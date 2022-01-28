@@ -1,5 +1,4 @@
 BUILD_DIR = build
-BUILD_DIRS = $(BUILD_DIR)/assets
 ASSETS_DIRS := assets
 ASM_DIRS := asm asm/os asm/libultra/os
 SRC_DIRS := $(shell find src/ -type d)
@@ -37,7 +36,7 @@ DEFINE_CFLAGS = -D_LANGUAGE_C -D_FINALROM -DF3DEX_GBI_2 -D_MIPS_SZLONG=32
 INCLUDE_CFLAGS = -I . -I include
 ASFLAGS = -EB -mtune=vr4300 -march=vr4300 -Iinclude -modd-spreg
 CFLAGS  = -G0 -mips2 -non_shared -Xfullwarn -Xcpluscomm -Wab,-r4300_mul $(DEFINE_FLAGS) $(INCLUDE_CFLAGS) -DF3DEX_GBI_2
-LDFLAGS = -T undefined_funcs_auto.txt -T undefined_syms_auto.txt -T $(BUILD_DIR)/$(LD_SCRIPT) -Map $(BUILD_DIR)/yoshisstory.map --no-check-sections
+LDFLAGS = -T undefined_funcs_auto.txt -T undefined_syms_auto.txt -T $(BUILD_DIR)/$(LD_SCRIPT) -Map $(BUILD_DIR)/$(TARGET).map --no-check-sections
 
 OPTFLAGS := -O2 -g3
 
@@ -46,6 +45,8 @@ CC_CHECK = gcc -fsyntax-only -fno-builtin -nostdinc -fsigned-char -m32 $(GCC_CFL
 
 TARGET = yoshisstory
 LD_SCRIPT = $(TARGET).ld
+SPLAT_YAML = $(TARGET).yaml
+SPLAT_CMD = python3 ./tools/splat/split.py $(SPLAT_YAML)
 
 ######################## Targets #############################
 build/src/os/O1/%.o: OPTFLAGS := -O1
@@ -58,11 +59,11 @@ all: $(BUILD_DIR) $(BUILD_DIR)/$(TARGET).z64 verify
 
 clean:
 	rm -rf $(BUILD_DIR) $(DATA_DIRS) $(ASM_DIRS) $(ASSETS_DIRS)
-	rm $(LD_SCRIPT)
+	rm -f $(LD_SCRIPT)
 	rm -f .splat_cache
 
-split:
-	python3 ./tools/splat/split.py yoshisstory.yaml
+split: $(SPLAT_YAML)
+	$(SPLAT_CMD)
 
 setup: clean split
 	
@@ -85,6 +86,9 @@ $(BUILD_DIR)/%.s.o: %.s
 $(BUILD_DIR)/%.bin.o: %.bin
 	$(LD) -r -b binary -o $@ $<
 
+$(LD_SCRIPT): $(SPLAT_YAML)
+	$(SPLAT_CMD)
+	
 $(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT)
 	@mkdir -p $(shell dirname $@)
 	cpp -P -DBUILD_DIR=$(BUILD_DIR) -o $@ $<
