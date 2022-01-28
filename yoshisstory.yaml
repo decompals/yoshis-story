@@ -211,6 +211,7 @@ segments:
       - [0x91D90, asm]
       - [0x920F0, asm]
       - [0x92170, data]
+      - [0xAC7E0, rodata]
   - type: bin
     start: 0xB58B0
   - [0x1000000]

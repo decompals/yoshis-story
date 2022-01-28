@@ -1,1 +1,3 @@
+D_800ABBE0 = 0x800ABBE0; // type: data
+D_800ABBE4 = 0x800ABBE4; // type: data
 D_800B1E30 = 0x800B1E30; // type: data
