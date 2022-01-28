@@ -9,3 +9,5 @@ __pycache__/
 
 asm/
 assets/
+
+.splat_cache
