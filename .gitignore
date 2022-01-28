@@ -1,0 +1,11 @@
+.vscode/
+bin/
+build/
+__pycache__/
+
+*.ld
+*.o
+*.z64
+
+asm/
+assets/
