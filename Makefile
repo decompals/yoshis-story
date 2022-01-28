@@ -58,9 +58,7 @@ default: all
 all: $(BUILD_DIR) $(BUILD_DIR)/$(TARGET).z64 verify
 
 clean:
-	rm -rf $(BUILD_DIR) $(DATA_DIRS) $(ASM_DIRS) $(ASSETS_DIRS)
-	rm -f $(LD_SCRIPT)
-	rm -f .splat_cache
+	rm -rf $(BUILD_DIR)
 
 split: $(SPLAT_YAML)
 	$(SPLAT_CMD)
@@ -93,7 +91,7 @@ $(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT)
 	@mkdir -p $(shell dirname $@)
 	cpp -P -DBUILD_DIR=$(BUILD_DIR) -o $@ $<
 
-$(BUILD_DIR)/$(TARGET).elf: $(O_FILES) $(BUILD_DIR)/$(LD_SCRIPT)
+$(BUILD_DIR)/$(TARGET).elf: $(BUILD_DIR)/$(LD_SCRIPT) $(O_FILES)
 	$(LD) $(LDFLAGS) -o $@
 
 $(BUILD_DIR)/$(TARGET).bin: $(BUILD_DIR)/$(TARGET).elf
