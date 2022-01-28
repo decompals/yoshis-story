@@ -210,6 +210,7 @@ segments:
       - [0x91D80, asm]
       - [0x91D90, asm]
       - [0x920F0, asm]
+      - [0x92170, data]
   - type: bin
-    start: 0x92170
+    start: 0xB58B0
   - [0x1000000]

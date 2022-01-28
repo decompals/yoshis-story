@@ -1,16 +1,19 @@
 BUILD_DIR = build
 ASSETS_DIRS := assets
 ASM_DIRS := asm asm/os asm/libultra/os
+ASM_DATA_DIRS := asm/data
 SRC_DIRS := $(shell find src/ -type d)
 
 C_FILES := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 C_FILES += $(wildcard src/*.c)
 S_FILES := $(foreach dir,$(ASM_DIRS),$(wildcard $(dir)/*.s))
+S_DATA_FILES := $(foreach dir,$(ASM_DATA_DIRS),$(wildcard $(dir)/*.s))
 DATA_FILES := $(foreach dir,$(ASSETS_DIRS),$(wildcard $(dir)/*.bin))
 
 # Object files
 O_FILES := $(foreach file,$(C_FILES),$(BUILD_DIR)/$(file:.c=.o)) \
            $(foreach file,$(S_FILES),$(BUILD_DIR)/$(file:.s=.s.o)) \
+           $(foreach file,$(S_DATA_FILES),$(BUILD_DIR)/$(file:.data.s=.data.s.o)) \
            $(foreach file,$(DATA_FILES),$(BUILD_DIR)/$(file:.bin=.bin.o)) \
 
 ##################### Compiler Options #######################
@@ -68,6 +71,7 @@ setup: clean split
 $(BUILD_DIR):
 	@mkdir $(BUILD_DIR)
 	@mkdir $(BUILD_DIR)/asm
+	@mkdir $(BUILD_DIR)/asm/data
 	@mkdir $(BUILD_DIR)/assets
 
 $(BUILD_DIR)/%.o: %.c
