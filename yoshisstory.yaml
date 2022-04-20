@@ -32,10 +32,10 @@ segments:
   - name: main
     type: code
     dir: main
-    start: 0x1060
+    start: 0x1070
     vram: 0x80000460
     subsegments:
-      - [0x1060, asm]
+      - [0x1070, asm]
       - [0x3BF0, asm]
       - [0xB9A0, asm]
       - [0xD510, asm]
@@ -232,6 +232,7 @@ segments:
       - [0xAAFB0, data, ../libultra/gu/sins]
       - [0xAB7B0, data]
       - [0xAC7E0, rodata]
+      - [0xB58B0, bss] # size = 0x5DFF0
   - type: bin
     start: 0xB58B0
   - [0x1000000]

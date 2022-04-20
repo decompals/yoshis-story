@@ -47,7 +47,14 @@ __ll_to_f = 0x80090C3C;
 __ull_to_d = 0x80090C54;
 __ull_to_f = 0x80090C88;
 
-sintable = 0x800AA3B0;
-D_800ABBE0 = 0x800ABBE0; // type: data
-D_800ABBE4 = 0x800ABBE4; // type: data
-D_800B1E30 = 0x800B1E30; // type: data
+// data
+sintable = 0x800AA3B0; // size:0x800
+
+D_800ABBE0 = 0x800ABBE0; // type:data
+D_800ABBE4 = 0x800ABBE4; // type:data
+D_800B1E30 = 0x800B1E30; // type:data
+
+// rodata
+
+// bss
+
