@@ -1,6 +1,6 @@
 BUILD_DIR = build
 ASSETS_DIRS := assets
-ASM_DIRS := asm asm/os asm/libultra/os
+ASM_DIRS := $(shell find asm -type d -not -name data)
 ASM_DATA_DIRS := asm/data
 SRC_DIRS := $(shell find src/ -type d)
 
@@ -40,10 +40,10 @@ CC_OLD = tools/ido_recomp/linux/7.1/cc
 DEFINE_CFLAGS = -D_LANGUAGE_C -D_FINALROM -DF3DEX_GBI_2 -D_MIPS_SZLONG=32
 INCLUDE_CFLAGS = -I . -I include
 ASFLAGS = -EB -mtune=vr4300 -march=vr4300 -Iinclude -modd-spreg
-CFLAGS  = -G0 -mips2 -non_shared -Xfullwarn -Xcpluscomm -Wab,-r4300_mul $(DEFINE_FLAGS) $(INCLUDE_CFLAGS) -DF3DEX_GBI_2
+CFLAGS  = -G0 -mips2 -non_shared -fullwarn -verbose -Xcpluscomm -Wab,-r4300_mul $(DEFINE_FLAGS) $(INCLUDE_CFLAGS) -DF3DEX_GBI_2
 LDFLAGS = -T undefined_funcs_auto.txt -T undefined_syms_auto.txt -T $(BUILD_DIR)/$(LD_SCRIPT) -Map $(BUILD_DIR)/$(TARGET).map --no-check-sections
 
-OPTFLAGS := -O2 -g3
+OPTFLAGS := -O2
 
 GCC_CFLAGS = -Wall $(DEFINE_CFLAGS) $(INCLUDE_CFLAGS) -fno-PIC -fno-zero-initialized-in-bss -fno-toplevel-reorder -Wno-missing-braces -Wno-unknown-pragmas
 CC_CHECK = gcc -fsyntax-only -fno-builtin -nostdinc -fsigned-char -m32 $(GCC_CFLAGS) -std=gnu90 -Wall -Wextra -Wno-format-security -Wno-main -DNON_MATCHING -DAVOID_UB
@@ -65,16 +65,16 @@ all: $(BUILD_DIR) $(BUILD_DIR)/$(TARGET).z64 verify
 clean:
 	rm -rf $(BUILD_DIR)
 
+asmclean:
+	rm -rf asm
+
 split: $(SPLAT_YAML)
 	$(SPLAT_CMD)
 
 setup: clean split
 	
 $(BUILD_DIR):
-	@mkdir $(BUILD_DIR)
-	@mkdir $(BUILD_DIR)/asm
-	@mkdir $(BUILD_DIR)/asm/data
-	@mkdir $(BUILD_DIR)/assets
+	$(shell mkdir -p build/baserom $(foreach dir,$(SRC_DIRS) $(ASM_DIRS) $(ASM_DATA_DIRS) $(ASSETS_DIRS),build/$(dir)))
 
 $(BUILD_DIR)/%.o: %.c
 	@$(CC_CHECK) -MMD -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<

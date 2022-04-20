@@ -1,3 +1,7 @@
+entrypoint = 0x80000400; // type: function
+bootproc = 0x8006743C; // type: function
+DoRelocation = 0x80081430; // type: function
+cosf = 0x8008D250; // type: function
 D_800ABBE0 = 0x800ABBE0; // type: data
 D_800ABBE4 = 0x800ABBE4; // type: data
 D_800B1E30 = 0x800B1E30; // type: data
