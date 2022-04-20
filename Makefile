@@ -62,11 +62,16 @@ default: all
 
 all: $(BUILD_DIR) $(BUILD_DIR)/$(TARGET).z64 verify
 
+distclean: asmclean assetclean clean
+
 clean:
 	rm -rf $(BUILD_DIR)
 
 asmclean:
 	rm -rf asm
+
+assetclean:
+	rm -rf assets
 
 split: $(SPLAT_YAML)
 	$(SPLAT_CMD)
@@ -109,4 +114,4 @@ $(BUILD_DIR)/$(TARGET).z64: $(BUILD_DIR)/$(TARGET).bin
 verify: $(BUILD_DIR)/$(TARGET).z64
 	md5sum -c checksum.md5
 
-.PHONY: all clean default split setup
+.PHONY: all clean default split setup distclean asmclean assetclean
