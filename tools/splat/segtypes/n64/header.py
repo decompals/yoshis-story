@@ -4,7 +4,7 @@ from util import options
 
 class N64SegHeader(CommonSegHeader):
     def parse_header(self, rom_bytes):
-        encoding = options.get("header_encoding", "ASCII")
+        encoding = options.get_header_encoding()
 
         header_lines = []
         header_lines.append(f".section .data\n")
@@ -18,7 +18,7 @@ class N64SegHeader(CommonSegHeader):
         header_lines.append(self.get_line("word", rom_bytes[0x1C:0x20], "Unknown 2"))
 
         if encoding != "word":
-            header_lines.append(".ascii \"" + rom_bytes[0x20:0x34].decode(encoding).strip().ljust(20) + "\" /* Internal name */")
+            header_lines.append(f".ascii \"" + rom_bytes[0x20:0x34].decode(encoding).strip().ljust(20) + "\" /* Internal name */")
         else:
             for i in range(0x20, 0x34, 4):
                 header_lines.append(self.get_line("word", rom_bytes[i:i+4], "Internal name"))
