@@ -30,7 +30,7 @@ del compile_args[out_ind]
 
 in_dir = os.path.split(os.path.realpath(in_file))[0]
 opt_flags = [
-    x for x in compile_args if x in ["-g3", "-g", "-O1", "-O2", "-framepointer"]
+    x for x in compile_args if x in ["-g3", "-g", "-O0", "-O1", "-O2", "-framepointer"]
 ]
 if "-mips2" not in compile_args:
     opt_flags.append("-mips1")
