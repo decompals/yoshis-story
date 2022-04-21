@@ -33,7 +33,7 @@ segments:
     type: code
     dir: main
     start: 0x1070
-    vram: 0x80000460
+    vram: 0x80000470
     subsegments:
       - [0x1070, asm]
       - [0x3BF0, asm]
@@ -119,11 +119,12 @@ segments:
       - [0x806E0, asm]
       - [0x808F0, asm]
       - [0x80C50, asm]
-      - [0x82030, asm, main/loadfragment2]
+      - [0x82030, asm, loadfragment2]
       - [0x823A0, asm]
       - [0x82510, asm]
       - [0x826F0, asm]
-      - [0x82830, asm, mathf]
+      - [0x82830, c, mathf]
+      # - [0x82830, asm, mathf]
       - [0x82BE0, hasm, fp]
       - [0x82D40, asm]
       - [0x82E10, asm]
@@ -232,7 +233,7 @@ segments:
       - [0xAAFB0, data, ../libultra/gu/sins]
       - [0xAB7B0, data]
       - [0xAC7E0, rodata]
-      - [0xB58B0, bss] # size = 0x5DFF0
+      # - [0xB58B0, .bss] # size = 0x5DFF0
   - type: bin
     start: 0xB58B0
   - [0x1000000]
