@@ -11,7 +11,9 @@ options:
   undefined_syms_auto_path: undefined_syms_auto.txt
   symbol_addrs_path: symbol_addrs.txt
   undefined_syms_path: undefined_syms.txt
-  asm_path: asm
+  asm_path: asm/text
+  data_path: asm/data
+  nonmatchings_path: asm/nonmatchings
   src_path: src
   build_path: build
   extensions_path: tools/splat_ext
@@ -119,7 +121,7 @@ segments:
       - [0x806E0, asm]
       - [0x808F0, asm]
       - [0x80C50, asm]
-      - [0x82030, asm, loadfragment2]
+      - [0x82030, c, loadfragment2]
       - [0x823A0, asm]
       - [0x82510, asm]
       - [0x826F0, asm]
@@ -137,7 +139,7 @@ segments:
       - [0x83560, asm]
       - [0x83820, asm, ../libultra/libc/ll] # -mips3
       - [0x83AE0, asm]
-      - [0x849D0, hasm, ../libultra/os/exceptasm]
+      - [0x849D0, asm, ../libultra/os/exceptasm] # hasm
       - [0x852E0, asm]
       - [0x85420, hasm, ../libultra/libc/bzero]
       - [0x854C0, asm]
@@ -232,7 +234,10 @@ segments:
       - [0x92170, data]
       - [0xAAFB0, data, ../libultra/gu/sins]
       - [0xAB7B0, data]
-      - [0xAC7E0, rodata]
+      # rodata: vram start 800ABBE0
+      - [0xAC7E0, rodata] 
+      - [0xB3D80, .rodata, mathf] #
+      - [0xB3DA0, rodata] #
       # - [0xB58B0, .bss] # size = 0x5DFF0
   - type: bin
     start: 0xB58B0
