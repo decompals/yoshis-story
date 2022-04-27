@@ -55,6 +55,7 @@ D_800ABBE4 = 0x800ABBE4; // type:data
 D_800B1E30 = 0x800B1E30; // type:data
 
 // rodata
+__osRcpImTable = 0x800B31A0; // type:data
 
 // bss
 
