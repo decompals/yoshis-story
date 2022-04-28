@@ -4,6 +4,11 @@ bootproc = 0x8006743C;
 
 DoRelocation = 0x80081430;
 
+mtxcvt_F2L = 0x800817A0;
+mtxcvt_L2F = 0x800818E8;
+PadSetup_Init = 0x80081AF0;
+
+osSendMesg = 0x80082210;
 osRecvMesg = 0x800824B0;
 osSetIntMask = 0x800825F0;
 
@@ -28,15 +33,23 @@ bzero = 0x80084820;
 osWritebackDCache = 0x80085FE0;
 __osProbeTLB = 0x80088300;
 sqrtf = 0x80089DE0;
+memcpy = 0x8008AD80;
+strlen = 0x8008ADAC;
+strchr = 0x8008ADD4;
+osCreateMesgQueue = 0x8008AE20;
 osInvalICache = 0x8008AE50;
 osInvalDCache = 0x8008AED0;
+__osSpDeviceBusy = 0x8008AF80;
 bcmp = 0x8008B800;
 bcopy = 0x8008C500;
 
-osWritebackDCacheAll = 80090710;
+osWritebackDCacheAll = 0x80090710;
 
 cosf = 0x8008D250;
 coss = 0x8008D3C0;
+
+__osSpSetStatus = 0x800906F0;
+__osSpGetStatus = 0x80090700;
 
 __d_to_ll = 0x80090AB0;
 __f_to_ll = 0x80090ACC;
@@ -46,6 +59,8 @@ __ll_to_d = 0x80090C24;
 __ll_to_f = 0x80090C3C;
 __ull_to_d = 0x80090C54;
 __ull_to_f = 0x80090C88;
+
+__osSpSetPc = 0x80091530;
 
 // data
 sintable = 0x800AA3B0; // size:0x800
