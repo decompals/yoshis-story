@@ -100,11 +100,12 @@ $(BUILD_DIR)/%.bin.o: %.bin
 	$(LD) -r -b binary -o $@ $<
 
 $(LD_SCRIPT): $(SPLAT_YAML)
+	rm $@
 	$(SPLAT) $<
 
 $(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT)
 	@mkdir -p $(@D)
-	cpp -P -DBUILD_DIR=$(@D) -o $@ $<
+	cpp -P -o $@ $<
 
 $(BUILD_DIR)/$(TARGET).elf: $(BUILD_DIR)/$(LD_SCRIPT) $(O_FILES)
 	$(LD) -T undefined_funcs_auto.txt -T undefined_syms_auto.txt -T $(BUILD_DIR)/$(LD_SCRIPT) -Map $(BUILD_DIR)/$(TARGET).map --no-check-sections -o $@
@@ -118,4 +119,5 @@ $(BUILD_DIR)/$(TARGET).z64: $(BUILD_DIR)/$(TARGET).bin
 verify: $(BUILD_DIR)/$(TARGET).z64
 	md5sum -c checksum.md5
 
+.DEFAULT: all
 .PHONY: all clean default split setup distclean asmclean assetclean
