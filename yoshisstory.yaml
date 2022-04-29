@@ -11,7 +11,9 @@ options:
   undefined_syms_auto_path: undefined_syms_auto.txt
   symbol_addrs_path: symbol_addrs.txt
   undefined_syms_path: undefined_syms.txt
-  asm_path: asm
+  asm_path: asm/text
+  data_path: asm/data
+  nonmatchings_path: asm/nonmatchings
   src_path: src
   build_path: build
   extensions_path: tools/splat_ext
@@ -20,15 +22,22 @@ segments:
   - name: header
     type: header
     start: 0x0
-  - name: boot
+  - name: ipl3
     type: bin
     start: 0x40
-  - name: main
+  - name: entry
     type: code
     start: 0x1000
     vram: 0x80000400
     subsegments:
-      - [0x1000, asm]
+      - [0x1000, asm, entry]
+  - name: main
+    type: code
+    dir: main
+    start: 0x1070
+    vram: 0x80000470
+    subsegments:
+      - [0x1070, asm]
       - [0x3BF0, asm]
       - [0xB9A0, asm]
       - [0xD510, asm]
@@ -53,10 +62,10 @@ segments:
       - [0x1CA30, asm]
       - [0x1D1D0, asm]
       - [0x1E360, asm]
-      - [0x45EC0, asm]
+      - [0x45EC0, asm, actormanager]
       - [0x49EC0, asm]
       - [0x4A430, asm]
-      - [0x4F970, asm]
+      - [0x4F970, asm, bgManager]
       - [0x511F0, asm]
       - [0x52880, asm]
       - [0x52E90, asm]
@@ -112,23 +121,31 @@ segments:
       - [0x806E0, asm]
       - [0x808F0, asm]
       - [0x80C50, asm]
+      - [0x82030, c, loadfragment2]
+      - [0x823A0, asm, mtxuty-cvt]
       - [0x82510, asm]
-      - [0x826F0, asm]
-      - [0x82830, asm]
-      - [0x82BE0, asm]
-      - [0x82E10, asm]
+      - [0x826F0, asm, padsetup]
+      - [0x82830, c, mathf]
+      - [0x82BE0, asm, fp] # hasm
+      - [0x82D40, asm]
+      - [0x82E10, asm, ../libultra/os/sendmesg]
       - [0x82F60, asm]
-      - [0x830B0, asm]
-      - [0x831F0, asm]
-      - [0x83330, asm]
-      - [0x83820, asm]
-      - [0x849D0, asm]
-      - [0x85420, asm]
+      - [0x830B0, asm, ../libultra/os/recvmesg]
+      - [0x831F0, asm, ../libultra/os/setintmask]
+      - [0x83290, asm]
+      - [0x83330, asm, ../libultra/gu/sinf]
+      - [0x834F0, asm, ../libultra/gu/sins]
+      - [0x83560, asm]
+      - [0x83820, asm, ../libultra/libc/ll] # -mips3
+      - [0x83AE0, asm]
+      - [0x849D0, asm, ../libultra/os/exceptasm] # hasm
+      - [0x852E0, asm]
+      - [0x85420, hasm, ../libultra/libc/bzero]
       - [0x854C0, asm]
       - [0x85D40, asm]
       - [0x86100, asm]
       - [0x86860, asm]
-      - [0x86B60, asm]
+      - [0x86B60, asm, ../libultra/os/writebackdcache]
       - [0x86BE0, asm]
       - [0x86C60, asm]
       - [0x86EF0, asm]
@@ -142,7 +159,7 @@ segments:
       - [0x87C10, asm]
       - [0x87C80, asm]
       - [0x88750, asm]
-      - [0x88F00, asm]
+      - [0x88F00, hasm, ../libultra/os/probetlb]
       - [0x88FC0, asm]
       - [0x88FD0, asm]
       - [0x89D30, asm]
@@ -151,22 +168,23 @@ segments:
       - [0x8A230, asm]
       - [0x8A330, asm]
       - [0x8A400, asm]
-      - [0x8A9E0, asm]
+      - [0x8A9E0, asm, ../libultra/gu/sqrtf]
       - [0x8A9F0, asm]
       - [0x8AAA0, asm]
       - [0x8B760, asm]
       - [0x8B840, asm]
-      - [0x8B980, asm]
-      - [0x8BA20, asm]
-      - [0x8BA50, asm]
-      - [0x8BAD0, asm]
-      - [0x8BB80, asm]
+      - [0x8B980, asm, ../libultra/libc/string] # -O3
+      - [0x8BA20, asm, ../libultra/os/createmesgqueue]
+      - [0x8BA50, asm, ../libultra/os/invalicache]
+      - [0x8BAD0, asm, ../libultra/os/invaldcache]
+      - [0x8BB80, asm, ../libultra/io/sp]
       - [0x8BBB0, asm]
       - [0x8BBE0, asm]
       - [0x8BE30, asm]
       - [0x8BF40, asm]
       - [0x8C150, asm]
       - [0x8C380, asm]
+      - [0x8C400, hasm, ../libultra/libc/bcmp]
       - [0x8C520, asm]
       - [0x8C5B0, asm]
       - [0x8CA00, asm]
@@ -174,15 +192,17 @@ segments:
       - [0x8CD40, asm]
       - [0x8CD50, asm]
       - [0x8CDE0, asm]
-      - [0x8CDF0, asm]
+      - [0x8CDF0, hasm, ../libultra/libc/bcopy]
+      - [0x8D100, asm]
       - [0x8D160, asm]
       - [0x8D780, asm]
       - [0x8D940, asm]
       - [0x8D980, asm]
       - [0x8DAC0, asm]
       - [0x8DE20, asm]
-      - [0x8DE50, asm]
-      - [0x8DFC0, asm]
+      - [0x8DE50, asm, ../libultra/gu/cosf]
+      - [0x8DFC0, asm, ../libultra/gu/coss]
+      - [0x8DFF0, asm, ../libultra/io/visetspecial]
       - [0x8E1B0, asm]
       - [0x8E220, asm]
       - [0x8E6B0, asm]
@@ -199,19 +219,26 @@ segments:
       - [0x90E70, asm]
       - [0x91000, asm]
       - [0x912A0, asm]
-      - [0x912F0, asm]
-      - [0x91300, asm]
-      - [0x91310, asm]
+      - [0x912F0, asm, ../libultra/io/spsetstat]
+      - [0x91300, asm, ../libultra/io/spgetstat]
+      - [0x91310, asm, ../libultra/os/writebackdcacheall]
       - [0x91340, asm]
       - [0x91350, asm]
-      - [0x916B0, asm]
+      - [0x916B0, asm, ../libultra/libc/llcvt]
       - [0x918C0, asm]
       - [0x91A20, asm]
       - [0x91D80, asm]
       - [0x91D90, asm]
       - [0x920F0, asm]
+      - [0x92130, asm, ../libultra/io/spsetpc]
       - [0x92170, data]
-      - [0xAC7E0, rodata]
+      - [0xAAFB0, data, ../libultra/gu/sins]
+      - [0xAB7B0, data]
+      # rodata: vram start 800ABBE0
+      - [0xAC7E0, rodata] 
+      - [0xB3D80, .rodata, mathf] #
+      - [0xB3DA0, rodata] #
+      # - [0xB58B0, .bss] # size = 0x5DFF0
   - type: bin
     start: 0xB58B0
   - [0x1000000]

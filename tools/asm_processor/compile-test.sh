@@ -3,7 +3,7 @@ set -o pipefail
 INPUT="$1"
 OUTPUT="${INPUT%.c}.o"
 
-CC="$QEMU_IRIX -silent -L $IRIX_ROOT $IRIX_ROOT/usr/bin/cc"
+CC="$MIPS_CC"  # ido 5.3 via recomp/qemu-irix
 CFLAGS="-Wab,-r4300_mul -non_shared -G 0 -Xcpluscomm -fullwarn -wlint -woff 819,820,852,821 -signed -c"
 AS="mips-linux-gnu-as"
 ASFLAGS="-march=vr4300 -mabi=32"

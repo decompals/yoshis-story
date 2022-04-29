@@ -1,3 +1,76 @@
-D_800ABBE0 = 0x800ABBE0; // type: data
-D_800ABBE4 = 0x800ABBE4; // type: data
-D_800B1E30 = 0x800B1E30; // type: data
+entrypoint = 0x80000400;
+
+bootproc = 0x8006743C;
+
+DoRelocation = 0x80081430;
+
+mtxcvt_F2L = 0x800817A0;
+mtxcvt_L2F = 0x800818E8;
+PadSetup_Init = 0x80081AF0;
+
+osSendMesg = 0x80082210;
+osRecvMesg = 0x800824B0;
+osSetIntMask = 0x800825F0;
+
+sinf = 0x80082730;
+sins = 0x800828F0;
+
+_ull_rshift = 0x80082C20;
+__ull_rem = 0x80082C4C;
+__ull_div = 0x80082C88;
+__ll_lshift = 0x80082CC4;
+__ll_rem = 0x80082CF0;
+__ll_div = 0x80082D2C;
+__ll_mul = 0x80082D88;
+__ull_divremi = 0x80082DB8;
+__ll_mod = 0x80082E18;
+__ll_rshift = 0x80082EB4;
+
+__osExceptionPreamble = 0x80083DD0;
+__osException = 0x80083DE0;
+__osCleanupThread = 0x800846D0;
+bzero = 0x80084820;
+osWritebackDCache = 0x80085FE0;
+__osProbeTLB = 0x80088300;
+sqrtf = 0x80089DE0;
+memcpy = 0x8008AD80;
+strlen = 0x8008ADAC;
+strchr = 0x8008ADD4;
+osCreateMesgQueue = 0x8008AE20;
+osInvalICache = 0x8008AE50;
+osInvalDCache = 0x8008AED0;
+__osSpDeviceBusy = 0x8008AF80;
+bcmp = 0x8008B800;
+bcopy = 0x8008C500;
+
+osWritebackDCacheAll = 0x80090710;
+
+cosf = 0x8008D250;
+coss = 0x8008D3C0;
+
+__osSpSetStatus = 0x800906F0;
+__osSpGetStatus = 0x80090700;
+
+__d_to_ll = 0x80090AB0;
+__f_to_ll = 0x80090ACC;
+__d_to_ull = 0x80090AE8;
+__f_to_ull = 0x80090B88;
+__ll_to_d = 0x80090C24;
+__ll_to_f = 0x80090C3C;
+__ull_to_d = 0x80090C54;
+__ull_to_f = 0x80090C88;
+
+__osSpSetPc = 0x80091530;
+
+// data
+sintable = 0x800AA3B0; // size:0x800
+
+D_800ABBE0 = 0x800ABBE0; // type:data
+D_800ABBE4 = 0x800ABBE4; // type:data
+D_800B1E30 = 0x800B1E30; // type:data
+
+// rodata
+__osRcpImTable = 0x800B31A0; // type:data
+
+// bss
+
