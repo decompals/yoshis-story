@@ -1,0 +1,10 @@
+// libultra OS symbols
+
+osTvType       = 0x80000300; // type:data size:0x4
+osRomType      = 0x80000304; // type:data size:0x4
+osRomBase      = 0x80000308; // type:data size:0x4
+osResetType    = 0x8000030C; // type:data size:0x4
+osCicId        = 0x80000310; // type:data size:0x4
+osVersion      = 0x80000314; // type:data size:0x4
+osMemSize      = 0x80000318; // type:data size:0x4
+osAppNmiBuffer = 0x8000031C; // type:data size:0x4
