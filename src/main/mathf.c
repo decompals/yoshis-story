@@ -1,8 +1,4 @@
-#include "common.h"
-
-typedef float f32;
-extern f32 sinf(f32 x);
-extern f32 cosf(f32 x);
+#include "global.h"
 
 f32 func_80081C30(f32 x) {
     return sinf(x) / cosf(x);

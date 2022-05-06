@@ -1,3 +1,6 @@
+#ifndef ULTRATYPES_H
+#define ULTRATYPES_H
+
 typedef signed char s8;
 typedef unsigned char u8;
 typedef signed short int s16;
@@ -33,3 +36,4 @@ typedef union {
     };
 } MtxF;
 
+#endif

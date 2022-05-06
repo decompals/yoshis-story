@@ -57,7 +57,7 @@ OBJDUMP_FLAGS := -d -r -z -Mreg-names=32
 
 TARGET     := yoshisstory
 LD_SCRIPT  := $(TARGET).ld
-SPLAT      := python3 ../../splat/split.py
+SPLAT      := python3 tools/splat/split.py
 SPLAT_YAML := $(TARGET).yaml
 
 ######################## Targets #############################
