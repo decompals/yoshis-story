@@ -134,7 +134,7 @@ segments:
       - [0x82F60, asm, ../libultra/io/pfsfreeblocks]
       - [0x830B0, asm, ../libultra/os/recvmesg]
       - [0x831F0, asm, ../libultra/os/setintmask]
-      - [0x83290, asm, ../gu/scale]
+      - [0x83290, asm, ../libultra/gu/scale]
       - [0x83330, asm, ../libultra/gu/sinf]
       - [0x834F0, asm, ../libultra/gu/sins]
       - [0x83560, asm, ../libultra/io/sptask]
