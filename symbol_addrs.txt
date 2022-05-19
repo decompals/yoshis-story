@@ -259,6 +259,8 @@ __osViDevMgr = 0x800ABBC0; // type:data size:0x1C
 __osViCurr = 0x800ABBE0; // type:data size:0x4
 __osViNext = 0x800ABAE4; // type:data size:0x4
 
+gLoad2LogSeverity = 0x800AA390; // type:data size=0x4
+
 D_800B1E30 = 0x800B1E30; // type:data
 
 // rodata
