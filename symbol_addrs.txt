@@ -229,6 +229,8 @@ osEepromRead = 0x80091190;
 __osPackEepReadData = 0x800913E4;
 osViGetCurrentFramebuffer = 0x800914F0;
 __osSpSetPc = 0x80091530;
+Load2_LoadOverlay = 0x8008169C;
+Load2_AllocateAndLoad = 0x80081744;
 
 // data
 sintable = 0x800AA3B0; // type:data size:0x800

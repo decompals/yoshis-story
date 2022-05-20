@@ -87,7 +87,7 @@ void DoRelocation(void* allocatedVRamAddr, OverlayRelocationSection* ovl, uintpt
     }
 }
 
-size_t func_8008169C(uintptr_t vRomStart, uintptr_t vRomEnd, uintptr_t vRamStart, uintptr_t vRamEnd,
+size_t Load2_LoadOverlay(uintptr_t vRomStart, uintptr_t vRomEnd, uintptr_t vRamStart, uintptr_t vRamEnd,
                      void* allocatedVRamAddr) {
     s32 pad[2];
     s32 size = vRomEnd - vRomStart;
@@ -122,11 +122,11 @@ size_t func_8008169C(uintptr_t vRomStart, uintptr_t vRomEnd, uintptr_t vRamStart
     return size;
 }
 
-void* func_80081744(uintptr_t vRomStart, uintptr_t vRomEnd, uintptr_t vRamStart, uintptr_t vRamEnd) {
+void* Load2_AllocateAndLoad(uintptr_t vRomStart, uintptr_t vRomEnd, uintptr_t vRamStart, uintptr_t vRamEnd) {
     void* allocatedVRamAddr = func_80064DD0(vRamEnd - vRamStart);
 
     if (allocatedVRamAddr != NULL) {
-        func_8008169C(vRomStart, vRomEnd, vRamStart, vRamEnd, allocatedVRamAddr);
+        Load2_LoadOverlay(vRomStart, vRomEnd, vRamStart, vRamEnd, allocatedVRamAddr);
     }
 
     return allocatedVRamAddr;
