@@ -229,6 +229,8 @@ osEepromRead = 0x80091190;
 __osPackEepReadData = 0x800913E4;
 osViGetCurrentFramebuffer = 0x800914F0;
 __osSpSetPc = 0x80091530;
+Load2_LoadOverlay = 0x8008169C;
+Load2_AllocateAndLoad = 0x80081744;
 
 // data
 sintable = 0x800AA3B0; // type:data size:0x800
@@ -258,6 +260,8 @@ __osViDevMgr = 0x800ABBC0; // type:data size:0x1C
 
 __osViCurr = 0x800ABBE0; // type:data size:0x4
 __osViNext = 0x800ABAE4; // type:data size:0x4
+
+gLoad2LogSeverity = 0x800AA390; // type:data size:0x4
 
 D_800B1E30 = 0x800B1E30; // type:data
 
