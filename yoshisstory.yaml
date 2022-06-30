@@ -17,7 +17,6 @@ options:
   src_path: src
   build_path: build
   extensions_path: tools/splat_ext
-  auto_all_sections: True
 segments:
   - name: header
     type: header

@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/simonlindholm/asm-processor.git
 	branch = main
-	commit = fd28ec1d7ec94ae75f77671ec44df30de62819c2
-	parent = 15e6e35f44e5b48dc96b6e134dcc51406389102e
+	commit = 97db4f35f103c55ec58ee0d722842549f75c3346
+	parent = d2f676925505321b57d450aae0d91a7e05b84f50
 	method = merge
 	cmdver = 0.4.3
