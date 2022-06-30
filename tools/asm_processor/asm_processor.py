@@ -576,7 +576,7 @@ class GlobalAsmBlock:
             self.text_glabels.append(line.split()[1])
         if not line:
             pass # empty line
-        elif line.startswith('glabel ') or (' ' not in line and line.endswith(':')):
+        elif line.startswith('glabel ') or line.startswith('dlabel ') or line.startswith('endlabel ') or (' ' not in line and line.endswith(':')):
             pass # label
         elif line.startswith('.section') or line in ['.text', '.data', '.rdata', '.rodata', '.bss', '.late_rodata']:
             # section change
@@ -913,6 +913,7 @@ def parse_source(f, opt, framepointer, mips1, input_enc, output_enc, out_depende
             for line in output_lines:
                 print_source.write(line + '\n')
         else:
+            newline_encoded = "\n".encode(output_enc)
             for line in output_lines:
                 try:
                     line_encoded = line.encode(output_enc)
@@ -921,10 +922,9 @@ def parse_source(f, opt, framepointer, mips1, input_enc, output_enc, out_depende
                     print("The line:", line)
                     print("The line, utf-8-encoded:", line.encode("utf-8"))
                     raise
-                print_source.write(line_encoded + b'\n')
+                print_source.write(line_encoded)
+                print_source.write(newline_encoded)
             print_source.flush()
-            if print_source != sys.stdout.buffer:
-                print_source.close()
 
     return asm_functions
 

@@ -94,3 +94,17 @@ how to avoid reordering the injected assembly, and how .rodata/.late_rodata are 
 ### Testing
 
 There are a few tests to ensure you don't break anything when hacking on asm-processor: `./run-tests.sh` should exit without output if they pass, or else output a diff from previous to new version.
+
+Tests need the environment variable `MIPS_CC` set as the IDO 5.3 compiler.
+
+For example if asm-processor is cloned in the same directory as [zeldaret/oot](https://github.com/zeldaret/oot/) and the working directory is asm-processor, tests can be run using the IDO recompilation:
+
+```sh
+MIPS_CC=../oot/tools/ido_recomp/linux/5.3/cc ./run-tests.sh
+```
+
+Or using [qemu-irix](https://github.com/zeldaret/oot/releases/tag/0.1q) (don't forget `chmod u+x qemu-irix`) to emulate IDO:
+
+```sh
+MIPS_CC='./qemu-irix -silent -L ../oot/tools/ido5.3_compiler/ ../oot/tools/ido5.3_compiler/usr/bin/cc' ./run-tests.sh
+```
