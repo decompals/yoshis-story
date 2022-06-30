@@ -76,6 +76,7 @@ clean:
 
 asmclean:
 	rm -rf asm
+	rm -f $(LD_SCRIPT)
 
 assetclean:
 	rm -rf assets
@@ -85,7 +86,8 @@ split: $(SPLAT_YAML)
 
 setup: clean split
 	
-$(BUILD_DIR):
+$(BUILD_DIR): $(LD_SCRIPT)
+#	$(info $(SRC_DIRS) $(ASM_DIRS) $(ASM_DATA_DIRS) $(ASSETS_DIRS))
 	$(shell mkdir -p build/baserom $(foreach dir,$(SRC_DIRS) $(ASM_DIRS) $(ASM_DATA_DIRS) $(ASSETS_DIRS),build/$(dir)))
 
 $(BUILD_DIR)/%.c.o: %.c
@@ -100,7 +102,7 @@ $(BUILD_DIR)/%.bin.o: %.bin
 	$(LD) -r -b binary -o $@ $<
 
 $(LD_SCRIPT): $(SPLAT_YAML)
-	rm $@
+	rm -f $@
 	$(SPLAT) $<
 
 $(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT)
