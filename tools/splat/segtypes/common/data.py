@@ -422,7 +422,7 @@ class CommonSegData(CommonSegCodeSubsegment, CommonSegGroup):
 
             sym.disasm_str = disasm_str
             name_str = f"\n\n{options.get_asm_data_macro()} {sym.name}\n"
-            ret += name_str + disasm_str
+            ret += f"{name_str}/* {dis_start:X} */ {disasm_str}"
 
         ret += "\n"
 
