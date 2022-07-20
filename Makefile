@@ -24,6 +24,20 @@ O_FILES := $(foreach file,$(C_FILES),$(BUILD_DIR)/$(file:.c=.c.o)) \
            $(foreach file,$(DATA_FILES),$(BUILD_DIR)/$(file:.bin=.bin.o)) \
 
 ##################### Compiler Options #######################
+ifeq ($(OS),Windows_NT)
+  DETECTED_OS=windows
+else
+  UNAME_S := $(shell uname -s)
+  ifeq ($(UNAME_S),Linux)
+    DETECTED_OS=linux
+  endif
+  ifeq ($(UNAME_S),Darwin)
+    DETECTED_OS=macos
+    MAKE=gmake
+    CPPFLAGS += -xc++
+  endif
+endif
+
 ifeq ($(shell type mips-n64-ld >/dev/null 2>/dev/null; echo $$?), 0)
   CROSS := mips-n64-
 else ifeq ($(shell type mips-linux-gnu-ld >/dev/null 2>/dev/null; echo $$?), 0)
@@ -34,25 +48,28 @@ else
   CROSS := mips64-elf-
 endif
 
-AS := $(CROSS)as
-LD := $(CROSS)ld
+CPP     := cpp
+AS      := $(CROSS)as
+LD      := $(CROSS)ld
 OBJDUMP := $(CROSS)objdump
 OBJCOPY := $(CROSS)objcopy
 
-CC := tools/ido_recomp/linux/7.1/cc
-CC_OLD := tools/ido_recomp/linux/5.3/cc
+CC := tools/ido_recomp/$(DETECTED_OS)/7.1/cc
+CC_OLD := tools/ido_recomp/$(DETECTED_OS)/5.3/cc
 
 DEFINE_CFLAGS := -D_LANGUAGE_C -D_FINALROM -DF3DEX_GBI_2 -D_MIPS_SZLONG=32
 INCLUDE_CFLAGS := -I . -I include
 ASFLAGS := -EB -mtune=vr4300 -march=vr4300 -Iinclude -modd-spreg
-CFLAGS  := -G0 -mips2 -non_shared -fullwarn -verbose -Xcpluscomm -Wab,-r4300_mul $(DEFINE_FLAGS) $(INCLUDE_CFLAGS) -DF3DEX_GBI_2
-
+CFLAGS  := -G0 -mips2 -non_shared -fullwarn -verbose -Xcpluscomm -Wab,-r4300_mul -woff 624,649,838,712,516 $(DEFINE_FLAGS) $(INCLUDE_CFLAGS)
 
 OPTFLAGS := -O2
 
-GCC_CFLAGS := -Wall $(DEFINE_CFLAGS) $(INCLUDE_CFLAGS) -fno-PIC -fno-zero-initialized-in-bss -fno-toplevel-reorder -Wno-missing-braces -Wno-unknown-pragmas
-CC_CHECK := gcc -fsyntax-only -fno-builtin -nostdinc -fsigned-char -m32 $(GCC_CFLAGS) -std=gnu90 -Wall -Wextra -Wno-format-security -Wno-main -DNON_MATCHING -DAVOID_UB
 
+CHECK_WARNINGS := -Wall -Wextra -Wno-format-security -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-variable -Wno-missing-braces -Wno-int-conversion -Wno-unused-but-set-variable -Wno-unused-label
+CC_CHECK   := gcc -fno-builtin -fsyntax-only -funsigned-char -fdiagnostics-color -std=gnu89 -m32 $(DEFINE_CFLAGS) -DAVOID_UB $(INCLUDE_CFLAGS) -nostdinc $(CHECK_WARNINGS) 
+
+
+CPPFLAGS      := -P
 OBJDUMP_FLAGS := -d -r -z -Mreg-names=32
 
 TARGET     := yoshisstory
@@ -105,7 +122,7 @@ $(LD_SCRIPT): $(SPLAT_YAML)
 
 $(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT)
 	@mkdir -p $(@D)
-	cpp -P -o $@ $<
+	$(CPP) $(CPPFLAGS) $< > $@
 
 $(BUILD_DIR)/$(TARGET).elf: $(BUILD_DIR)/$(LD_SCRIPT) $(O_FILES)
 	$(LD) -T undefined_funcs_auto.txt -T undefined_syms_auto.txt -T $(BUILD_DIR)/$(LD_SCRIPT) -Map $(BUILD_DIR)/$(TARGET).map --no-check-sections -o $@
