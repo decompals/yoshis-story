@@ -39,5 +39,17 @@ void func_80080C84(MtxF* mf, f32, f32, f32);
 size_t Load2_LoadOverlay(uintptr_t vRomStart, uintptr_t vRomEnd, uintptr_t vRamStart, uintptr_t vRamEnd, void* allocatedVRamAddr);
 void* Load2_AllocateAndLoad(uintptr_t vRomStart, uintptr_t vRomEnd, uintptr_t vRamStart, uintptr_t vRamEnd);
 
+// mathf
+
+double fabs(double f);
+#pragma intrinsic(fabs)
+float sqrtf(float f);
+#pragma intrinsic(sqrtf)
+
+// Mathematics
+#define M_PI 3.14159265358979323846f
+
+#define ABS(x) (((x) < 0) ? -(x) : (x))
+#define SQ(x) ((x) * (x))
 
 #endif

@@ -17,6 +17,7 @@ options:
   src_path: src
   build_path: build
   extensions_path: tools/splat_ext
+  mips_abi_float_regs: o32
 segments:
   - name: header
     type: header
@@ -82,6 +83,7 @@ segments:
       - [0x63870, asm]
       - [0x63A30, asm]
       - [0x65430, asm]
+      - [0x68000, asm]
       - [0x6A8A0, asm]
       - [0x6CB50, asm]
       - [0x6CB60, asm]
@@ -259,12 +261,34 @@ segments:
       - [0x920F0, asm, ../libultra/io/vigetcurrframebuf]
       - [0x92130, asm, ../libultra/io/spsetpc]
       - [0x92170, data]
+      - [0xA7190, data]
       - [0xAAF90, .data, loadfragment2]
       - [0xAAFA0, data]
       - [0xAAFB0, data, ../libultra/gu/sins]
       - [0xAB7B0, data]
       # rodata: vram start 800ABBE0
-      - [0xAC7E0, rodata] 
+      - [0xAC7E0, rodata]
+      - [0xAC810, rodata]
+      - [0xAC840, rodata]
+      - [0xAC910, rodata]
+      - [0xAC970, rodata]
+      - [0xACFB0, rodata]
+      - [0xAD8C0, rodata]
+      - [0xADA90, rodata]
+      - [0xB0060, rodata]
+      - [0xB05A0, rodata]
+      - [0xB0F40, rodata]
+      - [0xB1500, rodata]
+      - [0xB15B0, rodata]
+      - [0xB1760, rodata]
+      - [0xB1800, rodata]
+      - [0xB18A0, rodata]
+      - [0xB1B20, rodata]
+      - [0xB1C90, rodata]
+      - [0xB1D60, rodata]
+      - [0xB1D90, rodata]
+      - [0xB3B70, rodata]
+      - [0xB3B80, rodata]
       - [0xB3D80, .rodata, mathf] #
       - [0xB3DA0, rodata] #
       # - [0xB58B0, .bss] # size = 0x5DFF0
