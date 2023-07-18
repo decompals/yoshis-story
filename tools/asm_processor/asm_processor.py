@@ -437,15 +437,18 @@ class Failure(Exception):
 
 
 class GlobalState:
-    def __init__(self, min_instr_count, skip_instr_count, use_jtbl_for_rodata, mips1):
+    def __init__(self, min_instr_count, skip_instr_count, use_jtbl_for_rodata, prelude_if_late_rodata, mips1, pascal):
         # A value that hopefully never appears as a 32-bit rodata constant (or we
         # miscompile late rodata). Increases by 1 in each step.
         self.late_rodata_hex = 0xE0123456
+        self.valuectr = 0
         self.namectr = 0
         self.min_instr_count = min_instr_count
         self.skip_instr_count = skip_instr_count
         self.use_jtbl_for_rodata = use_jtbl_for_rodata
+        self.prelude_if_late_rodata = prelude_if_late_rodata
         self.mips1 = mips1
+        self.pascal = pascal
 
     def next_late_rodata_hex(self):
         dummy_bytes = struct.pack('>I', self.late_rodata_hex)
@@ -459,6 +462,36 @@ class GlobalState:
         self.namectr += 1
         return '_asmpp_{}{}'.format(cat, self.namectr)
 
+    def func_prologue(self, name):
+        if self.pascal:
+            return " ".join([
+                "procedure {}();".format(name),
+                "type",
+                " pi = ^integer;",
+                " pf = ^single;",
+                " pd = ^double;",
+                "var",
+                " vi: pi;",
+                " vf: pf;",
+                " vd: pd;",
+                "begin",
+                " vi := vi;",
+                " vf := vf;",
+                " vd := vd;",
+            ])
+        else:
+            return 'void {}(void) {{'.format(name)
+
+    def func_epilogue(self):
+        if self.pascal:
+            return "end;"
+        else:
+            return "}"
+
+    def pascal_assignment(self, tp, val):
+        self.valuectr += 1
+        address = (8 * self.valuectr) & 0x7FFF
+        return 'v{} := p{}({}); v{}^ := {};'.format(tp, tp, address, tp, val)
 
 Function = namedtuple('Function', ['text_glabels', 'asm_conts', 'late_rodata_dummy_bytes', 'jtbl_rodata_size', 'late_rodata_asm_conts', 'fn_desc', 'data'])
 
@@ -572,11 +605,11 @@ class GlobalAsmBlock:
         line = re.sub(r'^[a-zA-Z0-9_]+:\s*', '', line)
         changed_section = False
         emitting_double = False
-        if line.startswith('glabel ') and self.cur_section == '.text':
+        if (line.startswith('glabel ') or line.startswith('jlabel ')) and self.cur_section == '.text':
             self.text_glabels.append(line.split()[1])
         if not line:
             pass # empty line
-        elif line.startswith('glabel ') or line.startswith('dlabel ') or line.startswith('endlabel ') or (' ' not in line and line.endswith(':')):
+        elif line.startswith('glabel ') or line.startswith('dlabel ') or line.startswith('jlabel ') or line.startswith('endlabel ') or (' ' not in line and line.endswith(':')):
             pass # label
         elif line.startswith('.section') or line in ['.text', '.data', '.rdata', '.rodata', '.bss', '.late_rodata']:
             # section change
@@ -596,7 +629,7 @@ class GlobalAsmBlock:
             changed_section = True
         elif line.startswith('.incbin'):
             self.add_sized(int(line.split(',')[-1].strip(), 0), real_line)
-        elif line.startswith('.word') or line.startswith('.float'):
+        elif line.startswith('.word') or line.startswith('.gpword') or line.startswith('.float'):
             self.align4()
             self.add_sized(4 * len(line.split(',')), real_line)
         elif line.startswith('.double'):
@@ -618,17 +651,22 @@ class GlobalAsmBlock:
             emitting_double = True
         elif line.startswith('.space'):
             self.add_sized(int(line.split()[1], 0), real_line)
-        elif line.startswith('.balign') or line.startswith('.align'):
+        elif line.startswith('.balign'):
             align = int(line.split()[1])
             if align != 4:
                 self.fail("only .balign 4 is supported", real_line)
+            self.align4()
+        elif line.startswith('.align'):
+            align = int(line.split()[1])
+            if align != 2:
+                self.fail("only .align 2 is supported", real_line)
             self.align4()
         elif line.startswith('.asci'):
             z = (line.startswith('.asciz') or line.startswith('.asciiz'))
             self.add_sized(self.count_quoted_size(line, z, real_line, output_enc), real_line)
         elif line.startswith('.byte'):
             self.add_sized(len(line.split(',')), real_line)
-        elif line.startswith('.half'):
+        elif line.startswith('.half') or line.startswith('.hword'):
             self.align2()
             self.add_sized(2*len(line.split(',')), real_line)
         elif line.startswith('.'):
@@ -673,7 +711,12 @@ class GlobalAsmBlock:
             skip_next = False
             needs_double = (self.late_rodata_alignment != 0)
             extra_mips1_nop = False
-            jtbl_size = 11 if state.mips1 else 9
+            if state.pascal:
+                jtbl_size = 9 if state.mips1 else 8
+                jtbl_min_rodata_size = 2
+            else:
+                jtbl_size = 11 if state.mips1 else 9
+                jtbl_min_rodata_size = 5
             for i in range(size):
                 if skip_next:
                     skip_next = False
@@ -690,9 +733,15 @@ class GlobalAsmBlock:
                 # - we have at least 10 more instructions to go in this function (otherwise our
                 #   function size computation will be wrong since the delay slot goes unused)
                 if (not needs_double and state.use_jtbl_for_rodata and i >= 1 and
-                        size - i >= 5 and num_instr - len(late_rodata_fn_output) >= jtbl_size + 1):
-                    cases = " ".join("case {}:".format(case) for case in range(size - i))
-                    late_rodata_fn_output.append("switch (*(volatile int*)0) { " + cases + " ; }")
+                        size - i >= jtbl_min_rodata_size and
+                        num_instr - len(late_rodata_fn_output) >= jtbl_size + 1):
+                    if state.pascal:
+                        cases = " ".join("{}: ;".format(case) for case in range(size - i))
+                        line = "case 0 of " + cases + " otherwise end;"
+                    else:
+                        cases = " ".join("case {}:".format(case) for case in range(size - i))
+                        line = "switch (*(volatile int*)0) { " + cases + " ; }"
+                    late_rodata_fn_output.append(line)
                     late_rodata_fn_output.extend([""] * (jtbl_size - 1))
                     jtbl_rodata_size = (size - i) * 4
                     extra_mips1_nop = i != 2
@@ -703,7 +752,11 @@ class GlobalAsmBlock:
                     dummy_bytes2 = state.next_late_rodata_hex()
                     late_rodata_dummy_bytes.append(dummy_bytes2)
                     fval, = struct.unpack('>d', dummy_bytes + dummy_bytes2)
-                    late_rodata_fn_output.append('*(volatile double*)0 = {};'.format(fval))
+                    if state.pascal:
+                        line = state.pascal_assignment('d', fval)
+                    else:
+                        line = '*(volatile double*)0 = {};'.format(fval)
+                    late_rodata_fn_output.append(line)
                     skip_next = True
                     needs_double = False
                     if state.mips1:
@@ -713,7 +766,11 @@ class GlobalAsmBlock:
                     extra_mips1_nop = False
                 else:
                     fval, = struct.unpack('>f', dummy_bytes)
-                    late_rodata_fn_output.append('*(volatile float*)0 = {}f;'.format(fval))
+                    if state.pascal:
+                        line = state.pascal_assignment('f', fval)
+                    else:
+                        line = '*(volatile float*)0 = {}f;'.format(fval)
+                    late_rodata_fn_output.append(line)
                     extra_mips1_nop = True
                 late_rodata_fn_output.append('')
                 late_rodata_fn_output.append('')
@@ -723,8 +780,8 @@ class GlobalAsmBlock:
         text_name = None
         if self.fn_section_sizes['.text'] > 0 or late_rodata_fn_output:
             text_name = state.make_name('func')
-            src[0] = 'void {}(void) {{'.format(text_name)
-            src[self.num_lines] = '}'
+            src[0] = state.func_prologue(text_name)
+            src[self.num_lines] = state.func_epilogue()
             instr_count = self.fn_section_sizes['.text'] // 4
             if instr_count < state.min_instr_count:
                 self.fail("too short .text block")
@@ -732,6 +789,7 @@ class GlobalAsmBlock:
             tot_skipped = 0
             fn_emitted = 0
             fn_skipped = 0
+            skipping = True
             rodata_stack = late_rodata_fn_output[::-1]
             for (line, count) in self.fn_ins_inds:
                 for _ in range(count):
@@ -740,16 +798,28 @@ class GlobalAsmBlock:
                         # Don't let functions become too large. When a function reaches 284
                         # instructions, and -O2 -framepointer flags are passed, the IRIX
                         # compiler decides it is a great idea to start optimizing more.
+                        # Also, Pascal cannot handle too large functions before it runs out
+                        # of unique statements to write.
                         fn_emitted = 0
                         fn_skipped = 0
-                        src[line] += ' }} void {}(void) {{ '.format(state.make_name('large_func'))
-                    if fn_skipped < state.skip_instr_count:
+                        skipping = True
+                        src[line] += (' ' + state.func_epilogue() + ' ' +
+                            state.func_prologue(state.make_name('large_func')) + ' ')
+                    if (
+                        skipping and
+                        fn_skipped < state.skip_instr_count +
+                            (state.prelude_if_late_rodata if rodata_stack else 0)
+                    ):
                         fn_skipped += 1
                         tot_skipped += 1
-                    elif rodata_stack:
-                        src[line] += rodata_stack.pop()
                     else:
-                        src[line] += '*(volatile int*)0 = 0;'
+                        skipping = False
+                        if rodata_stack:
+                            src[line] += rodata_stack.pop()
+                        elif state.pascal:
+                            src[line] += state.pascal_assignment('i', '0')
+                        else:
+                            src[line] += '*(volatile int*)0 = 0;'
                     tot_emitted += 1
                     fn_emitted += 1
             if rodata_stack:
@@ -763,16 +833,24 @@ class GlobalAsmBlock:
 
         rodata_name = None
         if self.fn_section_sizes['.rodata'] > 0:
+            if state.pascal:
+                self.fail(".rodata isn't supported with Pascal for now")
             rodata_name = state.make_name('rodata')
             src[self.num_lines] += ' const char {}[{}] = {{1}};'.format(rodata_name, self.fn_section_sizes['.rodata'])
 
         data_name = None
         if self.fn_section_sizes['.data'] > 0:
             data_name = state.make_name('data')
-            src[self.num_lines] += ' char {}[{}] = {{1}};'.format(data_name, self.fn_section_sizes['.data'])
+            if state.pascal:
+                line = ' var {}: packed array[1..{}] of char := [otherwise: 0];'.format(data_name, self.fn_section_sizes['.data'])
+            else:
+                line = ' char {}[{}] = {{1}};'.format(data_name, self.fn_section_sizes['.data'])
+            src[self.num_lines] += line
 
         bss_name = None
         if self.fn_section_sizes['.bss'] > 0:
+            if state.pascal:
+                self.fail(".bss isn't supported with Pascal")
             bss_name = state.make_name('bss')
             src[self.num_lines] += ' char {}[{}];'.format(bss_name, self.fn_section_sizes['.bss'])
 
@@ -797,43 +875,55 @@ float_regexpr = re.compile(r"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?f")
 def repl_float_hex(m):
     return str(struct.unpack(">I", struct.pack(">f", float(m.group(0).strip().rstrip("f"))))[0])
 
-def parse_source(f, opt, framepointer, mips1, input_enc, output_enc, out_dependencies, print_source=None):
-    if opt in ['O2', 'O1']:
-        if framepointer:
+Opts = namedtuple('Opts', ['opt', 'framepointer', 'mips1', 'kpic', 'pascal', 'input_enc', 'output_enc'])
+
+def parse_source(f, opts, out_dependencies, print_source=None):
+    if opts.opt in ['O1', 'O2']:
+        if opts.framepointer:
             min_instr_count = 6
             skip_instr_count = 5
         else:
             min_instr_count = 2
             skip_instr_count = 1
-    elif opt == 'O0':
-        if framepointer:
+    elif opts.opt == 'O0':
+        if opts.framepointer:
             min_instr_count = 8
             skip_instr_count = 8
         else:
             min_instr_count = 4
             skip_instr_count = 4
-    elif opt == 'g':
-        if framepointer:
+    elif opts.opt == 'g':
+        if opts.framepointer:
             min_instr_count = 7
             skip_instr_count = 7
         else:
             min_instr_count = 4
             skip_instr_count = 4
-    else:
-        if opt != 'g3':
-            raise Failure("must pass one of -g, -O0, -O1, -O2, -O2 -g3")
-        if framepointer:
+    elif opts.opt == 'g3':
+        if opts.framepointer:
             min_instr_count = 4
             skip_instr_count = 4
         else:
             min_instr_count = 2
             skip_instr_count = 2
+    else:
+        raise Failure("must pass one of -g, -O0, -O1, -O2, -O2 -g3")
+    prelude_if_late_rodata = 0
+    if opts.kpic:
+        # Without optimizations, the PIC prelude always takes up 3 instructions.
+        # With optimizations, the prelude is optimized out if there's no late rodata.
+        if opts.opt in ('g3', 'O2'):
+            prelude_if_late_rodata = 3
+        else:
+            min_instr_count += 3
+            skip_instr_count += 3
 
     use_jtbl_for_rodata = False
-    if opt in ['O2', 'g3'] and not framepointer:
+    if opts.opt in ['O2', 'g3'] and not opts.framepointer and not opts.kpic:
         use_jtbl_for_rodata = True
 
-    state = GlobalState(min_instr_count, skip_instr_count, use_jtbl_for_rodata, mips1)
+    state = GlobalState(min_instr_count, skip_instr_count, use_jtbl_for_rodata, prelude_if_late_rodata, opts.mips1, opts.pascal)
+    output_enc = opts.output_enc
 
     global_asm = None
     asm_functions = []
@@ -870,7 +960,7 @@ def parse_source(f, opt, framepointer, mips1, input_enc, output_enc, out_depende
             fname = line[line.index('(') + 2 : -2]
             out_dependencies.append(fname)
             global_asm = GlobalAsmBlock(fname)
-            with open(fname, encoding=input_enc) as f:
+            with open(fname, encoding=opts.input_enc) as f:
                 for line2 in f:
                     global_asm.process_line(line2.rstrip(), output_enc)
             src, fn = global_asm.finish(state)
@@ -892,8 +982,8 @@ def parse_source(f, opt, framepointer, mips1, input_enc, output_enc, out_depende
             fname = os.path.join(fpath, line[line.index(' ') + 2 : -1])
             out_dependencies.append(fname)
             include_src = StringIO()
-            with open(fname, encoding=input_enc) as include_file:
-                parse_source(include_file, opt, framepointer, mips1, input_enc, output_enc, out_dependencies, include_src)
+            with open(fname, encoding=opts.input_enc) as include_file:
+                parse_source(include_file, opts, out_dependencies, include_src)
             include_src.write('#line ' + str(line_no + 1) + ' "' + f.name + '"')
             output_lines[-1] = include_src.getvalue()
             include_src.close()
@@ -928,7 +1018,7 @@ def parse_source(f, opt, framepointer, mips1, input_enc, output_enc, out_depende
 
     return asm_functions
 
-def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc, drop_mdebug_gptab):
+def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc, drop_mdebug_gptab, convert_statics):
     SECTIONS = ['.data', '.text', '.rodata', '.bss']
 
     with open(objfile_name, 'rb') as f:
@@ -972,6 +1062,11 @@ def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc, d
             loc = loc[1]
             prev_loc = prev_locs[sectype]
             if loc < prev_loc:
+                # If the dummy C generates too little asm, and we have two
+                # consecutive GLOBAL_ASM blocks, we detect that error here.
+                # On the other hand, if it generates too much, we don't have
+                # a good way of discovering that error: it's indistinguishable
+                # from a static symbol occurring after the GLOBAL_ASM block.
                 raise Failure("Wrongly computed size for section {} (diff {}). This is an asm-processor bug!".format(sectype, prev_loc- loc))
             if loc != prev_loc:
                 asm.append('.section ' + sectype)
@@ -981,7 +1076,7 @@ def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc, d
                 else:
                     asm.append('.space {}'.format(loc - prev_loc))
             to_copy[sectype].append((loc, size, temp_name, function.fn_desc))
-            if function.text_glabels:
+            if function.text_glabels and sectype == '.text':
                 func_sizes[function.text_glabels[0]] = size
             prev_locs[sectype] = loc + size
         if not ifdefed:
@@ -1003,7 +1098,10 @@ def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc, d
     if any(late_rodata_asm):
         late_rodata_source_name_start = '_asmpp_late_rodata_start'
         late_rodata_source_name_end = '_asmpp_late_rodata_end'
-        asm.append('.rdata')
+        asm.append('.section .late_rodata')
+        # Put some padding at the start to avoid conflating symbols with
+        # references to the whole section.
+        asm.append('.word 0, 0')
         asm.append('glabel {}'.format(late_rodata_source_name_start))
         for conts in late_rodata_asm:
             asm.extend(conts)
@@ -1034,11 +1132,12 @@ def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc, d
 
         # Unify reginfo sections
         target_reginfo = objfile.find_section('.reginfo')
-        source_reginfo_data = list(asm_objfile.find_section('.reginfo').data)
-        data = list(target_reginfo.data)
-        for i in range(20):
-            data[i] |= source_reginfo_data[i]
-        target_reginfo.data = bytes(data)
+        if target_reginfo is not None:
+            source_reginfo_data = list(asm_objfile.find_section('.reginfo').data)
+            data = list(target_reginfo.data)
+            for i in range(20):
+                data[i] |= source_reginfo_data[i]
+            target_reginfo.data = bytes(data)
 
         # Move over section contents
         modified_text_positions = set()
@@ -1075,7 +1174,7 @@ def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc, d
         # of another way of doing it.
         moved_late_rodata = {}
         if any(all_late_rodata_dummy_bytes) or any(all_jtbl_rodata_size):
-            source = asm_objfile.find_section('.rodata')
+            source = asm_objfile.find_section('.late_rodata')
             target = objfile.find_section('.rodata')
             source_pos = asm_objfile.symtab.find_symbol_in_section(late_rodata_source_name_start, source)
             source_end = asm_objfile.symtab.find_symbol_in_section(late_rodata_source_name_end, source)
@@ -1121,7 +1220,7 @@ def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc, d
 
         # Find relocated symbols
         relocated_symbols = set()
-        for sectype in SECTIONS:
+        for sectype in SECTIONS + ['.late_rodata']:
             for obj in [asm_objfile, objfile]:
                 sec = obj.find_section(sectype)
                 if sec is None:
@@ -1131,39 +1230,49 @@ def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc, d
                         relocated_symbols.add(obj.symtab.symbol_entries[rel.sym_index])
 
         # Move over symbols, deleting the temporary function labels.
-        # Sometimes this naive procedure results in duplicate symbols, or UNDEF
-        # symbols that are also defined the same .o file. Hopefully that's fine.
-        # Skip over local symbols that aren't relocated against, to avoid
-        # conflicts.
-        new_local_syms = [s for s in objfile.symtab.local_symbols() if not is_temp_name(s.name)]
-        new_global_syms = [s for s in objfile.symtab.global_symbols() if not is_temp_name(s.name)]
+        # Skip over new local symbols that aren't relocated against, to
+        # avoid conflicts.
+        empty_symbol = objfile.symtab.symbol_entries[0]
+        new_syms = [s for s in objfile.symtab.symbol_entries[1:] if not is_temp_name(s.name)]
+
         for i, s in enumerate(asm_objfile.symtab.symbol_entries):
             is_local = (i < asm_objfile.symtab.sh_info)
             if is_local and s not in relocated_symbols:
                 continue
             if is_temp_name(s.name):
+                assert s not in relocated_symbols
                 continue
             if s.st_shndx not in [SHN_UNDEF, SHN_ABS]:
                 section_name = asm_objfile.sections[s.st_shndx].name
-                if section_name not in SECTIONS:
-                    raise Failure("generated assembly .o must only have symbols for .text, .data, .rodata, ABS and UNDEF, but found " + section_name)
-                s.st_shndx = objfile.find_section(section_name).index
+                target_section_name = section_name
+                if section_name == ".late_rodata":
+                    target_section_name = ".rodata"
+                elif section_name not in SECTIONS:
+                    raise Failure("generated assembly .o must only have symbols for .text, .data, .rodata, .late_rodata, ABS and UNDEF, but found " + section_name)
+                objfile_section = objfile.find_section(target_section_name)
+                if objfile_section is None:
+                    raise Failure("generated assembly .o has section that real objfile lacks: " + target_section_name)
+                s.st_shndx = objfile_section.index
                 # glabel's aren't marked as functions, making objdump output confusing. Fix that.
                 if s.name in all_text_glabels:
                     s.type = STT_FUNC
                     if s.name in func_sizes:
                         s.st_size = func_sizes[s.name]
-                if objfile.sections[s.st_shndx].name == '.rodata' and s.st_value in moved_late_rodata:
+                if section_name == '.late_rodata':
+                    if s.st_value == 0:
+                        # This must be a symbol corresponding to the whole .late_rodata
+                        # section, being referred to from a relocation.
+                        # Moving local symbols is tricky, because it requires fixing up
+                        # lo16/hi16 relocation references to .late_rodata+<offset>.
+                        # Just disallow it for now.
+                        raise Failure("local symbols in .late_rodata are not allowed")
                     s.st_value = moved_late_rodata[s.st_value]
             s.st_name += strtab_adj
-            if is_local:
-                new_local_syms.append(s)
-            else:
-                new_global_syms.append(s)
+            new_syms.append(s)
+        make_statics_global = convert_statics in ("global", "global-with-filename")
 
         # Add static symbols from .mdebug, so they can be referred to from GLOBAL_ASM
-        local_sym_replacements = {}
-        if mdebug_section:
+        if mdebug_section and convert_statics != "no":
             strtab_index = len(objfile.symtab.strtab.data)
             new_strtab_data = []
             ifd_max, cb_fd_offset = fmt.unpack('II', mdebug_section.data[18*4 : 20*4])
@@ -1182,45 +1291,72 @@ def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc, d
                         symbol_name_offset_end = objfile.data.find(b'\0', symbol_name_offset)
                         assert symbol_name_offset_end != -1
                         symbol_name = objfile.data[symbol_name_offset : symbol_name_offset_end + 1]
-                        symbol_name_str = symbol_name[:-1].decode('latin1')
+                        emitted_symbol_name = symbol_name
+                        if convert_statics == "global-with-filename":
+                            # Change the emitted symbol name to include the filename,
+                            # but don't let that affect deduplication logic.
+                            emitted_symbol_name = objfile_name.encode("utf-8") + b":" + symbol_name
                         section_name = {1: '.text', 2: '.data', 3: '.bss', 15: '.rodata'}[sc]
                         section = objfile.find_section(section_name)
                         symtype = STT_FUNC if sc == 1 else STT_OBJECT
+                        binding = STB_GLOBAL if make_statics_global else STB_LOCAL
                         sym = Symbol.from_parts(
                             fmt,
                             st_name=strtab_index,
                             st_value=value,
                             st_size=0,
-                            st_info=(STB_LOCAL << 4 | symtype),
+                            st_info=(binding << 4 | symtype),
                             st_other=STV_DEFAULT,
                             st_shndx=section.index,
                             strtab=objfile.symtab.strtab,
-                            name=symbol_name_str)
-                        local_sym_replacements[symbol_name_str] = len(new_local_syms)
-                        strtab_index += len(symbol_name)
-                        new_strtab_data.append(symbol_name)
-                        new_local_syms.append(sym)
+                            name=symbol_name[:-1].decode('latin1'))
+                        strtab_index += len(emitted_symbol_name)
+                        new_strtab_data.append(emitted_symbol_name)
+                        new_syms.append(sym)
             objfile.symtab.strtab.data += b''.join(new_strtab_data)
 
-        # To get the linker to use the local symbols, we have to get rid of UNDEF
-        # global ones.
-        newer_global_syms = []
-        for s in new_global_syms:
-            if s.st_shndx == SHN_UNDEF and s.name in local_sym_replacements:
-                s.new_index = local_sym_replacements[s.name]
+        # Get rid of duplicate symbols, favoring ones that are not UNDEF.
+        # Skip this for unnamed local symbols though.
+        new_syms.sort(key=lambda s: 0 if s.st_shndx != SHN_UNDEF else 1)
+        old_syms = []
+        newer_syms = []
+        name_to_sym = {}
+        for s in new_syms:
+            if s.name == "_gp_disp":
+                s.type = STT_OBJECT
+            if s.bind == STB_LOCAL and s.st_shndx == SHN_UNDEF:
+                raise Failure("local symbol \"" + s.name + "\" is undefined")
+            if not s.name:
+                if s.bind != STB_LOCAL:
+                    raise Failure("global symbol with no name")
+                newer_syms.append(s)
             else:
-                newer_global_syms.append(s)
-        new_global_syms = newer_global_syms
+                existing = name_to_sym.get(s.name)
+                if not existing:
+                    name_to_sym[s.name] = s
+                    newer_syms.append(s)
+                elif s.st_shndx != SHN_UNDEF:
+                    raise Failure("symbol \"" + s.name + "\" defined twice")
+                else:
+                    s.replace_by = existing
+                    old_syms.append(s)
+        new_syms = newer_syms
 
-        new_syms = new_local_syms + new_global_syms
+        # Put local symbols in front, with the initial dummy entry first, and
+        # _gp_disp at the end if it exists.
+        new_syms.insert(0, empty_symbol)
+        new_syms.sort(key=lambda s: (s.bind != STB_LOCAL, s.name == "_gp_disp"))
+        num_local_syms = sum(1 for s in new_syms if s.bind == STB_LOCAL)
+
         for i, s in enumerate(new_syms):
             s.new_index = i
+        for s in old_syms:
+            s.new_index = s.replace_by.new_index
         objfile.symtab.data = b''.join(s.to_bin() for s in new_syms)
-        objfile.symtab.sh_info = len(new_local_syms)
+        objfile.symtab.sh_info = num_local_syms
 
-        # Move over relocations
+        # Fix up relocation symbol references
         for sectype in SECTIONS:
-            source = asm_objfile.find_section(sectype)
             target = objfile.find_section(sectype)
 
             if target is not None:
@@ -1232,34 +1368,38 @@ def fixup_objfile(objfile_name, functions, asm_prelude, assembler, output_enc, d
                             sectype == '.rodata' and rel.r_offset in jtbl_rodata_positions):
                             # don't include relocations for late_rodata dummy code
                             continue
-                        # hopefully we don't have relocations for local or
-                        # temporary symbols, so new_index exists
                         rel.sym_index = objfile.symtab.symbol_entries[rel.sym_index].new_index
                         nrels.append(rel)
                     reltab.relocations = nrels
                     reltab.data = b''.join(rel.to_bin() for rel in nrels)
 
-            if not source:
+        # Move over relocations
+        for sectype in SECTIONS + ['.late_rodata']:
+            source = asm_objfile.find_section(sectype)
+            if source is None or not source.data:
                 continue
 
-            target_reltab = objfile.find_section('.rel' + sectype)
-            target_reltaba = objfile.find_section('.rela' + sectype)
+            target_sectype = '.rodata' if sectype == '.late_rodata' else sectype
+            target = objfile.find_section(target_sectype)
+            assert target is not None, target_sectype
+            target_reltab = objfile.find_section('.rel' + target_sectype)
+            target_reltaba = objfile.find_section('.rela' + target_sectype)
             for reltab in source.relocated_by:
                 for rel in reltab.relocations:
                     rel.sym_index = asm_objfile.symtab.symbol_entries[rel.sym_index].new_index
-                    if sectype == '.rodata' and rel.r_offset in moved_late_rodata:
+                    if sectype == '.late_rodata':
                         rel.r_offset = moved_late_rodata[rel.r_offset]
                 new_data = b''.join(rel.to_bin() for rel in reltab.relocations)
                 if reltab.sh_type == SHT_REL:
                     if not target_reltab:
-                        target_reltab = objfile.add_section('.rel' + sectype,
+                        target_reltab = objfile.add_section('.rel' + target_sectype,
                                 sh_type=SHT_REL, sh_flags=0,
                                 sh_link=objfile.symtab.index, sh_info=target.index,
                                 sh_addralign=4, sh_entsize=8, data=b'')
                     target_reltab.data += new_data
                 else:
                     if not target_reltaba:
-                        target_reltaba = objfile.add_section('.rela' + sectype,
+                        target_reltaba = objfile.add_section('.rela' + target_sectype,
                                 sh_type=SHT_RELA, sh_flags=0,
                                 sh_link=objfile.symtab.index, sh_info=target.index,
                                 sh_addralign=4, sh_entsize=12, data=b'')
@@ -1283,9 +1423,12 @@ def run_wrapped(argv, outfile, functions):
     parser.add_argument('--input-enc', default='latin1', help="input encoding (default: %(default)s)")
     parser.add_argument('--output-enc', default='latin1', help="output encoding (default: %(default)s)")
     parser.add_argument('--drop-mdebug-gptab', dest='drop_mdebug_gptab', action='store_true', help="drop mdebug and gptab sections")
+    parser.add_argument('--convert-statics', dest='convert_statics', choices=["no", "local", "global", "global-with-filename"], default="local", help="change static symbol visibility (default: %(default)s)")
+    parser.add_argument('--force', dest='force', action='store_true', help="force processing of files without GLOBAL_ASM blocks")
     parser.add_argument('-framepointer', dest='framepointer', action='store_true')
     parser.add_argument('-mips1', dest='mips1', action='store_true')
     parser.add_argument('-g3', dest='g3', action='store_true')
+    parser.add_argument('-KPIC', dest='kpic', action='store_true')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-O0', dest='opt', action='store_const', const='O0')
     group.add_argument('-O1', dest='opt', action='store_const', const='O1')
@@ -1293,31 +1436,35 @@ def run_wrapped(argv, outfile, functions):
     group.add_argument('-g', dest='opt', action='store_const', const='g')
     args = parser.parse_args(argv)
     opt = args.opt
+    pascal = any(args.filename.endswith(ext) for ext in (".p", ".pas", ".pp"))
     if args.g3:
         if opt != 'O2':
             raise Failure("-g3 is only supported together with -O2")
         opt = 'g3'
-    if args.mips1 and (opt != 'O2' or args.framepointer):
-        raise Failure("-mips1 is only supported together with -O2")
+    if args.mips1 and (opt not in ('O1', 'O2') or args.framepointer):
+        raise Failure("-mips1 is only supported together with -O1 or -O2")
+    if pascal and opt not in ('O1', 'O2', 'g3'):
+        raise Failure("Pascal is only supported together with -O1, -O2 or -O2 -g3")
+    opts = Opts(opt, args.framepointer, args.mips1, args.kpic, pascal, args.input_enc, args.output_enc)
 
     if args.objfile is None:
         with open(args.filename, encoding=args.input_enc) as f:
             deps = []
-            functions = parse_source(f, opt=opt, framepointer=args.framepointer, mips1=args.mips1, input_enc=args.input_enc, output_enc=args.output_enc, out_dependencies=deps, print_source=outfile)
+            functions = parse_source(f, opts, out_dependencies=deps, print_source=outfile)
             return functions, deps
     else:
         if args.assembler is None:
             raise Failure("must pass assembler command")
         if functions is None:
             with open(args.filename, encoding=args.input_enc) as f:
-                functions = parse_source(f, opt=opt, framepointer=args.framepointer, mips1=args.mips1, input_enc=args.input_enc, out_dependencies=[], output_enc=args.output_enc)
-        if not functions:
+                functions = parse_source(f, opts, out_dependencies=[])
+        if not functions and not args.force:
             return
         asm_prelude = b''
         if args.asm_prelude:
             with open(args.asm_prelude, 'rb') as f:
                 asm_prelude = f.read()
-        fixup_objfile(args.objfile, functions, asm_prelude, args.assembler, args.output_enc, args.drop_mdebug_gptab)
+        fixup_objfile(args.objfile, functions, asm_prelude, args.assembler, args.output_enc, args.drop_mdebug_gptab, args.convert_statics)
 
 def run(argv, outfile=sys.stdout.buffer, functions=None):
     try:

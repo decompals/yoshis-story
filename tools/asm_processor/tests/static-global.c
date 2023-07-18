@@ -1,4 +1,5 @@
 // COMPILE-FLAGS: -O2
+// ASMP-FLAGS: --convert-statics=global
 static int xtext(int a, int b, int c);
 const int rodata1[] = {1};
 static const int rodata2[] = {2};

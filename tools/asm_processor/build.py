@@ -39,7 +39,7 @@ del compile_args[out_ind]
 
 in_dir = in_file.resolve().parent
 opt_flags = [
-    x for x in compile_args if x in {"-g3", "-g", "-O0", "-O1", "-O2", "-framepointer"}
+    x for x in compile_args if x in {"-g3", "-g", "-O0", "-O1", "-O2", "-framepointer", "-KPIC"}
 ]
 if "-mips2" not in compile_args:
     opt_flags.append("-mips1")
@@ -56,7 +56,7 @@ asmproc_flags += opt_flags + [str(in_file)]
 
 with tempfile.TemporaryDirectory(prefix="asm_processor") as tmpdirname:
     tmpdir_path = Path(tmpdirname)
-    preprocessed_filename = "preprocessed_" + uuid.uuid4().hex + ".c"
+    preprocessed_filename = "preprocessed_" + uuid.uuid4().hex + in_file.suffix
     preprocessed_path = tmpdir_path / preprocessed_filename
 
     with preprocessed_path.open("wb") as f:

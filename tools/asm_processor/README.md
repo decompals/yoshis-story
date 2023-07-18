@@ -95,16 +95,18 @@ how to avoid reordering the injected assembly, and how .rodata/.late_rodata are 
 
 There are a few tests to ensure you don't break anything when hacking on asm-processor: `./run-tests.sh` should exit without output if they pass, or else output a diff from previous to new version.
 
-Tests need the environment variable `MIPS_CC` set as the IDO 5.3 compiler.
+Tests need the environment variable `MIPS_CC` set to point to the IDO 7.1 compiler, with Pascal support enabled.
 
-For example if asm-processor is cloned in the same directory as [zeldaret/oot](https://github.com/zeldaret/oot/) and the working directory is asm-processor, tests can be run using the IDO recompilation:
+For example if asm-processor is cloned in the same directory as [ido static recomp](https://github.com/decompals/ido-static-recomp) and the working directory is asm-processor, tests can be run using:
 
 ```sh
-MIPS_CC=../oot/tools/ido_recomp/linux/5.3/cc ./run-tests.sh
+MIPS_CC=../ido-static-recomp/build/7.1/out/cc ./run-tests.sh
 ```
 
 Or using [qemu-irix](https://github.com/zeldaret/oot/releases/tag/0.1q) (don't forget `chmod u+x qemu-irix`) to emulate IDO:
 
 ```sh
-MIPS_CC='./qemu-irix -silent -L ../oot/tools/ido5.3_compiler/ ../oot/tools/ido5.3_compiler/usr/bin/cc' ./run-tests.sh
+MIPS_CC='./qemu-irix -silent -L ../ido-static-recomp/ido/7.1/ ../ido-static-recomp/ido/7.1/usr/bin/cc' ./run-tests.sh
 ```
+
+To skip running Pascal tests, remove the `tests/*.p` glob from `run-tests.sh`.

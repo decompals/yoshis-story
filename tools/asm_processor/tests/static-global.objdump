@@ -1,20 +1,20 @@
 
-tests/static.o:     file format elf32-tradbigmips
+tests/static-global.o:     file format elf32-tradbigmips
 
 SYMBOL TABLE:
 00000000 l    d  .text	00000080 .text
 00000000 l    d  .rodata	00000010 .rodata
 00000000 l    d  .data	00000010 .data
 00000000 l    d  .bss	00000010 .bss
-00000004 l     O .rodata	00000000 rodata2
-00000004 l     O .data	00000000 data2
-00000004 l     O .bss	00000000 bss2
-00000030 l     F .text	00000000 xtext
 00000000 g     O .rodata	00000004 rodata1
 00000000 g     O .data	00000004 data1
 00000000 g     O .bss	00000004 bss1
 00000044 g     F .text	00000034 baz
 00000000 g     F .text	00000030 bar
+00000004 g     O .rodata	00000000 rodata2
+00000004 g     O .data	00000000 data2
+00000004 g     O .bss	00000000 bss2
+00000030 g     F .text	00000000 xtext
 
 
 RELOCATION RECORDS FOR [.text]:

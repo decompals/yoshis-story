@@ -39,17 +39,17 @@ GLOBAL_ASM(
 .rdata
 .word 0x66756e63 # func
 .word 0x34000000 # 4\0\0\0
-.word jumptarget
+.word jumptarget + 4
 
 .late_rodata
 glabel rv
 .word 0x3e4ccccd # 0.2f
-.word jumptarget
+.word jumptarget + 8
 
 .text
 glabel func4
 lui     $at, %hi(rv)
-jumptarget:
+glabel jumptarget
 jr      $ra
 lwc1    $f0, %lo(rv)($at)
 jr      $ra
