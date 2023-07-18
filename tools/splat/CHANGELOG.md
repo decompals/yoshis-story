@@ -1,5 +1,234 @@
 # splat Release Notes
 
+### 0.15.3
+
+* Disabled `asm_emit_size_directive` by default for IDO projects.
+
+### 0.15.2
+
+* Various cleanup and fixes to support more liberal use of `auto` for rom addresses
+
+### 0.15.1
+
+* Made some modifications such that linker object paths should be simpler in some circumstances
+
+### 0.15.0
+
+* New options:
+  * `data_string_encoding` can be set at the global level (or `str_encoding` at the segment level) to specify the encoding using when guessing and disassembling strings the the data section. In spimdisasm this value defaults to ASCII.
+  * `rodata_string_guesser_level` changes the behaviour of the rodata string guesser. A higher value means more agressive guessing, while 0 and negative means no guessing at all. Even if the guesser feature is disabled, symbols manually marked as strings in the symbol_addrs.txt file will still be disassembled as strings. In spimdisasm this value defaults to 1.
+    * level 0: Completely disable the guessing feature.
+    * level 1: The most conservative guessing level. Imposes the following restrictions:
+      * Do not try to guess if the user provided a type for the symbol.
+      * Do no try to guess if type information for the symbol can be inferred by other means.
+      * A string symbol must be referenced only once.
+      * Strings must not be empty.
+    * level 2: A string no longer needs to be referenced only once to be considered a possible string. This can happen because of a deduplication optimization.
+    * level 3: Empty strings are allowed.
+    * level 4: Symbols with autodetected type information but no user type information can still be guessed as strings.
+  * `data_string_guesser_level` is similar to `rodata_string_guesser_level`, but for the data section instead. In spimdisasm this value defaults to 2.
+  * `asm_emit_size_directive` toggles the size directived emitted by the disassembler. In spimdisasm this defaults to True.
+
+### 0.14.1
+
+* Fix bug, cod cleanup
+
+### 0.14.0
+
+* Add support for PSX's GTE instruction set
+
+### 0.13.10
+
+* New option `disasm_unknown` (False by default)
+  * If enabled it tells the disassembler to try disassembling functions with unknown instructions instead of falling back to disassembling as raw data
+
+### 0.13.9
+
+* New segment option `linker_entry` (true by default).
+  * If disabled, this segment will not produce entries in the linker script.
+
+### 0.13.8
+
+* New option `segment_end_before_align`.
+  * If enabled, the end symbol for each segment will be placed before the alignment directive for the segment
+
+### 0.13.7
+
+* Severely sped-up linker entry writing by using a dict instead of a list. Symbol headers will no longer be in any specific order (which shouldn't matter, because they're headers).
+
+### 0.13.6
+
+* Changed CI image processing so that their data is fetched during the scan phase, supporting palettes that come before CI images.
+
+### 0.13.5
+
+* An error will be produced if a symbol is declared with an unknown type in the symbol_addrs file.
+  * The current list of known symbols is `'func', 'label', 'jtbl', 'jtbl_label', 's8', 'u8', 's16', 'u16', 's32', 'u32', 's64', 'u64', 'f32', 'f64', 'Vec3f', 'asciz', 'char*', 'char'`.
+  * Custom types are allowed if they start with a capital letter.
+
+### 0.13.4
+
+* Renamed `follows_vram_symbol` segment option to `vram_of_symbol` to more accurately reflect what it's used for - to set the segment's vram based on a symbol.
+* Refactored the `appears_after_overlays_addr` feature so that expressions are written at the latest possible moment in the linker script. This fixes errors and warnings regarding forward references to later symbols.
+
+### 0.13.3
+
+* Added a new symbol_addrs attribute `appears_after_overlays_addr:0x1234` which will modify the linker script such that the symbol's address is equal to the value of the end of the longest overlay starting with address 0x1234. It achieves this by writing a series of sym = MAX(sym, seg_vram_END) statements into the linker script. For some games, it's feasible to manually create such statements, but for games with hundreds of overlays at the same address, this is very tedious and prone to error. The new attribute allows you to have peace of mind that the symbol will end up after all of these overlays.
+
+### 0.13.2
+
+* Actually implemented `ld_use_follows`. Oopz
+
+### 0.13.1
+
+* Added `ld_wildcard_sections` option (disabled by default), which adds a wildcard to the linker script for section linking. This can be helpful for modern GCC, which creates additional rodata sections such as ".rodata.xyz".
+* Added `ld_use_follows` option (enabled by default), which, if disabled, makes splat ignore follows_vram and follows_symbols. This helps for fixing matching builds while being able to add infrastructure to the yaml for non-matching builds by just re-enabling the option.
+
+### 0.13.0
+
+* Automatically generate `INCLUDE_RODATA`/`#pragma GLOBAL_ASM` directives for non migrated rodata symbols when creating new C files.
+* Non migrated rodata symbols will now only be produced if the C file has a corresponding rodata file with the same name and the C file has a `INCLUDE_RODATA`/`#pragma GLOBAL_ASM` directive referencing the symbol, similar to how functions are disassembled.
+  * Because of this, the `partial_migration` attribute has lost its purpose and has been removed.
+* Rodata symbol files are now included in the autogenerated dependency files too.
+
+### 0.12.14
+
+* New option: `pair_rodata_to_text`.
+  * If enabled, splat will try to find to which text segment an unpaired rodata segment belongs, and it will hint it to the user.
+
+### 0.12.13
+
+* bss segments can now omit the rom offset.
+
+### 0.12.12
+
+* Try to detect and warn to the user if a gap between two migrated rodata symbols is detected and suggest possible solutions to the user.
+
+### 0.12.11
+
+* New disassembly option in the yaml: `allow_data_addends`.
+  * Allows enabling/disabling using addends on all `.data` symbols.
+* Three new options for symbols: `name_end`, `allow_addend` and `dont_allow_addend`.
+  * `name_end`: allows to provide a closing name for any symbol. Useful for handwritten asm which usually have an "end" name.
+  * `allow_addend` and `dont_allow_addend`: Allow overriding the global `allow_data_addends` option for allowing addends on data symbols.
+
+### 0.12.10
+
+* Allows passing user-created relocs to the disassembler via the `reloc_addrs.txt` file, allowing to improve the automatic disassembly.
+* Multiple reloc_addrs files can be specified in the yaml with the `reloc_addrs_path` option.
+
+### 0.12.9
+
+* Added `format_sym_name()` to the vtx segment so it, too, can be extended
+
+### 0.12.8
+
+* The gfx and vtx segments now have a `data_only` option, which, if enabled, will emit only the plain data for the type and omit the enclosing symbol definition. This mode is useful when you want to manually declare the symbol and then #include the extracted data within the declaration.
+* The gfx segment has a method, `format_sym_name()`, which will allow custom overriding of the output of symbol names by extending the `gfx` segment. For example, this can be used to transform context-specific symbol names like mac_01_vtx into N(vtx), where N() is a macro that applies the current "namespace" to the symbol. Paper Mario plans to use this, so we can extract an asset once and then #include it in multiple places, while giving each inclusion unique symbol names for each component.
+
+### 0.12.7
+
+* Allow setting a different macro for jumptable labels with `asm_jtbl_label_macro`
+  * The currently recommended one is `jlabel` instead of `glabel`
+* Two new options for symbols: `force_migration` and `force_not_migration`
+  * Useful for weird cases where the disassembler decided a rodata symbol must (or must not) be migrated when it really shouldn't (or should)
+* Fix `str_encoding` defaulting to `False` instead of `None`
+* Output empty rules in generated dependency files to avoid issues when the function file does not exist anymore (i.e. when it gets matched)
+* Allow changing the `include_macro_inc` option in the yaml
+
+### 0.12.6
+
+* Adds two new N64-specific segments:
+  * IPL3: Allows setting its correct VRAM address without messing the global segment detection
+  * RSP: Allows disassembling using the RSP instruction set instead of the default one
+* PS2 was added as a new platform option.
+  * When this is selected the R5900 instruction set will be used when disassembling instead of the default one.
+
+### 0.12.5
+
+* Update minimal spimdisasm version to 1.7.1.
+* Fix spimdisasm>=1.7.0 non being able to see symbols which only are referenced by other data symbols.
+* A check was added to prevent segments marked with `exclusive_ram_id` have a vram address range which overlaps with segments not marked with said tag. If this happens it will be warned to the user.
+
+### 0.12.4
+
+* Fixed a bug involving the order of attributes in symbol_addrs preventing proper range searching during calls to `get_symbol`
+
+### 0.12.3: Initial Gamecube Support
+Initial support for Gamecube disk images has been set up! Disassembly is not currently supported, and a more comprehensive explanation of Gamecube support will come once that is finished.
+
+* The Symbol class is now hashable
+* Added the ability for segments to specify a file path (`path`) to receive that file's contents as their split input
+* The `generated_s_preamble` option now will be applied to data files created by spimdisasm
+* Rewrote symbol range check code to be more efficient
+* Fixed bug that allowed empty top-level segments of type `code`.
+* Fixed progress bars to properly update their descriptions
+* Fixed bug pertaining to symbols getting assigned to segments they shouldn't if their segment is given in symbol_addrs (`segment:`)
+
+### 0.12.2
+* Fixed bug where `given_dir` was possibly not a `Path`
+
+### 0.12.1
+* The constructor for `Segment` takes far fewer arguments now, which will affect (and hopefully simplify) any custom segments that are implemented.
+
+* The new option `string_encoding` can be set at the global or segment level and will influence the encoding for strings in rodata during disassembly. The default encoding used is EUC-JP, as it was previously.
+
+## 0.12.0: Performance Boost
+
+In this release, we bring many performance improvements, making splat dramatically faster. We have observed speedups of 10-20x, though your results may vary.
+
+* Linker script `_romPos` alignment statements now take a form that is friendlier to different assemblers.
+
+* Fixed the default value of `use_legacy_include_asm` to be what it was before 0.11.2
+
+### 0.11.2
+* The way options are parsed and accessed has been completely refactored. The following option names have changed:
+
+`linker_symbol_header_path` -> `ld_symbol_header_path`
+
+`asm_endlabels` -> `asm_end_label`
+
+Additionally, any custom segments or code that needs to read options will have to accommodate the new API for doing so. Options are now fields of an object named `opts` within the existing `options` namespace. Because the options are fields, `get_` is no longer necessary. To give an example:
+
+Before: `options.get_asm_path()`
+
+After: `options.opts.asm_path`
+
+The clean_up_path function in linker_entry.py now uses a cache, offering a small performance improvement during the linker script writing phase.
+
+### 0.11.1
+* The linker script now includes a `_SIZE` symbol for each segment.
+* The new `create_asm_dependencies`, if enabled, will cause splat to create `.asmproc.d` files that can inform a build system which asm files a c file depends upon. If your build system is configured correctly, this can allow triggering a rebuild of a C file when its included asm files are modified.
+* Splat no longer depends directly on pypng and now instead uses [n64img](https://github.com/decompals/n64img). Currently, all image behavior uses the exact same code. Eventually, n64img will be implemented in C and support rebuilding images as well.
+
+## 0.11.0: Spimdisasm Returns
+
+Spimdisasm now handles data (data, rodata, bss) disassembly in splat! This includes a few changes in behavior:
+
+* Rodata will be migrated to c files' asm function files when a .rodata subsegment is used that corresponds with an identically-named c file. Some symbols may not be automatically migrated to functions when it is not clear if they belong to the function itself (an example of which being const arrays). In this case, the `partial_migration` option can be enabled for the given .rodata subsegment and splat will create .s files for these unmigrated rodata symbols. These files can then be included in your c files, or you can go ahead and migrate these symbols to c and disable the `partial_migration` feature.
+
+* BSS can now be disassembled as well, and the size of a code segment's bss section can be specified with the `bss_size` option. This option will tell splat how large the bss section is in bytes so BSS can properly be handled during disassembly. For bss subsegments, the rom address will of course not change, but the vram address should still be specified. This currently can only be done in the dict form of segment representation, rather than the list form.
+
+Thanks again to [AngheloAlf](https://github.com/AngheloAlf) for adding this functionality and continuing to improve splat's disassembler.
+
+## 0.10.0: The Linker Script Update
+
+Linker scripts splat produces are now capable of being shift-friendly. Rom addresses will automatically shift, and ram addresses will still be hard-coded unless the new segment option `follows_vram` is specified. The value of this option should be the name of a segment (a) that this segment (b) should follow in memory. If a grows or shrinks, b's start address will also do so to accommodate it.
+
+The `enable_ld_alignment_hack` option and corresponding behavior has been removed. This proved to add too much complexity to the linker script generation code and was becoming quite a burden to keep dealing with. Apologies for any inconvenience this may cause. But trust me: in the long run, it's good you won't be depending on that madness.
+
+### 0.9.5
+* Changes have been made to the linker script such that it is more shiftable. Rather than setting the rom position to hard-coded addresses, it increments the position by the size of the previous segment. Some projects may experience some alignment-related issues after this change. If specified, the new segment option `align: n` will add an `ALIGN(n)` directive for that section's linker segment.
+
+### 0.9.4
+* A new linker script section is now automatically created when the .bss section begins, using NOLOAD as opposed to the previous hacky rom rewinding we were previously doing. Additionally, `ld_section_labels` now includes `.rodata` by default.
+
+### 0.9.3
+* Added `add_set_gp_64` option (true by default), which allows controlling whether to add ".set gp=64" to asm/hasm files
+
+### 0.9.2
+* Added "palette" argument to ci4/ci8 segments so that segments' palettes can be manually specified
+
 ### 0.9.1
 * Fixed a bug in which local labels and jump table labels could replace raw words in data blobs during data disassembly
 
@@ -22,11 +251,11 @@ We plan to roll this out in phases. Currently, it only handles actual code disas
 
 ### Global options changes
 
-The new `symbol_name_format` option allows specification of how symbols will be named. This can be set as a global option and also changed per-segment. `symbol_norom_name_format` is used when the symbol does not have a rom address (BSS).
+The new `symbol_name_format` option allows specification of how symbols will be named. This can be set as a global option and also changed per-segment. `symbol_name_format_no_rom` is used when the symbol does not have a rom address (BSS).
 
  The following substitutions are allowed:
 
-`$ROM` - the rom address of the symbol, hex-formatted and padded to 6 characters (ABCF10, 000030, 123456) (note: only for `symbol_name_format`, usage in `symbol_norom_name_format` will cause an error)
+`$ROM` - the rom address of the symbol, hex-formatted and padded to 6 characters (ABCF10, 000030, 123456) (note: only for `symbol_name_format`, usage in `symbol_name_format_no_rom` will cause an error)
 
 `$VRAM` - the vram address of the symbol, hex-formatted and padded to 8 characters (00030010, 00020015, ABCDEF10)
 
@@ -34,14 +263,14 @@ The new `symbol_name_format` option allows specification of how symbols will be 
 
 The default values for these options are as follows
 
-`symbol_name_format` : `$VRAM_$ROM`
+`symbol_name_format` : `$VRAM`
 
-`symbol_noram_name_format` : `$VRAM_$SEG`
+`symbol_name_format_no_rom` : `$VRAM_$SEG`
 
 The appropriate prefix string will still automatically be applied depending on the type of the symbol: `D_` for data, `jtbl_` for jump tables, and `func_` for functions. This functionality may be customizable in the future.
 
 ----
-The `auto_all_section` option now should be a list of section names (`[".data", ".rodata", ".bss"]` by default) indicating the sections that should be linked from .o files built from source files (.c or asm/hasm .s files), when no subsegment explicitly indicates linking this type of section.
+The `auto_all_sections` option now should be a list of section names (`[".data", ".rodata", ".bss"]` by default) indicating the sections that should be linked from .o files built from source files (.c or asm/hasm .s files), when no subsegment explicitly indicates linking this type of section.
 
 For example, if any subsegment of a code segment is of segment type `data` or `.data`, the `.data` section from all `c`/`asm`/`hasm` subsegments will not be linked unless explicitly indicated with a relevant `.data` subsegment.
 

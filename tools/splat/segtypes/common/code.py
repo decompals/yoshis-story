@@ -1,31 +1,31 @@
-from collections import OrderedDict
-from typing import Dict, List, Optional, Tuple
 import typing
-from segtypes.common.group import CommonSegGroup
-from segtypes.common.linker_section import dotless_type
-from segtypes.segment import RomAddr, Segment
+from collections import OrderedDict
+from typing import Dict, List, Optional, Tuple, Set
+
 from util import log, options
 from util.range import Range
 from util.symbols import Symbol
 
+from segtypes.common.group import CommonSegGroup
+from segtypes.segment import Segment
+
 CODE_TYPES = ["c", "asm", "hasm"]
+
+
+def dotless_type(type: str) -> str:
+    return type[1:] if type[0] == "." else type
+
 
 # code group
 class CommonSegCode(CommonSegGroup):
     def __init__(
         self,
-        rom_start,
-        rom_end,
-        type,
-        name,
-        vram_start,
-        extract,
-        given_subalign,
-        exclusive_ram_id,
-        given_dir,
-        symbol_name_format,
-        symbol_name_format_no_rom,
-        args,
+        rom_start: Optional[int],
+        rom_end: Optional[int],
+        type: str,
+        name: str,
+        vram_start: Optional[int],
+        args: list,
         yaml,
     ):
         self.bss_size: int = yaml.get("bss_size", 0) if isinstance(yaml, dict) else 0
@@ -36,20 +36,15 @@ class CommonSegCode(CommonSegGroup):
             type,
             name,
             vram_start,
-            extract,
-            given_subalign,
-            exclusive_ram_id=exclusive_ram_id,
-            given_dir=given_dir,
-            symbol_name_format=symbol_name_format,
-            symbol_name_format_no_rom=symbol_name_format_no_rom,
             args=args,
             yaml=yaml,
         )
 
         self.reported_file_split = False
-        self.jtbl_glabels_to_add = set()
+        self.jtbl_glabels_to_add: Set[int] = set()
         self.jumptables: Dict[int, Tuple[int, int]] = {}
         self.rodata_syms: Dict[int, List[Symbol]] = {}
+        self.align = 0x10
 
     @property
     def needs_symbols(self) -> bool:
@@ -62,33 +57,26 @@ class CommonSegCode(CommonSegGroup):
         else:
             return None
 
-    # def ram_to_rom(self, ram_addr: int) -> Optional[int]:
-    #     size_no_bss = self.vram_start + self.size
+    def check_rodata_sym_impl(self, func_addr: int, sym: Symbol, rodata_section: Range):
+        if rodata_section.is_complete():
+            assert rodata_section.start is not None
+            assert rodata_section.end is not None
 
-    #     # Do not return a rom address if this is a BSS symbol
-    #     if ram_addr > size_no_bss:
-    #         return None
-
-    #     if not self.contains_vram(ram_addr) and ram_addr != self.vram_end:
-    #         return None
-
-    #     if self.vram_start is not None and isinstance(self.rom_start, int):
-    #         return self.rom_start + ram_addr - self.vram_start
-    #     else:
-    #         return None
-
-    # Prepare symbol for migration to the function
-    def check_rodata_sym(self, func_addr: int, sym: Symbol):
-        if self.section_boundaries[".rodata"].is_complete():
-            assert self.section_boundaries[".rodata"].start is not None
-            assert self.section_boundaries[".rodata"].end is not None
-
-            rodata_start: int = self.section_boundaries[".rodata"].start
-            rodata_end: int = self.section_boundaries[".rodata"].end
+            rodata_start: int = rodata_section.start
+            rodata_end: int = rodata_section.end
             if rodata_start <= sym.vram_start < rodata_end:
                 if func_addr not in self.rodata_syms:
                     self.rodata_syms[func_addr] = []
                 self.rodata_syms[func_addr].append(sym)
+
+    # Prepare symbol for migration to the function
+    def check_rodata_sym(self, func_addr: int, sym: Symbol):
+        rodata_section = self.section_boundaries.get(".rodata")
+        if rodata_section is not None:
+            self.check_rodata_sym_impl(func_addr, sym, rodata_section)
+        rodata_section = self.section_boundaries.get(".rdata")
+        if rodata_section is not None:
+            self.check_rodata_sym_impl(func_addr, sym, rodata_section)
 
     def handle_alls(self, segs: List[Segment], base_segs) -> bool:
         for i, elem in enumerate(segs):
@@ -103,26 +91,29 @@ class CommonSegCode(CommonSegGroup):
                         self.rom_start, int
                     ):
                         # Shoddy rom to ram
+                        assert self.vram_start is not None, self.vram_start
                         vram_start = elem.rom_start - self.rom_start + self.vram_start
                     else:
-                        vram_start = "auto"
+                        vram_start = None
                     rep: Segment = replace_class(
                         rom_start=elem.rom_start,
                         rom_end=elem.rom_end,
                         type=rep_type,
                         name=base[0],
                         vram_start=vram_start,
-                        extract=False,
-                        given_subalign=self.given_subalign,
-                        exclusive_ram_id=self.get_exclusive_ram_id(),
-                        given_dir=self.given_dir,
-                        symbol_name_format=self.symbol_name_format,
-                        symbol_name_format_no_rom=self.symbol_name_format_no_rom,
                         args=[],
                         yaml={},
                     )
+                    rep.extract = False
+                    rep.given_subalign = self.given_subalign
+                    rep.exclusive_ram_id = self.get_exclusive_ram_id()
+                    rep.given_dir = self.given_dir
+                    rep.given_symbol_name_format = self.symbol_name_format
+                    rep.given_symbol_name_format_no_rom = self.symbol_name_format_no_rom
                     rep.sibling = base[1]
                     rep.parent = self
+                    if rep.special_vram_segment:
+                        self.special_vram_segment = True
                     alls.append(rep)
 
                 # Insert alls into segs at i
@@ -141,7 +132,7 @@ class CommonSegCode(CommonSegGroup):
         section_order.remove(".text")
 
         for i, section in enumerate(section_order):
-            if section not in options.auto_all_sections():
+            if section not in options.opts.auto_all_sections:
                 continue
 
             if not found_sections[section].has_start():
@@ -159,9 +150,16 @@ class CommonSegCode(CommonSegGroup):
         return inserts
 
     def parse_subsegments(self, segment_yaml) -> List[Segment]:
+        if "subsegments" not in segment_yaml:
+            if not self.parent:
+                raise Exception(
+                    f"No subsegments provided in top-level code segment {self.name}"
+                )
+            return []
+
         base_segments: OrderedDict[str, Segment] = OrderedDict()
         ret = []
-        prev_start: RomAddr = -1
+        prev_start: Optional[int] = -1
         inserts: OrderedDict[
             str, int
         ] = (
@@ -169,7 +167,7 @@ class CommonSegCode(CommonSegGroup):
         )  # Used to manually add "all_" types for sections not otherwise defined in the yaml
 
         self.section_boundaries = OrderedDict(
-            (s_name, Range()) for s_name in options.get_section_order()
+            (s_name, Range()) for s_name in options.opts.section_order
         )
 
         found_sections = OrderedDict(
@@ -177,14 +175,11 @@ class CommonSegCode(CommonSegGroup):
         )  # Stores yaml index where a section was first found
         found_sections.pop(".text")
 
-        if "subsegments" not in segment_yaml:
-            return []
-
         # Mark any manually added dot types
         cur_section = None
 
         for i, subsection_yaml in enumerate(segment_yaml["subsegments"]):
-            # rompos marker
+            # endpos marker
             if isinstance(subsection_yaml, list) and len(subsection_yaml) == 1:
                 continue
 
@@ -223,8 +218,10 @@ class CommonSegCode(CommonSegGroup):
 
         inserts = self.find_inserts(found_sections)
 
+        last_rom_end = 0
+
         for i, subsection_yaml in enumerate(segment_yaml["subsegments"]):
-            # rompos marker
+            # endpos marker
             if isinstance(subsection_yaml, list) and len(subsection_yaml) == 1:
                 continue
 
@@ -233,7 +230,23 @@ class CommonSegCode(CommonSegGroup):
 
             # Add dummy segments to be expanded later
             if typ.startswith("all_"):
-                ret.append(Segment(start, "auto", typ, "", "auto"))
+                dummy_seg = Segment(
+                    rom_start=start,
+                    rom_end=None,
+                    type=typ,
+                    name="",
+                    vram_start=None,
+                    args=[],
+                    yaml={},
+                )
+                dummy_seg.given_subalign = self.given_subalign
+                dummy_seg.exclusive_ram_id = self.exclusive_ram_id
+                dummy_seg.given_dir = self.given_dir
+                dummy_seg.given_symbol_name_format = self.symbol_name_format
+                dummy_seg.given_symbol_name_format_no_rom = (
+                    self.symbol_name_format_no_rom
+                )
+                ret.append(dummy_seg)
                 continue
 
             segment_class = Segment.get_class_for_type(typ)
@@ -250,15 +263,36 @@ class CommonSegCode(CommonSegGroup):
                 )
 
             vram = None
-            if start != "auto":
+            if start is not None:
                 assert isinstance(start, int)
                 vram = self.get_most_parent().rom_to_ram(start)
+
+            if segment_class.is_noload():
+                # Pretend bss's rom address is after the last actual rom segment
+                start = last_rom_end
+                # and it has a rom size of zero
+                end = last_rom_end
 
             segment: Segment = Segment.from_yaml(
                 segment_class, subsection_yaml, start, end, vram
             )
+
             segment.sibling = base_segments.get(segment.name, None)
+
+            if segment.sibling is not None:
+                if self.section_order.index(".text") < self.section_order.index(
+                    ".rodata"
+                ):
+                    if segment.is_rodata():
+                        segment.sibling.rodata_sibling = segment
+                else:
+                    if segment.is_text() and segment.sibling.is_rodata():
+                        segment.rodata_sibling = segment.sibling
+                        segment.sibling.sibling = segment
+
             segment.parent = self
+            if segment.special_vram_segment:
+                self.special_vram_segment = True
 
             for i, section in enumerate(self.section_order):
                 if not self.section_boundaries[section].has_start() and dotless_type(
@@ -269,13 +303,19 @@ class CommonSegCode(CommonSegGroup):
                         self.section_boundaries[prev_section].end = segment.vram_start
                     self.section_boundaries[section].start = segment.vram_start
 
+            segment.bss_contains_common = self.bss_contains_common
             ret.append(segment)
 
-            # todo change
-            if typ in CODE_TYPES:
+            if segment.is_text():
                 base_segments[segment.name] = segment
 
+            if self.section_order.index(".rodata") < self.section_order.index(".text"):
+                if segment.is_rodata() and segment.sibling is None:
+                    base_segments[segment.name] = segment
+
             prev_start = start
+            if end is not None:
+                last_rom_end = end
 
         # Add the automatic all_ sections
         orig_len = len(ret)
@@ -286,37 +326,49 @@ class CommonSegCode(CommonSegGroup):
                 idx = orig_len
 
             # bss hack TODO maybe rethink
-            if section == "bss" and self.vram_start is not None:
+            if (
+                section == "bss"
+                and self.vram_start is not None
+                and self.rom_end is not None
+                and self.rom_start is not None
+            ):
                 rom_start = self.rom_end
                 vram_start = self.vram_start + self.rom_end - self.rom_start
             else:
-                rom_start = "auto"
-                vram_start = "auto"
+                rom_start = None
+                vram_start = None
 
-            ret.insert(
-                idx,
-                (
-                    Segment(
-                        rom_start,
-                        "auto",
-                        "all_" + section,
-                        "",
-                        vram_start,
-                    )
-                ),
+            new_seg = Segment(
+                rom_start=rom_start,
+                rom_end=None,
+                type="all_" + section,
+                name="",
+                vram_start=vram_start,
+                args=[],
+                yaml={},
             )
+            new_seg.given_subalign = self.given_subalign
+            new_seg.exclusive_ram_id = self.exclusive_ram_id
+            new_seg.given_dir = self.given_dir
+            new_seg.given_symbol_name_format = self.symbol_name_format
+            new_seg.given_symbol_name_format_no_rom = self.symbol_name_format_no_rom
+            ret.insert(idx, new_seg)
 
         check = True
         while check:
             check = self.handle_alls(ret, base_segments)
 
         # TODO why is this necessary?
+        rodata_section = self.section_boundaries.get(
+            ".rodata"
+        ) or self.section_boundaries.get(".rdata")
         if (
-            self.section_boundaries[".rodata"].has_start()
-            and not self.section_boundaries[".rodata"].has_end()
+            rodata_section is not None
+            and rodata_section.has_start()
+            and not rodata_section.has_end()
         ):
             assert self.vram_end is not None
-            self.section_boundaries[".rodata"].end = self.vram_end
+            rodata_section.end = self.vram_end
 
         return ret
 

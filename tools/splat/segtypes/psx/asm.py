@@ -1,8 +1,6 @@
-from segtypes.common.asm import CommonSegAsm
-from typing import Optional
-from pathlib import Path
-
 from util import options
+
+from segtypes.common.asm import CommonSegAsm
 
 
 class PsxSegAsm(CommonSegAsm):
@@ -12,11 +10,10 @@ class PsxSegAsm(CommonSegAsm):
 
         ret.append('.include "macro.inc"')
         ret.append("")
-        ret.append("# assembler directives")
-        ret.append(".set noat      # allow manual use of $at")
-        ret.append(".set noreorder # don't insert nops after branches")
+        ret.append(".set noat")
+        ret.append(".set noreorder")
         ret.append("")
-        preamble = options.get_generated_s_preamble()
+        preamble = options.opts.generated_s_preamble
         if preamble:
             ret.append(preamble)
             ret.append("")

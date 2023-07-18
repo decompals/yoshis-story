@@ -1,10 +1,9 @@
-from segtypes.n64.rgba16 import N64SegRgba16
+import n64img.image
+
+from segtypes.n64.img import N64SegImg
 
 
-class N64SegRgba32(N64SegRgba16):
-    @staticmethod
-    def parse_image(data, width, height, flip_h=False, flip_v=False):
-        return data
-
-    def max_length(self):
-        return self.width * self.height * 4
+class N64SegRgba32(N64SegImg):
+    def __init__(self, *args, **kwargs):
+        kwargs["img_cls"] = n64img.image.RGBA32
+        super().__init__(*args, **kwargs)
