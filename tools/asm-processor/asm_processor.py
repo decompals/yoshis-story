@@ -666,9 +666,11 @@ class GlobalAsmBlock:
             self.add_sized(self.count_quoted_size(line, z, real_line, output_enc), real_line)
         elif line.startswith('.byte'):
             self.add_sized(len(line.split(',')), real_line)
-        elif line.startswith('.half') or line.startswith('.hword'):
+        elif line.startswith('.half') or line.startswith('.hword') or line.startswith(".short"):
             self.align2()
             self.add_sized(2*len(line.split(',')), real_line)
+        elif line.startswith('.size'):
+            pass
         elif line.startswith('.'):
             # .macro, ...
             self.fail("asm directive not supported", real_line)
