@@ -1,125 +1,272 @@
+# Build options can be changed by modifying the makefile or by building with 'make SETTING=value'.
+# It is also possible to override the settings in Defaults in a file called .make_options as 'SETTING=value'.
+
+-include .make_options
+
 MAKEFLAGS += --no-builtin-rules
 
+#### Defaults ####
+
+# If COMPARE is 1, check the output md5sum after building
+COMPARE ?= 1
+# If NON_MATCHING is 1, define the NON_MATCHING C flag when building
+NON_MATCHING ?= 0
+# if WERROR is 1, pass -Werror to CC_CHECK, so warnings would be treated as errors
+WERROR ?= 0
+# Keep .mdebug section in build
+KEEP_MDEBUG ?= 0
+# Check code syntax with host compiler
+RUN_CC_CHECK ?= 1
+CC_CHECK_COMP ?= gcc
+# Dump build object files
+OBJDUMP_BUILD ?= 0
+# Number of threads to compress with
+N_THREADS ?= $(shell nproc)
+
+# Set prefix to mips binutils binaries (mips-linux-gnu-ld => 'mips-linux-gnu-') - Change at your own risk!
+# In nearly all cases, not having 'mips-linux-gnu-*' binaries on the PATH is indicative of missing dependencies
+MIPS_BINUTILS_PREFIX ?= mips-linux-gnu-
+
+
+VERSION ?= us
+
+BASEROM              := baserom.$(VERSION).z64
+TARGET               := yoshisstory
+
+
+### Output ###
+
 BUILD_DIR := build
-ASSETS_DIRS := assets
-ASM_DIRS := $(shell find asm -path "asm/data" -prune -o -path "asm/nonmatchings" -prune -o -type d -print)
-# $(info $(ASM_DIRS))
-ASM_DATA_DIRS := $(shell find asm/data -type d)
-SRC_DIRS := $(shell find src/ -type d)
-# $(info $(SRC_DIRS))
+ROM       := $(BUILD_DIR)/$(TARGET).$(VERSION).z64
+ELF       := $(BUILD_DIR)/$(TARGET).$(VERSION).elf
+LD_MAP    := $(BUILD_DIR)/$(TARGET).$(VERSION).map
+LD_SCRIPT := linker_scripts/$(VERSION)/$(TARGET).ld
 
-C_FILES := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
-# C_FILES += $(wildcard src/*.c)
-S_FILES := $(foreach dir,$(ASM_DIRS),$(wildcard $(dir)/*.s))
-S_DATA_FILES := $(foreach dir,$(ASM_DATA_DIRS),$(wildcard $(dir)/*.data.s))
-S_RODATA_FILES := $(foreach dir,$(ASM_DATA_DIRS),$(wildcard $(dir)/*.rodata.s))
-DATA_FILES := $(foreach dir,$(ASSETS_DIRS),$(wildcard $(dir)/*.bin))
-# $(info $(DATA_FILES))
 
-# Object files
-O_FILES := $(foreach file,$(C_FILES),$(BUILD_DIR)/$(file:.c=.c.o)) \
-           $(foreach file,$(S_FILES),$(BUILD_DIR)/$(file:.s=.s.o)) \
-           $(foreach file,$(S_DATA_FILES),$(BUILD_DIR)/$(file:.data.s=.data.s.o)) \
-           $(foreach file,$(S_RODATA_FILES),$(BUILD_DIR)/$(file:.rodata.s=.rodata.s.o)) \
-           $(foreach file,$(DATA_FILES),$(BUILD_DIR)/$(file:.bin=.bin.o)) \
+#### Setup ####
 
-##################### Compiler Options #######################
-ifeq ($(shell type mips-n64-ld >/dev/null 2>/dev/null; echo $$?), 0)
-  CROSS := mips-n64-
-else ifeq ($(shell type mips-linux-gnu-ld >/dev/null 2>/dev/null; echo $$?), 0)
-  CROSS := mips-linux-gnu-
-else ifeq ($(shell type mips64-linux-gnu-ld >/dev/null 2>/dev/null; echo $$?), 0)
-  CROSS := mips64-linux-gnu-
+BUILD_DEFINES ?=
+
+ifeq ($(VERSION),us)
+    BUILD_DEFINES   += -DVERSION_US=1
 else
-  CROSS := mips64-elf-
+$(error Invalid VERSION variable detected. Please use 'us')
 endif
 
-AS := $(CROSS)as
-LD := $(CROSS)ld
-OBJDUMP := $(CROSS)objdump
-OBJCOPY := $(CROSS)objcopy
 
-CC := tools/ido_recomp/linux/7.1/cc
-CC_OLD := tools/ido_recomp/linux/5.3/cc
+ifeq ($(NON_MATCHING),1)
+    BUILD_DEFINES   += -DNON_MATCHING -DAVOID_UB
+    COMPARE  := 0
+endif
 
-DEFINE_CFLAGS := -D_LANGUAGE_C -D_FINALROM -DF3DEX_GBI_2 -D_MIPS_SZLONG=32
-INCLUDE_CFLAGS := -I . -I include
-ASFLAGS := -EB -mtune=vr4300 -march=vr4300 -Iinclude -modd-spreg
-CFLAGS  := -G0 -mips2 -non_shared -fullwarn -verbose -Xcpluscomm -Wab,-r4300_mul $(DEFINE_FLAGS) $(INCLUDE_CFLAGS) -DF3DEX_GBI_2
+MAKE = make
+CPPFLAGS += -fno-dollars-in-identifiers -P
+LDFLAGS  := --no-check-sections --accept-unknown-input-arch --emit-relocs
+
+UNAME_S := $(shell uname -s)
+ifeq ($(OS),Windows_NT)
+$(error Native Windows is currently unsupported for building this repository, use WSL instead c:)
+else ifeq ($(UNAME_S),Linux)
+    DETECTED_OS := linux
+else ifeq ($(UNAME_S),Darwin)
+    DETECTED_OS := mac
+    MAKE := gmake
+    CPPFLAGS += -xc++
+endif
+
+#### Tools ####
+ifneq ($(shell type $(MIPS_BINUTILS_PREFIX)ld >/dev/null 2>/dev/null; echo $$?), 0)
+$(error Unable to find $(MIPS_BINUTILS_PREFIX)ld. Please install or build MIPS binutils, commonly mips-linux-gnu. (or set MIPS_BINUTILS_PREFIX if your MIPS binutils install uses another prefix))
+endif
 
 
-OPTFLAGS := -O2
+CC              := tools/ido/$(DETECTED_OS)/7.1/cc
+CC_OLD          := tools/ido/$(DETECTED_OS)/5.3/cc
 
-GCC_CFLAGS := -Wall $(DEFINE_CFLAGS) $(INCLUDE_CFLAGS) -fno-PIC -fno-zero-initialized-in-bss -fno-toplevel-reorder -Wno-missing-braces -Wno-unknown-pragmas
-CC_CHECK := gcc -fsyntax-only -fno-builtin -nostdinc -fsigned-char -m32 $(GCC_CFLAGS) -std=gnu90 -Wall -Wextra -Wno-format-security -Wno-main -DNON_MATCHING -DAVOID_UB
 
-OBJDUMP_FLAGS := -d -r -z -Mreg-names=32
+AS              := $(MIPS_BINUTILS_PREFIX)as
+LD              := $(MIPS_BINUTILS_PREFIX)ld
+OBJCOPY         := $(MIPS_BINUTILS_PREFIX)objcopy
+OBJDUMP         := $(MIPS_BINUTILS_PREFIX)objdump
+CPP             := cpp
+ICONV           := iconv
+ASM_PROC        := python3 tools/asm-processor/build.py
+CAT             := cat
 
-TARGET     := yoshisstory
-LD_SCRIPT  := $(TARGET).ld
-SPLAT      := python3 tools/splat/split.py
-SPLAT_YAML := $(TARGET).yaml
+ASM_PROC_FLAGS  := --input-enc=utf-8 --output-enc=euc-jp --convert-statics=global-with-filename
 
-######################## Targets #############################
-build/src/os/O1/%.o: OPTFLAGS := -O1
-build/src/%.o: CC := python3 tools/asm_processor/build.py $(CC) -- $(AS) $(ASFLAGS) --
-build/asm/%.o: ASFLAGS += -mips3 -mabi=32
+SPLAT           ?= tools/splat/split.py
+SPLAT_YAML      ?= $(TARGET).$(VERSION).yaml
 
-default: all
 
-all: $(BUILD_DIR) $(BUILD_DIR)/$(TARGET).z64 verify
 
-distclean: asmclean assetclean clean
+IINC := -Iinclude -Ibin/$(VERSION) -I.
+IINC += -Ilib/ultralib/include -Ilib/ultralib/include/PR
+
+ifeq ($(KEEP_MDEBUG),0)
+  RM_MDEBUG = $(OBJCOPY) --remove-section .mdebug $@
+else
+  RM_MDEBUG = @:
+endif
+
+# Check code syntax with host compiler
+CHECK_WARNINGS := -Wall -Wextra -Wimplicit-fallthrough -Wno-unknown-pragmas -Wno-missing-braces -Wno-sign-compare -Wno-uninitialized
+# Have CC_CHECK pretend to be a MIPS compiler
+MIPS_BUILTIN_DEFS := -DMIPSEB -D_MIPS_FPSET=16 -D_MIPS_ISA=2 -D_ABIO32=1 -D_MIPS_SIM=_ABIO32 -D_MIPS_SZINT=32 -D_MIPS_SZPTR=32
+ifneq ($(RUN_CC_CHECK),0)
+#   The -MMD flags additionaly creates a .d file with the same name as the .o file.
+    CC_CHECK          := $(CC_CHECK_COMP)
+    CC_CHECK_FLAGS    := -MMD -MP -fno-builtin -fsyntax-only -funsigned-char -fdiagnostics-color -std=gnu89 -m32 -DNON_MATCHING -DAVOID_UB -DCC_CHECK=1
+    ifneq ($(WERROR), 0)
+        CHECK_WARNINGS += -Werror
+    endif
+else
+    CC_CHECK          := @:
+endif
+
+
+CFLAGS          += -G 0 -non_shared -Xcpluscomm -nostdinc -Wab,-r4300_mul
+
+WARNINGS        := -fullwarn -verbose -woff 624,649,838,712,516,513,596,564,594
+ASFLAGS         := -march=vr4300 -32 -G0
+COMMON_DEFINES  := -D_MIPS_SZLONG=32
+GBI_DEFINES     := -DF3DEX_GBI_2
+RELEASE_DEFINES := -DNDEBUG -D_FINALROM
+AS_DEFINES      := -DMIPSEB -D_LANGUAGE_ASSEMBLY -D_ULTRA64
+C_DEFINES       := -DLANGUAGE_C -D_LANGUAGE_C
+ENDIAN          := -EB
+
+OPTFLAGS        := -O2
+MIPS_VERSION    := -mips2
+ICONV_FLAGS     := --from-code=UTF-8 --to-code=EUC-JP
+
+# Use relocations and abi fpr names in the dump
+OBJDUMP_FLAGS := --disassemble --reloc --disassemble-zeroes -Mreg-names=32 -Mno-aliases
+
+ifneq ($(OBJDUMP_BUILD), 0)
+    OBJDUMP_CMD = $(OBJDUMP) $(OBJDUMP_FLAGS) $@ > $(@:.o=.dump.s)
+    OBJCOPY_BIN = $(OBJCOPY) -O binary $@ $@.bin
+else
+    OBJDUMP_CMD = @:
+    OBJCOPY_BIN = @:
+endif
+
+# rom compression flags
+COMPFLAGS := --threads $(N_THREADS)
+ifeq ($(NON_MATCHING),0)
+    COMPFLAGS += --matching
+endif
+
+#### Files ####
+
+$(shell mkdir -p asm bin linker_scripts/$(VERSION)/auto)
+
+SRC_DIRS      := $(shell find src -type d)
+ASM_DIRS      := $(shell find asm/$(VERSION) -type d -not -path "asm/$(VERSION)/nonmatchings/*")
+BIN_DIRS      := $(shell find bin -type d)
+
+C_FILES       := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
+S_FILES       := $(foreach dir,$(ASM_DIRS) $(SRC_DIRS),$(wildcard $(dir)/*.s))
+BIN_FILES     := $(foreach dir,$(BIN_DIRS),$(wildcard $(dir)/*.bin))
+O_FILES       := $(foreach f,$(C_FILES:.c=.o),$(BUILD_DIR)/$f) \
+                 $(foreach f,$(S_FILES:.s=.o),$(BUILD_DIR)/$f) \
+                 $(foreach f,$(BIN_FILES:.bin=.o),$(BUILD_DIR)/$f)
+
+
+# Automatic dependency files
+DEP_FILES := $(O_FILES:.o=.d) \
+             $(O_FILES:.o=.asmproc.d)
+
+# create build directories
+$(shell mkdir -p $(BUILD_DIR)/linker_scripts/$(VERSION) $(BUILD_DIR)/linker_scripts/$(VERSION)/auto $(foreach dir,$(SRC_DIRS) $(ASM_DIRS) $(BIN_DIRS),$(BUILD_DIR)/$(dir)))
+
+
+# directory flags
+build/src/boot/O2/%.o: OPTFLAGS := -O2
+
+# per-file flags
+
+# cc & asm-processor
+build/src/%.o: CC := $(ASM_PROC) $(ASM_PROC_FLAGS) $(CC) -- $(AS) $(ASFLAGS) --
+
+
+#### Main Targets ###
+
+all: uncompressed
+
+uncompressed: $(ROM)
+ifneq ($(COMPARE),0)
+	@md5sum $(ROM)
+	@md5sum -c $(TARGET).$(VERSION).md5
+endif
 
 clean:
-	rm -rf $(BUILD_DIR)
+	$(RM) -r $(BUILD_DIR)/asm $(BUILD_DIR)/bin $(BUILD_DIR)/src $(ROM) $(ELF)
 
-asmclean:
-	rm -rf asm
-	rm -f $(LD_SCRIPT)
+libclean:
+	$(MAKE) -C lib clean
 
-assetclean:
-	rm -rf assets
+distclean: clean
+	$(RM) -r $(BUILD_DIR) asm/ bin/ .splat/
+	$(RM) -r linker_scripts/$(VERSION)/auto $(LD_SCRIPT)
+	$(MAKE) -C tools distclean
 
-split: $(SPLAT_YAML)
-	$(SPLAT) $<
+setup:
+	$(MAKE) -C tools
 
-setup: clean split
-	
-$(BUILD_DIR): $(LD_SCRIPT)
-#	$(info $(SRC_DIRS) $(ASM_DIRS) $(ASM_DATA_DIRS) $(ASSETS_DIRS))
-	$(shell mkdir -p build/baserom $(foreach dir,$(SRC_DIRS) $(ASM_DIRS) $(ASM_DATA_DIRS) $(ASSETS_DIRS),build/$(dir)))
+extract:
+	$(RM) -r asm/$(VERSION) bin/$(VERSION)
+	$(CAT) yamls/$(VERSION)/header.yaml yamls/$(VERSION)/makerom.yaml yamls/$(VERSION)/boot.yaml > $(SPLAT_YAML)
+	$(SPLAT) $(SPLAT_YAML)
 
-$(BUILD_DIR)/%.c.o: %.c
-	@$(CC_CHECK) -MMD -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<
-	$(CC) -c $(CFLAGS) $(OPTFLAGS) -o $@ $^
-	$(OBJDUMP) $(OBJDUMP_FLAGS) $@ > $(@:.o=.s)
+diff-init: uncompressed
+	$(RM) -rf expected/
+	mkdir -p expected/
+	cp -r $(BUILD_DIR) expected/$(BUILD_DIR)
 
-$(BUILD_DIR)/%.s.o: %.s
-	$(AS) $(ASFLAGS) -o $@ $<
+init:
+	$(MAKE) distclean
+	$(MAKE) setup
+	$(MAKE) extract
+	$(MAKE) all
+	$(MAKE) diff-init
 
-$(BUILD_DIR)/%.bin.o: %.bin
-	$(LD) -r -b binary -o $@ $<
+.PHONY: all uncompressed clean distclean setup extract diff-init init
+.DEFAULT_GOAL := uncompressed
+# Prevent removing intermediate files
+.SECONDARY:
 
-$(LD_SCRIPT): $(SPLAT_YAML)
-	rm -f $@
-	$(SPLAT) $<
 
-$(BUILD_DIR)/$(LD_SCRIPT): $(LD_SCRIPT)
-	@mkdir -p $(@D)
-	cpp -P -o $@ $<
+#### Various Recipes ####
 
-$(BUILD_DIR)/$(TARGET).elf: $(BUILD_DIR)/$(LD_SCRIPT) $(O_FILES)
-	$(LD) -T undefined_funcs_auto.txt -T undefined_syms_auto.txt -T $(BUILD_DIR)/$(LD_SCRIPT) -Map $(BUILD_DIR)/$(TARGET).map --no-check-sections -o $@
+$(ROM): $(ELF)
+	$(OBJCOPY) -O binary $< $@
+# TODO: update rom header checksum
 
-$(BUILD_DIR)/$(TARGET).bin: $(BUILD_DIR)/$(TARGET).elf
-	$(OBJCOPY) $< $@ -O binary
+# TODO: avoid using auto/undefined
+$(ELF): $(LIBULTRA_O) $(O_FILES) $(LD_SCRIPT) $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_syms_auto.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_funcs_auto.ld
+	$(LD) $(LDFLAGS) -T $(LD_SCRIPT) \
+		-T $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld \
+		-T $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_syms_auto.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_funcs_auto.ld \
+		-Map $(LD_MAP) -o $@
 
-$(BUILD_DIR)/$(TARGET).z64: $(BUILD_DIR)/$(TARGET).bin
-	@cp $< $@
+$(BUILD_DIR)/%.ld: %.ld
+	$(CPP) $(CPPFLAGS) $(BUILD_DEFINES) $(IINC) $< > $@
 
-verify: $(BUILD_DIR)/$(TARGET).z64
-	md5sum -c checksum.md5
+$(BUILD_DIR)/%.o: %.bin
+	$(OBJCOPY) -I binary -O elf32-big $< $@
 
-.DEFAULT: all
-.PHONY: all clean default split setup distclean asmclean assetclean
+$(BUILD_DIR)/%.o: %.s
+	$(CPP) $(CPPFLAGS) $(BUILD_DEFINES) $(IINC) -I $(dir $*) $(COMMON_DEFINES) $(RELEASE_DEFINES) $(GBI_DEFINES) $(AS_DEFINES) $< | $(ICONV) $(ICONV_FLAGS) | $(AS) $(ASFLAGS) $(ENDIAN) $(IINC) -I $(dir $*) -o $@
+	$(OBJDUMP_CMD)
+
+$(BUILD_DIR)/%.o: %.c
+	$(CC_CHECK) $(CC_CHECK_FLAGS) $(IINC) -I $(dir $*) $(CHECK_WARNINGS) $(BUILD_DEFINES) $(COMMON_DEFINES) $(RELEASE_DEFINES) $(GBI_DEFINES) $(C_DEFINES) $(MIPS_BUILTIN_DEFS) -o $@ $<
+	$(CC) -c $(CFLAGS) $(BUILD_DEFINES) $(IINC) $(WARNINGS) $(MIPS_VERSION) $(ENDIAN) $(COMMON_DEFINES) $(RELEASE_DEFINES) $(GBI_DEFINES) $(C_DEFINES) $(OPTFLAGS) -o $@ $<
+	$(OBJDUMP_CMD)
+	$(RM_MDEBUG)
+
+-include $(DEP_FILES)
+
+# Print target for debugging
+print-% : ; $(info $* is a $(flavor $*) variable set to [$($*)]) @true
