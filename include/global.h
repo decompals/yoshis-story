@@ -1,8 +1,7 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#include "ultratypes.h"
-#include "r4300.h"
+#include "ultra64.h"
 
 #include "libc/stddef.h"
 #include "libc/stdint.h"
@@ -15,12 +14,13 @@ typedef struct {
     /* 0x8 */ f32 z;
 } Vec3f;
 
-// Libultra
-f32 sinf(f32 x);
-f32 cosf(f32 x);
-void bzero(void* begin, s32 length);
-void osWritebackDCache(void* vaddr, s32 nbytes);
-void osInvalICache(void* vaddr, u32 nbytes);
+typedef float MtxF_t[4][4];
+typedef union {
+    MtxF_t mf;
+    struct {
+        float xx, yx, zx, wx, xy, yy, zy, wy, xz, yz, zz, wz, xw, yw, zw, ww;
+    };
+} MtxF; // size = 0x40
 
 // mtxuty-cvt
 void mtxcvt_F2L(Mtx* mtx, MtxF* mf);
