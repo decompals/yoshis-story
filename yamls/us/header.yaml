@@ -13,8 +13,7 @@ options:
   undefined_syms_auto_path: linker_scripts/us/auto/undefined_syms_auto.ld
 
   symbol_addrs_path: 
-    - linker_scripts/us/symbol_addrs.txt 
-    - linker_scripts/us/pif_syms.txt
+    - linker_scripts/us/symbol_addrs.txt
   reloc_addrs_path:
     - relocs/reloc_addrs.us.txt
 
