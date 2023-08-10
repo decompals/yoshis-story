@@ -203,9 +203,6 @@ endif
 clean:
 	$(RM) -r $(BUILD_DIR)/asm $(BUILD_DIR)/bin $(BUILD_DIR)/src $(ROM) $(ELF)
 
-libclean:
-	$(MAKE) -C lib clean
-
 distclean: clean
 	$(RM) -r $(BUILD_DIR) asm/ bin/ .splat/
 	$(RM) -r linker_scripts/$(VERSION)/auto $(LD_SCRIPT)
