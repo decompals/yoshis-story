@@ -2,7 +2,7 @@ name: Yoshi Story (North America)
 sha1: b13072fef6c6df48c07d8822c01e5bc59036f6da
 options:
   basename: yoshisstory
-  target_path: baserom.z64
+  target_path: baserom.us.z64
   ld_script_path: linker_scripts/us/yoshisstory.ld
   base_path: .
   compiler: IDO
