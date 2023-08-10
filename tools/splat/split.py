@@ -1,37 +1,43 @@
 #! /usr/bin/env python3
 
-import hashlib
-from typing import Dict, List, Union, Set, Any
 import argparse
-import spimdisasm
-import rabbitizer
-import tqdm
-import yaml
+import hashlib
+import importlib
 import pickle
-from colorama import Style, Fore
-from segtypes.segment import Segment
-from segtypes.linker_entry import LinkerWriter, to_cname
-from util import log
-from util import options
-from util import symbols
-from util import palettes
-from util import compiler
-from util.symbols import Symbol
-
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from disassembler import disassembler_instance
+from util import progress_bar
+import yaml
+from colorama import Fore, Style
 from intervaltree import Interval, IntervalTree
+import sys
 
-VERSION = "0.9.0"
+from segtypes.linker_entry import (
+    LinkerWriter,
+    get_segment_vram_end_symbol_name,
+    to_cname,
+)
+from segtypes.segment import Segment
+from util import log, options, palettes, symbols, relocs
+
+VERSION = "0.16.5"
 
 parser = argparse.ArgumentParser(
     description="Split a rom given a rom, a config, and output directory"
 )
 parser.add_argument("config", help="path to a compatible config .yaml file", nargs="+")
-parser.add_argument("--target", help="path to a file to split (.z64 rom)")
-parser.add_argument("--basedir", help="a directory in which to extract the rom")
 parser.add_argument("--modes", nargs="+", default="all")
 parser.add_argument("--verbose", action="store_true", help="Enable debug logging")
 parser.add_argument(
     "--use-cache", action="store_true", help="Only split changed segments in config"
+)
+parser.add_argument(
+    "--skip-version-check",
+    action="store_true",
+    help="Skips the disassembler's version check",
+)
+parser.add_argument(
+    "--stdout-only", help="Print all output to stdout", action="store_true"
 )
 
 linker_writer: LinkerWriter
@@ -57,11 +63,13 @@ def initialize_segments(config_segments: Union[dict, list]) -> List[Segment]:
     segment_roms = IntervalTree()
     segment_rams = IntervalTree()
 
-    seen_segment_names: Set[str] = set()
+    segments_by_name: Dict[str, Segment] = {}
     ret = []
 
+    last_rom_end = 0
+
     for i, seg_yaml in enumerate(config_segments):
-        # rompos marker
+        # end marker
         if isinstance(seg_yaml, list) and len(seg_yaml) == 1:
             continue
 
@@ -70,17 +78,27 @@ def initialize_segments(config_segments: Union[dict, list]) -> List[Segment]:
         segment_class = Segment.get_class_for_type(seg_type)
 
         this_start = Segment.parse_segment_start(seg_yaml)
-        next_start = Segment.parse_segment_start(config_segments[i + 1])
+
+        if i == len(config_segments) - 1 and Segment.parse_segment_file_path(seg_yaml):
+            next_start: Optional[int] = 0
+        else:
+            next_start = Segment.parse_segment_start(config_segments[i + 1])
+
+        if segment_class.is_noload():
+            # Pretend bss's rom address is after the last actual rom segment
+            this_start = last_rom_end
+            # and it has a rom size of zero
+            next_start = last_rom_end
 
         segment: Segment = Segment.from_yaml(
             segment_class, seg_yaml, this_start, next_start
         )
 
         if segment.require_unique_name:
-            if segment.name in seen_segment_names:
+            if segment.name in segments_by_name:
                 log.error(f"segment name '{segment.name}' is not unique")
 
-            seen_segment_names.add(segment.name)
+            segments_by_name[segment.name] = segment
 
         ret.append(segment)
         if (
@@ -96,15 +114,29 @@ def initialize_segments(config_segments: Union[dict, list]) -> List[Segment]:
         ):
             segment_rams.addi(segment.vram_start, segment.vram_end, segment)
 
+        if next_start is not None:
+            last_rom_end = next_start
+
+    for segment in ret:
+        if segment.given_follows_vram:
+            if segment.given_follows_vram not in segments_by_name:
+                log.error(
+                    f"segment '{segment.given_follows_vram}', the 'follows_vram' value for segment '{segment.name}', does not exist"
+                )
+            segment.vram_of_symbol = get_segment_vram_end_symbol_name(
+                segments_by_name[segment.given_follows_vram]
+            )
+
     return ret
 
 
 def assign_symbols_to_segments():
-    seg_syms: dict[int, list[Symbol]] = {}
-
     for symbol in symbols.all_symbols:
+        if symbol.segment:
+            continue
+
         if symbol.rom:
-            cands = segment_roms[symbol.rom]
+            cands: Set[Interval] = segment_roms[symbol.rom]
             if len(cands) > 1:
                 log.error("multiple segments rom overlap symbol", symbol)
             elif len(cands) == 0:
@@ -114,7 +146,7 @@ def assign_symbols_to_segments():
                 seg: Segment = cand.data
                 seg.add_symbol(symbol)
         else:
-            cands: Set[Interval] = segment_rams[symbol.vram_start]
+            cands = segment_rams[symbol.vram_start]
             segs: List[Segment] = [cand.data for cand in cands]
             for seg in segs:
                 if not seg.get_exclusive_ram_id():
@@ -174,73 +206,6 @@ def merge_configs(main_config, additional_config):
     return main_config
 
 
-def configure_disassembler():
-    # Configure spimdisasm
-    spimdisasm.common.GlobalConfig.PRODUCE_SYMBOLS_PLUS_OFFSET = True
-    spimdisasm.common.GlobalConfig.TRUST_USER_FUNCTIONS = True
-    spimdisasm.common.GlobalConfig.TRUST_JAL_FUNCTIONS = True
-    spimdisasm.common.GlobalConfig.GLABEL_ASM_COUNT = False
-
-    if options.rom_address_padding():
-        spimdisasm.common.GlobalConfig.ASM_COMMENT_OFFSET_WIDTH = 6
-    else:
-        spimdisasm.common.GlobalConfig.ASM_COMMENT_OFFSET_WIDTH = 0
-
-    # spimdisasm is not performing any analyzis on non-text sections so enabling this options is pointless
-    spimdisasm.common.GlobalConfig.AUTOGENERATED_NAMES_BASED_ON_SECTION_TYPE = False
-    spimdisasm.common.GlobalConfig.AUTOGENERATED_NAMES_BASED_ON_DATA_TYPE = False
-
-    spimdisasm.common.GlobalConfig.SYMBOL_FINDER_FILTERED_ADDRESSES_AS_HILO = False
-
-    rabbitizer.config.regNames_userFpcCsr = False
-    rabbitizer.config.regNames_vr4300Cop0NamedRegisters = False
-
-    rabbitizer.config.misc_opcodeLJust = options.mnemonic_ljust() - 1
-
-    rabbitizer.config.regNames_gprAbiNames = rabbitizer.Abi.fromStr(
-        options.get_mips_abi_gpr()
-    )
-    rabbitizer.config.regNames_fprAbiNames = rabbitizer.Abi.fromStr(
-        options.get_mips_abi_float_regs()
-    )
-
-    if options.get_endianess() == "big":
-        spimdisasm.common.GlobalConfig.ENDIAN = spimdisasm.common.InputEndian.BIG
-    else:
-        spimdisasm.common.GlobalConfig.ENDIAN = spimdisasm.common.InputEndian.LITTLE
-
-    rabbitizer.config.pseudos_pseudoMove = False
-
-    selectedCompiler = options.get_compiler()
-    if selectedCompiler == compiler.SN64:
-        rabbitizer.config.regNames_namedRegisters = False
-        rabbitizer.config.toolchainTweaks_sn64DivFix = True
-        rabbitizer.config.toolchainTweaks_treatJAsUnconditionalBranch = True
-        spimdisasm.common.GlobalConfig.ASM_COMMENT = False
-        spimdisasm.common.GlobalConfig.SYMBOL_FINDER_FILTERED_ADDRESSES_AS_HILO = False
-        spimdisasm.common.GlobalConfig.COMPILER = spimdisasm.common.Compiler.SN64
-    elif selectedCompiler == compiler.GCC:
-        rabbitizer.config.toolchainTweaks_treatJAsUnconditionalBranch = True
-        spimdisasm.common.GlobalConfig.COMPILER = spimdisasm.common.Compiler.GCC
-    elif selectedCompiler == compiler.IDO:
-        spimdisasm.common.GlobalConfig.COMPILER = spimdisasm.common.Compiler.IDO
-
-    spimdisasm.common.GlobalConfig.GP_VALUE = options.get_gp()
-
-    spimdisasm.common.GlobalConfig.ASM_TEXT_LABEL = options.get_asm_function_macro()
-    spimdisasm.common.GlobalConfig.ASM_DATA_LABEL = options.get_asm_data_macro()
-    spimdisasm.common.GlobalConfig.ASM_TEXT_END_LABEL = options.get_asm_end_label()
-
-    if spimdisasm.common.GlobalConfig.ASM_TEXT_LABEL == ".globl":
-        spimdisasm.common.GlobalConfig.ASM_TEXT_ENT_LABEL = ".ent"
-        spimdisasm.common.GlobalConfig.ASM_TEXT_FUNC_AS_LABEL = True
-
-    spimdisasm.common.GlobalConfig.LINE_ENDS = options.c_newline()
-
-    if options.get_platform() == "n64":
-        symbols.spim_context.fillDefaultBannedSymbols()
-
-
 def brief_seg_name(seg: Segment, limit: int, ellipsis="…") -> str:
     s = seg.name.strip()
     if len(s) > limit:
@@ -248,10 +213,18 @@ def brief_seg_name(seg: Segment, limit: int, ellipsis="…") -> str:
     return s
 
 
-def main(config_path, base_dir, target_path, modes, verbose, use_cache=True):
+def main(
+    config_path,
+    modes,
+    verbose,
+    use_cache=True,
+    skip_version_check=False,
+    stdout_only=False,
+):
     global config
 
-    log.write(f"splat {VERSION} (powered by spimdisasm {spimdisasm.__version__})")
+    if stdout_only:
+        progress_bar.out_file = sys.stdout
 
     # Load config
     config = {}
@@ -260,13 +233,12 @@ def main(config_path, base_dir, target_path, modes, verbose, use_cache=True):
             additional_config = yaml.load(f.read(), Loader=yaml.SafeLoader)
         config = merge_configs(config, additional_config)
 
-    options.initialize(config, config_path, base_dir, target_path)
-    options.set("modes", modes)
+    options.initialize(config, config_path, modes, verbose)
 
-    if verbose:
-        options.set("verbose", True)
+    disassembler_instance.create_disassembler_instance(options.opts.platform)
+    disassembler_instance.get_instance().check_version(skip_version_check, VERSION)
 
-    with options.get_target_path().open("rb") as f2:
+    with options.opts.target_path.open("rb") as f2:
         rom_bytes = f2.read()
 
     if "sha1" in config:
@@ -276,7 +248,7 @@ def main(config_path, base_dir, target_path, modes, verbose, use_cache=True):
             log.error(f"sha1 mismatch: expected {e_sha1}, was {sha1}")
 
     # Create main output dir
-    options.get_base_path().mkdir(parents=True, exist_ok=True)
+    options.opts.base_path.mkdir(parents=True, exist_ok=True)
 
     processed_segments: List[Segment] = []
 
@@ -287,7 +259,7 @@ def main(config_path, base_dir, target_path, modes, verbose, use_cache=True):
     # Load cache
     if use_cache:
         try:
-            with options.get_cache_path().open("rb") as f3:
+            with options.opts.cache_path.open("rb") as f3:
                 cache = pickle.load(f3)
 
             if verbose:
@@ -306,26 +278,32 @@ def main(config_path, base_dir, target_path, modes, verbose, use_cache=True):
             "__options__": config.get("options"),
         }
 
-    configure_disassembler()
+    disassembler_instance.get_instance().configure(options.opts)
+
+    platform_module = importlib.import_module(f"platforms.{options.opts.platform}")
+    platform_init = getattr(platform_module, "init")
+    platform_init(rom_bytes)
 
     # Initialize segments
     all_segments = initialize_segments(config["segments"])
 
     # Load and process symbols
     symbols.initialize(all_segments)
+    relocs.initialize()
 
     # Assign symbols to segments
     assign_symbols_to_segments()
 
-    if options.mode_active("code"):
+    if options.opts.is_mode_active("code"):
         symbols.initialize_spim_context(all_segments)
+        relocs.initialize_spim_context()
 
     # Resolve raster/palette siblings
-    if options.mode_active("img"):
+    if options.opts.is_mode_active("img"):
         palettes.initialize(all_segments)
 
     # Scan
-    scan_bar = tqdm.tqdm(all_segments, total=len(all_segments))
+    scan_bar = progress_bar.get_progress_bar(all_segments)
     for segment in scan_bar:
         assert isinstance(segment, Segment)
         scan_bar.set_description(f"Scanning {brief_seg_name(segment, 20)}")
@@ -352,49 +330,82 @@ def main(config_path, base_dir, target_path, modes, verbose, use_cache=True):
 
             seg_split[typ] += 1
 
+    symbols.mark_c_funcs_as_defined()
+
     # Split
-    for segment in tqdm.tqdm(
-        all_segments,
-        total=len(all_segments),
-        desc=f"Splitting {brief_seg_name(segment, 20)}",
-    ):
+    split_bar = progress_bar.get_progress_bar(all_segments)
+    for segment in split_bar:
+        split_bar.set_description(f"Splitting {brief_seg_name(segment, 20)}")
+
         if use_cache:
             cached = segment.cache()
 
             if cached == cache.get(segment.unique_id()):
                 # Cache hit
-                seg_cached[typ] += 1
+                if segment.type not in seg_cached:
+                    seg_cached[segment.type] = 0
+                seg_cached[segment.type] += 1
                 continue
             else:
                 # Cache miss; split
                 cache[segment.unique_id()] = cached
 
         if segment.should_split():
-            segment.split(rom_bytes)
+            segment_bytes = rom_bytes
+            if segment.file_path:
+                with open(segment.file_path, "rb") as segment_input_file:
+                    segment_bytes = segment_input_file.read()
+            segment.split(segment_bytes)
 
-    if options.mode_active("ld"):
+    if (
+        options.opts.is_mode_active("ld") and options.opts.platform != "gc"
+    ):  # TODO move this to platform initialization when it gets implemented
+        # Calculate list of segments for which we need to find the largest, so we can safely place the symbol after it
+        max_vram_end_syms: Dict[str, List[Segment]] = {}
+        for sym in symbols.appears_after_overlays_syms:
+            max_vram_end_syms[sym.name] = [
+                seg
+                for seg in all_segments
+                if isinstance(seg.vram_start, int)
+                and seg.vram_start == sym.appears_after_overlays_addr
+            ]
+        max_vram_end_sym_names: Set[str] = set(max_vram_end_syms.keys())
+
+        max_vram_end_insertion_points: Dict[
+            Segment, List[Tuple[str, List[Segment]]]
+        ] = {}
+        # Find the last segment whose vram_of_symbol is one of the max_vram_end_syms
+        for segment in reversed(all_segments):
+            vram_of_sym = segment.vram_of_symbol
+            if vram_of_sym is not None and vram_of_sym in max_vram_end_sym_names:
+                if segment not in max_vram_end_insertion_points:
+                    max_vram_end_insertion_points[segment] = []
+                max_vram_end_insertion_points[segment].append(
+                    (vram_of_sym, max_vram_end_syms[vram_of_sym])
+                )
+                max_vram_end_sym_names.remove(vram_of_sym)
+
         global linker_writer
         linker_writer = LinkerWriter()
-        for segment in tqdm.tqdm(
-            all_segments,
-            total=len(all_segments),
-            desc=f"Writing linker script {brief_seg_name(segment, 20)}",
-        ):
-            linker_writer.add(segment)
+        linker_bar = progress_bar.get_progress_bar(all_segments)
+
+        for segment in linker_bar:
+            linker_bar.set_description(f"Linker script {brief_seg_name(segment, 20)}")
+            linker_writer.add(segment, max_vram_end_insertion_points.get(segment, []))
         linker_writer.save_linker_script()
         linker_writer.save_symbol_header()
 
         # write elf_sections.txt - this only lists the generated sections in the elf, not subsections
         # that the elf combines into one section
-        if options.get_create_elf_section_list_auto():
+        if options.opts.elf_section_list_path:
             section_list = ""
             for segment in all_segments:
                 section_list += "." + to_cname(segment.name) + "\n"
-            with open(options.get_elf_section_list_path(), "w", newline="\n") as f:
+            with open(options.opts.elf_section_list_path, "w", newline="\n") as f:
                 f.write(section_list)
 
     # Write undefined_funcs_auto.txt
-    if options.get_create_undefined_funcs_auto():
+    if options.opts.create_undefined_funcs_auto:
         to_write = [
             s
             for s in symbols.all_symbols
@@ -402,12 +413,12 @@ def main(config_path, base_dir, target_path, modes, verbose, use_cache=True):
         ]
         to_write.sort(key=lambda x: x.vram_start)
 
-        with open(options.get_undefined_funcs_auto_path(), "w", newline="\n") as f:
+        with open(options.opts.undefined_funcs_auto_path, "w", newline="\n") as f:
             for symbol in to_write:
                 f.write(f"{symbol.name} = 0x{symbol.vram_start:X};\n")
 
     # write undefined_syms_auto.txt
-    if options.get_create_undefined_syms_auto():
+    if options.opts.create_undefined_syms_auto:
         to_write = [
             s
             for s in symbols.all_symbols
@@ -418,7 +429,7 @@ def main(config_path, base_dir, target_path, modes, verbose, use_cache=True):
         ]
         to_write.sort(key=lambda x: x.vram_start)
 
-        with open(options.get_undefined_syms_auto_path(), "w", newline="\n") as f:
+        with open(options.opts.undefined_syms_auto_path, "w", newline="\n") as f:
             for symbol in to_write:
                 f.write(f"{symbol.name} = 0x{symbol.vram_start:X};\n")
 
@@ -441,12 +452,44 @@ def main(config_path, base_dir, target_path, modes, verbose, use_cache=True):
     if cache != {} and use_cache:
         if verbose:
             log.write("Writing cache")
-        with open(options.get_cache_path(), "wb") as f4:
+        with open(options.opts.cache_path, "wb") as f4:
             pickle.dump(cache, f4)
+
+    if options.opts.dump_symbols and options.opts.is_mode_active("code"):
+        from pathlib import Path
+
+        splat_hidden_folder = Path(".splat/")
+        splat_hidden_folder.mkdir(exist_ok=True)
+
+        with open(splat_hidden_folder / "splat_symbols.csv", "w") as f:
+            f.write(
+                "vram_start,given_name,name,type,given_size,size,rom,defined,user_declared,referenced,dead,extract\n"
+            )
+            for s in sorted(symbols.all_symbols, key=lambda x: x.vram_start):
+                f.write(f"{s.vram_start:X},{s.given_name},{s.name},{s.type},")
+                if s.given_size is not None:
+                    f.write(f"0x{s.given_size:X},")
+                else:
+                    f.write("None,")
+                f.write(f"{s.size},")
+                if s.rom is not None:
+                    f.write(f"0x{s.rom:X},")
+                else:
+                    f.write("None,")
+                f.write(
+                    f"{s.defined},{s.user_declared},{s.referenced},{s.dead},{s.extract}\n"
+                )
+
+        symbols.spim_context.saveContextToFile(splat_hidden_folder / "spim_context.csv")
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
     main(
-        args.config, args.basedir, args.target, args.modes, args.verbose, args.use_cache
+        args.config,
+        args.modes,
+        args.verbose,
+        args.use_cache,
+        args.skip_version_check,
+        args.stdout_only,
     )

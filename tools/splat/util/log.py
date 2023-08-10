@@ -1,6 +1,8 @@
 import sys
-from colorama import init, Fore, Style
-from typing import Optional
+from typing import NoReturn, Optional
+from pathlib import Path
+
+from colorama import Fore, init, Style
 
 init(autoreset=True)
 
@@ -19,13 +21,13 @@ def write(*args, status=None, **kwargs):
     print(status_to_ansi(status) + str(args[0]), *args[1:], **kwargs)
 
 
-def error(*args, **kwargs):
+def error(*args, **kwargs) -> NoReturn:
     write(*args, **kwargs, status="error")
     sys.exit(2)
 
 
 # The line_num is expected to be zero-indexed
-def parsing_error_preamble(path, line_num, line):
+def parsing_error_preamble(path: Path, line_num: int, line: str):
     write("")
     write(f"error reading {path}, line {line_num + 1}:", status="error")
     write(f"\t{line}")

@@ -35,10 +35,10 @@ if args.make:
     check_call(["make", "-j4", "COMPARE=0"])
 
 baseimg = f"baserom.z64"
-basemap = f"expected/build/yoshisstory.map"
+basemap = f"expected/build/yoshisstory.us.map"
 
-myimg = f"build/yoshisstory.z64"
-mymap = f"build/yoshisstory.map"
+myimg = f"build/yoshisstory.us.z64"
+mymap = f"build/yoshisstory.us.map"
 
 if not os.path.isfile(baseimg):
     print(f"{baseimg} must exist.")
