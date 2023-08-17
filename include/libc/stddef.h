@@ -1,20 +1,25 @@
-#ifndef STDDEF_H
-#define STDDEF_H
-
-#include "ultratypes.h"
-
-typedef u32 size_t;
-
-typedef s32 ptrdiff_t;
+#ifndef LIBC_STDDEF_H
+#define LIBC_STDDEF_H
 
 #ifndef NULL
-#define NULL (void*)0
+#define NULL ((void *)0)
 #endif
 
+#ifndef _PTRDIFF_T
+    #define _PTRDIFF_T
+    #if (_MIPS_SZLONG == 32)
+        typedef int ptrdiff_t;
+    #else
+        typedef long ptrdiff_t;
+    #endif
+#endif
+
+#ifndef offsetof
 #ifdef __GNUC__
-#define offsetof(structure, member) __builtin_offsetof (structure, member)
+#define offsetof(structure, member) __builtin_offsetof(structure, member)
 #else
 #define offsetof(structure, member) ((size_t)&(((structure*)0)->member))
 #endif
+#endif
 
-#endif /* STDDEF_H */
+#endif

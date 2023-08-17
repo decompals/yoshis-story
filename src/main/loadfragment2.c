@@ -16,7 +16,7 @@ void DoRelocation(void* allocatedVRamAddr, OverlayRelocationSection* ovl, uintpt
     uintptr_t relocatedAddress;
     u32 i;
     u32* luiInstRef;
-    uintptr_t allocu32 = (uintptr_t)allocatedVRamAddr;
+    u32 allocu32 = (uintptr_t)allocatedVRamAddr;
     u32* regValP;
     u32* luiRefs[32];
     u32 luiVals[32];

@@ -14,6 +14,7 @@ options:
 
   symbol_addrs_path: 
     - linker_scripts/us/symbol_addrs.txt
+    - linker_scripts/us/symbol_addrs_libultra.txt
   reloc_addrs_path:
     - relocs/reloc_addrs.us.txt
 
