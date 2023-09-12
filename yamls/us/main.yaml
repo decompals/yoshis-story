@@ -95,7 +95,7 @@
       - [0x82830, c, mathf]
       - [0x82BE0, asm, fp] # hasm
       - [0x82D40, asm, printutils]
-      - [0x82DA0, asm, sleep]
+      - [0x82DA0, c, sleep]
       # Libultra
       - [0x82E10, asm, ../libultra/os/sendmesg]
       - [0x82F60, asm, ../libultra/io/pfsfreeblocks]

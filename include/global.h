@@ -6,7 +6,7 @@
 #include "libc/stddef.h"
 #include "libc/stdint.h"
 
-
+#include "macros.h"
 
 typedef struct {
     /* 0x0 */ f32 x;
