@@ -2,7 +2,7 @@
 
 [Build Status]: <https://github.com/decompals/yoshis-story/actions/workflows/ci.yml/badge.svg>
 [actions]: <https://github.com/decompals/yoshis-story/actions/workflows/ci.yml>
-[Code us Progress]: https://img.shields.io/endpoint?label=Code%20us&url=https%3A%2F%2Fprogress.deco.mp%2Fdata%yoshisstory%2Fus%2Fcode%2F%3Fmode%3Dshield%26measure%3Dall
+[Code us Progress]: https://img.shields.io/endpoint?label=Code%20us&url=https%3A%2F%2Fprogress.deco.mp%2Fdata%2Fyoshisstory%2Fus%2Fcode%2F%3Fmode%3Dshield%26measure%3Dall
 
 This is a WIP decomp of Yoshi's Story (US).
 
