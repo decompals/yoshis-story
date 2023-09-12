@@ -20,7 +20,6 @@ s32 gLoad2LogSeverity = 2;
 // Extract MIPS jump target from an instruction word
 #define MIPS_JUMP_TARGET(insn) (((insn)&0x03FFFFFF) << 2)
 
-
 /**
  * Performs runtime relocation of overlay files, loadable code segments.
  *
@@ -78,7 +77,7 @@ void DoRelocation(void* allocatedVRamAddr, OverlayRelocationSection* ovl, uintpt
                 break;
 
             case R_MIPS_26 << RELOC_TYPE_SHIFT:
-                 // Handles 26-bit address relocation, used for jumps and jals.
+                // Handles 26-bit address relocation, used for jumps and jals.
                 // Extract the address from the target field of the J-type MIPS instruction.
                 // Relocate the address and update the instruction.
 
