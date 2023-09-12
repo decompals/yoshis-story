@@ -6,6 +6,7 @@
 #include "libc/stddef.h"
 #include "libc/stdint.h"
 
+#include "attributes.h"
 #include "macros.h"
 
 typedef struct {
@@ -44,8 +45,8 @@ void func_80080798(MtxF* mf, f32 /*x*/, f32 /*y*/);
 void func_80080C84(MtxF* mf, f32 /*x*/, f32 /*y*/, f32 /*z*/);
 
 // loadfragment2
-size_t Load2_LoadOverlay(uintptr_t vRomStart, uintptr_t vRomEnd, uintptr_t vRamStart, uintptr_t vRamEnd, void* allocatedVRamAddr);
-void* Load2_AllocateAndLoad(uintptr_t vRomStart, uintptr_t vRomEnd, uintptr_t vRamStart, uintptr_t vRamEnd);
+size_t Load2_LoadOverlay(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart, uintptr_t vramEnd, void* allocatedRamAddr);
+void* Load2_AllocateAndLoad(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart, uintptr_t vramEnd);
 
 
 #endif

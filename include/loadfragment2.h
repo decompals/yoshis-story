@@ -3,8 +3,6 @@
 
 #include "ultratypes.h"
 
-#define RELOCATE_ADDR(addr, vRamStart, allocu32) ((addr) - (vRamStart) + (allocu32))
-
 #define RELOC_SECTION(reloc) ((reloc) >> 30)
 #define RELOC_OFFSET(reloc) ((reloc) & 0xFFFFFF)
 #define RELOC_TYPE_MASK(reloc) ((reloc) & 0x3F000000)
