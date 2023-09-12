@@ -52,7 +52,8 @@ void DoRelocation(void* allocatedVRamAddr, OverlayRelocationSection* ovl, uintpt
 
                 *relocDataP =
                     (*relocDataP & 0xFC000000) |
-                    ((RELOCATE_ADDR(PHYS_TO_K0((*relocDataP & 0x03FFFFFF) << 2), vRamStart, allocu32) & 0x0FFFFFFF) >> 2);
+                    ((RELOCATE_ADDR(PHYS_TO_K0((*relocDataP & 0x03FFFFFF) << 2), vRamStart, allocu32) & 0x0FFFFFFF) >>
+                     2);
                 break;
 
             case R_MIPS_HI16 << RELOC_TYPE_SHIFT:
@@ -88,7 +89,7 @@ void DoRelocation(void* allocatedVRamAddr, OverlayRelocationSection* ovl, uintpt
 }
 
 size_t Load2_LoadOverlay(uintptr_t vRomStart, uintptr_t vRomEnd, uintptr_t vRamStart, uintptr_t vRamEnd,
-                     void* allocatedVRamAddr) {
+                         void* allocatedVRamAddr) {
     s32 pad[2];
     s32 size = vRomEnd - vRomStart;
     void* end;
