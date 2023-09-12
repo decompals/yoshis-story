@@ -94,7 +94,7 @@
       - [0x826F0, asm, padsetup]
       - [0x82830, c, mathf]
       - [0x82BE0, asm, fp] # hasm
-      - [0x82D40, asm, printutils]
+      - [0x82D40, c, aprintf]
       - [0x82DA0, c, sleep]
       # Libultra
       - [0x82E10, asm, ../libultra/os/sendmesg]

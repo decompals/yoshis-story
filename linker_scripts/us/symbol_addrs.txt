@@ -9,8 +9,8 @@ mtxcvt_L2F = 0x800818E8;
 StackCheck_Init = 0x80081910;
 PadSetup_Init = 0x80081AF0;
 
-PrintUtils_VPrintf = 0x80082140;
-PrintUtils_Printf = 0x80082174;
+vaprintf = 0x80082140;
+aprintf = 0x80082174;
 csleep = 0x800821A0;
 
 Load2_LoadOverlay = 0x8008169C;
