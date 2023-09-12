@@ -6,6 +6,7 @@
 #include "libc/stddef.h"
 #include "libc/stdint.h"
 
+#include "attributes.h"
 #include "macros.h"
 
 typedef struct {
