@@ -10,7 +10,6 @@ void func_8007FD30(Mtx* arg0, Mtx* arg1) {
     *arg0 = *arg1;
 }
 
-
 void func_8007FD6C(Mtx* arg0, Mtx* arg1) {
     MtxF sp58;
     MtxF sp18;
@@ -22,7 +21,6 @@ void func_8007FD6C(Mtx* arg0, Mtx* arg1) {
 }
 
 void func_8007FDBC(void) {
-
 }
 
 void func_8007FDC4(Mtx* arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4) {
@@ -50,7 +48,6 @@ void func_8007FE74(Mtx* arg0, f32 arg1, f32 arg2) {
 }
 
 void func_8007FEC0(void) {
-
 }
 
 void func_8007FEC8(Mtx* arg0, f32 arg1) {
@@ -70,7 +67,6 @@ void func_8007FF0C(Mtx* arg0, f32 arg1) {
 }
 
 void func_8007FF50(void) {
-
 }
 
 void func_8007FF58(Mtx* arg0, f32 arg1) {
@@ -82,7 +78,6 @@ void func_8007FF58(Mtx* arg0, f32 arg1) {
 }
 
 void func_8007FF9C(void) {
-
 }
 
 void func_8007FFA4(Mtx* arg0, f32 arg1, f32 arg2) {
@@ -102,5 +97,4 @@ void func_8007FFF0(Mtx* arg0, f32 arg1, f32 arg2, f32 arg3) {
 }
 
 void func_80080044(void) {
-
 }

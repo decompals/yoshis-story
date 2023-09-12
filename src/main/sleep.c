@@ -1,7 +1,6 @@
 #include "global.h"
 #include "macros.h"
 
-
 void csleep(OSTime t) {
     OSMesgQueue mq;
     OSMesg msg[1];
