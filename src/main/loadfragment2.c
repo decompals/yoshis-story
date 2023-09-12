@@ -40,14 +40,14 @@ s32 gLoad2LogSeverity = 2;
  * @param ovlRelocs Overlay relocation section containing overlay section layout and runtime relocations.
  * @param vramStart Virtual RAM address that the overlay was compiled at.
  */
-void DoRelocation(void* allocatedVRamAddr, OverlayRelocationSection* ovl, uintptr_t vramStart) {
+void DoRelocation(void* allocatedRamAddr, OverlayRelocationSection* ovl, uintptr_t vramStart) {
     u32 sections[4];
     u32* relocDataP;
     u32 reloc;
     uintptr_t relocatedAddress;
     u32 i;
     u32* luiInstRef;
-    u32 allocu32 = (uintptr_t)allocatedVRamAddr;
+    u32 allocu32 = (uintptr_t)allocatedRamAddr;
     u32* regValP;
     u32* luiRefs[32];
     u32 luiVals[32];
@@ -120,47 +120,47 @@ void DoRelocation(void* allocatedVRamAddr, OverlayRelocationSection* ovl, uintpt
     }
 }
 
-size_t Load2_LoadOverlay(uintptr_t vRomStart, uintptr_t vRomEnd, uintptr_t vramStart, uintptr_t vRamEnd,
-                         void* allocatedVRamAddr) {
+size_t Load2_LoadOverlay(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart, uintptr_t vramEnd,
+                         void* allocatedRamAddr) {
     UNUSED s32 pad[2];
-    s32 size = vRomEnd - vRomStart;
+    s32 size = vromEnd - vromStart;
     void* end;
     OverlayRelocationSection* ovl;
 
     if (gLoad2LogSeverity >= 3) {}
     if (gLoad2LogSeverity >= 3) {}
 
-    end = (void*)((uintptr_t)allocatedVRamAddr + size);
-    func_8007DF0C(allocatedVRamAddr, vRomStart, size);
+    end = (void*)((uintptr_t)allocatedRamAddr + size);
+    func_8007DF0C(allocatedRamAddr, vromStart, size);
 
     ovl = (OverlayRelocationSection*)((uintptr_t)end - ((s32*)end)[-1]);
 
     if (gLoad2LogSeverity >= 3) {}
     if (gLoad2LogSeverity >= 3) {}
 
-    DoRelocation(allocatedVRamAddr, ovl, vramStart);
+    DoRelocation(allocatedRamAddr, ovl, vramStart);
 
     if (ovl->bssSize != 0) {
         if (gLoad2LogSeverity >= 3) {}
         bzero(end, ovl->bssSize);
     }
 
-    size = vRamEnd - vramStart;
+    size = vramEnd - vramStart;
 
-    osWritebackDCache(allocatedVRamAddr, size);
-    osInvalICache(allocatedVRamAddr, size);
+    osWritebackDCache(allocatedRamAddr, size);
+    osInvalICache(allocatedRamAddr, size);
 
     if (gLoad2LogSeverity >= 3) {}
 
     return size;
 }
 
-void* Load2_AllocateAndLoad(uintptr_t vRomStart, uintptr_t vRomEnd, uintptr_t vramStart, uintptr_t vRamEnd) {
-    void* allocatedVRamAddr = func_80064DD0(vRamEnd - vramStart);
+void* Load2_AllocateAndLoad(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart, uintptr_t vramEnd) {
+    void* allocatedRamAddr = func_80064DD0(vramEnd - vramStart);
 
-    if (allocatedVRamAddr != NULL) {
-        Load2_LoadOverlay(vRomStart, vRomEnd, vramStart, vRamEnd, allocatedVRamAddr);
+    if (allocatedRamAddr != NULL) {
+        Load2_LoadOverlay(vromStart, vromEnd, vramStart, vramEnd, allocatedRamAddr);
     }
 
-    return allocatedVRamAddr;
+    return allocatedRamAddr;
 }
