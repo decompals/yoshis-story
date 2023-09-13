@@ -92,7 +92,7 @@
       - [0x823A0, asm, mtxuty-cvt]
       - [0x82510, asm, stackcheck]
       - [0x826F0, asm, padsetup]
-      - [0x82830, c, mathf]
+      - [0x82830, c, math64]
       - [0x82BE0, asm, fp] # hasm
       - [0x82D40, c, aprintf]
       - [0x82DA0, c, sleep]
@@ -236,7 +236,7 @@
 
       # rodata: vram start 800ABBE0
       - [0xAC7E0, rodata] 
-      - [0xB3D80, .rodata, mathf] #
+      - [0xB3D80, .rodata, math64] #
       - [0xB3DA0, rodata] #
       # - [0xB58B0, .bss] # size = 0x5DFF0
 
