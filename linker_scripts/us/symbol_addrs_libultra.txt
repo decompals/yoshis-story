@@ -94,6 +94,7 @@ __osDevMgrMain = 0x80089800; // size:0x490
 osPiRawStartDma = 0x80089C90; // size:0xE0
 osSetEventMesg = 0x80089D70; // size:0x68
 sqrtf = 0x80089DE0; // size:0x8
+osContInit = 0x80085140;
 osContStartQuery = 0x80089DF0; // size:0x84
 osContGetQuery = 0x80089E74; // size:0x28
 // xprintf.text+0x0 = 0x80089EA0; // size:0xCC0

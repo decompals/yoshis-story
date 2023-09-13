@@ -91,7 +91,7 @@
       - [0x82030, c, loadfragment2]
       - [0x823A0, asm, mtxuty-cvt]
       - [0x82510, asm, stackcheck]
-      - [0x826F0, asm, padsetup]
+      - [0x826F0, c, padsetup]
       - [0x82830, c, math64]
       - [0x82BE0, asm, fp] # hasm
       - [0x82D40, c, aprintf]
