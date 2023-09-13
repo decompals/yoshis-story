@@ -69,23 +69,23 @@ f32 Math_FAtanContFracF(f32 x) {
     }
 }
 
-f32 fatan2(f32 x, f32 y) {
-    if ((x == 0.0f) && (y == 0.0f)) {
+f32 fatan2(f32 y, f32 x) {
+    if ((y == 0.0f) && (x == 0.0f)) {
         return 0.0f;
-    } else if (y == 0.0f) {
-        if (x < 0.0f) {
+    } else if (x == 0.0f) {
+        if (y < 0.0f) {
             return -((f32)M_PI / 2);
         } else {
             return (f32)M_PI / 2;
         }
-    } else if (y < 0.0f) {
-        if (x < 0.0f) {
-            return -((f32)M_PI - Math_FAtanContFracF(fabs((f64)(x / y))));
+    } else if (x < 0.0f) {
+        if (y < 0.0f) {
+            return -((f32)M_PI - Math_FAtanContFracF(fabs((f64)(y / x))));
         } else {
-            return (f32)M_PI - Math_FAtanContFracF(fabs((f64)(x / y)));
+            return (f32)M_PI - Math_FAtanContFracF(fabs((f64)(y / x)));
         }
     } else {
-        return Math_FAtanContFracF(x / y);
+        return Math_FAtanContFracF(y / x);
     }
 }
 
