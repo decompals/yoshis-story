@@ -6,4 +6,7 @@
 float fabsf(float f);
 #pragma intrinsic(fabsf)
 
+double fabs(double f);
+#pragma intrinsic(fabs)
+
 #endif
