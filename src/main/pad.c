@@ -1,4 +1,3 @@
-#include "global.h"
 #include "pad.h"
 
 void pad_init(Input* input) {
