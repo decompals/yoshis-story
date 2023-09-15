@@ -1,10 +1,17 @@
 #include "global.h"
 
-extern MtxF D_800AA350;
+// clang-format off
+MtxF gMtxFClear = {
+    1.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 1.0f,
+};
+// clang-format on
 
 // Matrix_Clear, sets mf to identity matrix
 void func_80080050(MtxF* mf) {
-    *mf = D_800AA350;
+    *mf = gMtxFClear;
 }
 
 // Matrix_Copy, copies src to dest

@@ -8,24 +8,7 @@
 
 #include "attributes.h"
 #include "macros.h"
-
-typedef struct {
-    /* 0x0 */ f32 x;
-    /* 0x4 */ f32 y;
-    /* 0x8 */ f32 z;
-} Vec3f;
-
-typedef float MtxF_t[4][4];
-typedef union {
-    MtxF_t mf;
-    struct {
-        float xx, yx, zx, wx, xy, yy, zy, wy, xz, yz, zz, wz, xw, yw, zw, ww;
-    };
-} MtxF; // size = 0x40
-
-// mtxuty-cvt
-void mtxcvt_F2L(Mtx* mtx, MtxF* mf);
-void mtxcvt_L2F(MtxF* mtx, Mtx* mf);
+#include "ys64math.h"
 
 // malloc
 void* func_80064DD0(u32 size);
