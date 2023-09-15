@@ -6,8 +6,8 @@ DoRelocation = 0x80081430;
 Load2_LoadOverlay = 0x8008169C;
 Load2_AllocateAndLoad = 0x80081744; // type:func
 
-mtxcvt_F2L = 0x800817A0;
-mtxcvt_L2F = 0x800818E8;
+MtxConv_F2L = 0x800817A0;
+MtxConv_L2F = 0x800818E8;
 
 StackCheck_Init = 0x80081910;
 StackCheck_Cleanup = 0x800819C8;
@@ -54,6 +54,8 @@ aprintf = 0x80082174;
 csleep = 0x800821A0;
 
 // data
+gMtxClear = 0x800AA310;
+gMtxFClear = 0x800AA350;
 gLoad2LogSeverity = 0x800AA390; // type:s32
 
 D_800B1E30 = 0x800B1E30; //

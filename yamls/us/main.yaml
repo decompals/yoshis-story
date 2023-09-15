@@ -86,10 +86,10 @@
       - [0x7F070, asm, vimode] # Top is like OoT, bottom is different
       - [0x7FB00, asm, gfxprint]
       - [0x806E0, asm, padutils]
-      - [0x808F0, c] # Mtx functions, uses file below
-      - [0x80C50, c] # MtxF functions
+      - [0x808F0, c, 808F0] # Mtx functions, uses file below
+      - [0x80C50, c, 80C50] # MtxF functions
       - [0x82030, c, loadfragment2]
-      - [0x823A0, asm, mtxuty-cvt]
+      - [0x823A0, c, mtxuty-cvt]
       - [0x82510, c, stackcheck]
       - [0x826F0, c, padsetup]
       - [0x82830, c, math64]
@@ -229,6 +229,8 @@
 
       # Data
       - [0x92170, data]
+      - [0xAAF10, .data, 808F0]
+      - [0xAAF50, .data, 80C50]
       - [0xAAF90, .data, loadfragment2]
       - [0xAAFA0, .data, stackcheck]
       - [0xAAFB0, data, ../libultra/gu/sins]
