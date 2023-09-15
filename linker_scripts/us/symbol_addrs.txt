@@ -2,6 +2,25 @@ entrypoint = 0x80000400;
 
 bootproc = 0x8006743C;
 
+pad_init = 0x8007FAE0;
+pad_flush = 0x8007FB08;
+pad_push_only = 0x8007FB1C;
+pad_push_also = 0x8007FB34;
+pad_on_trigger = 0x8007FB50;
+pad_off_trigger = 0x8007FB6C;
+pad_button = 0x8007FB88;
+pad_trigger = 0x8007FB90;
+pad_physical_stick_x = 0x8007FB98;
+pad_physical_stick_y = 0x8007FBA0;
+pad_set_logical_stick = 0x8007FBA8;
+pad_logical_stick_x = 0x8007FBB4;
+pad_logical_stick_y = 0x8007FBBC;
+pad_stick_x = 0x8007FBC4;
+pad_stick_y = 0x8007FBE4;
+pad_press_stick_x = 0x8007FC04;
+pad_press_stick_y = 0x8007FC0C;
+pad_correct_stick = 0x8007FC14;
+
 DoRelocation = 0x80081430;
 Load2_LoadOverlay = 0x8008169C;
 Load2_AllocateAndLoad = 0x80081744; // type:func

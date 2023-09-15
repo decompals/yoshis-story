@@ -85,7 +85,7 @@
       - [0x7EFD0, asm]
       - [0x7F070, asm, vimode] # Top is like OoT, bottom is different
       - [0x7FB00, asm, gfxprint]
-      - [0x806E0, asm, padutils]
+      - [0x806E0, c, pad]
       - [0x808F0, c, 808F0] # Mtx functions, uses file below
       - [0x80C50, c, 80C50] # MtxF functions
       - [0x82030, c, loadfragment2]
