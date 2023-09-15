@@ -91,7 +91,6 @@ void pad_correct_stick(Input* input) {
 
     if (curY > 7) {
         relY = (curY < 0x43) ? curY - 7 : 0x43 - 7;
-
     } else if (curY < -7) {
         relY = (curY > -0x43) ? curY + 7 : -0x43 + 7;
     } else {
