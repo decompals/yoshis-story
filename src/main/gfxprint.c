@@ -1,4 +1,5 @@
 #include "gfxprint.h"
+#include "attributes.h"
 
 #define TX_LINE(width, siz) (((((4 << (siz)) * (width)) >> 3) + 7) >> 3)
 
@@ -73,7 +74,6 @@ void gfxprint_setoffset(gfxprint* this, s32 x, s32 y) {
     this->unk2C = y * 4;
 }
 
-#ifdef NON_MATCHING
 void gfxprint_putc1(gfxprint* this, char c) {
     u32 tile = (c & 0xFF) * 2;
     u16 x0 = (c & 4);
@@ -108,27 +108,21 @@ void gfxprint_putc1(gfxprint* this, char c) {
 
     this->unkC += 32;
 }
-#else
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/gfxprint/gfxprint_putc1.s")
-#endif
 
-#ifdef NON_MATCHING
 void gfxprint_putc(gfxprint* this, char c) {
-    char param = c;
-
-    if (param >= ' ' && param <= 0x7E) {
-        gfxprint_putc1(this, param);
-    } else if (param >= 0xA0 && param <= 0xDF) {
+    if (c >= ' ' && c <= 0x7E) {
+        gfxprint_putc1(this, c);
+    } else if (c >= 0xA0 && c <= 0xDF) {
         if (this->unk18) {
-            if (param <= 0xBF) {
-                param -= 0x20;
+            if (c <= 0xBF) {
+                c -= 0x20;
             } else {
-                param += 0x20;
+                c += 0x20;
             }
         }
-        gfxprint_putc1(this, param);
+        gfxprint_putc1(this, c);
     } else {
-        switch (param) {
+        switch (c) {
             case '\0':
                 break;
 
@@ -176,9 +170,6 @@ void gfxprint_putc(gfxprint* this, char c) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/gfxprint/gfxprint_putc.s")
-#endif
 
 void gfxprint_write(gfxprint* this, const void* buffer, s32 size, s32 n) {
     const char* buf = (const char*)buffer;
@@ -215,7 +206,7 @@ void gfxprint_init(gfxprint* this) {
     this->unk24 = 1;
 }
 
-void gfxprint_cleanup(gfxprint* this) {
+void gfxprint_cleanup(UNUSED gfxprint* this) {
 }
 
 void gfxprint_open(gfxprint* this, Gfx* gListp) {
