@@ -10,8 +10,11 @@ void gfxprint_setup(gfxprint* this) {
     s32 i;
 
     gDPPipeSync(this->gListp++);
-    gSPSetOtherMode(this->gListp++, G_SETOTHERMODE_H, 0, 24, G_AD_DISABLE | G_CD_DISABLE | G_CK_NONE | G_TC_FILT | G_TF_BILERP | G_TT_IA16 | G_TL_TILE | G_TD_CLAMP | G_TP_NONE | G_CYC_1CYCLE | G_PM_NPRIMITIVE);
-    gSPSetOtherMode(this->gListp++, G_SETOTHERMODE_L, G_MDSFT_ALPHACOMPARE, 3, G_AC_NONE | G_ZS_PRIM | G_RM_XLU_SURF | G_RM_XLU_SURF2);
+    gSPSetOtherMode(this->gListp++, G_SETOTHERMODE_H, 0, 24,
+                    G_AD_DISABLE | G_CD_DISABLE | G_CK_NONE | G_TC_FILT | G_TF_BILERP | G_TT_IA16 | G_TL_TILE |
+                        G_TD_CLAMP | G_TP_NONE | G_CYC_1CYCLE | G_PM_NPRIMITIVE);
+    gSPSetOtherMode(this->gListp++, G_SETOTHERMODE_L, G_MDSFT_ALPHACOMPARE, 3,
+                    G_AC_NONE | G_ZS_PRIM | G_RM_XLU_SURF | G_RM_XLU_SURF2);
 
     gDPSetRenderMode(this->gListp++, G_ZS_PRIM | G_RM_XLU_SURF, G_ZS_PRIM | G_RM_XLU_SURF2);
     gDPSetCombineMode(this->gListp++, G_CC_MODULATEIDECALA_PRIM, G_CC_MODULATEIDECALA_PRIM);
@@ -97,13 +100,13 @@ void gfxprint_putc1(gfxprint* this, char c) {
 
     if (gfxprint_isShadow(this)) {
         gDPSetColor(this->gListp++, G_SETPRIMCOLOR, 0);
-        gSPTextureRectangle(this->gListp++, this->posX + 4, this->posY + 4, this->posX + 4 + 32,
-                            this->posY + 4 + 32, tile, x0 << 6, x1 << 8, 1 << 10, 1 << 10);
+        gSPTextureRectangle(this->gListp++, this->posX + 4, this->posY + 4, this->posX + 4 + 32, this->posY + 4 + 32,
+                            tile, x0 << 6, x1 << 8, 1 << 10, 1 << 10);
         gDPSetColor(this->gListp++, G_SETPRIMCOLOR, this->color.rgba);
     }
 
-    gSPTextureRectangle(this->gListp++, this->posX, this->posY, this->posX + 32,
-                        this->posY + 32, tile, x0 << 6, x1 << 8, 1 << 10, 1 << 10);
+    gSPTextureRectangle(this->gListp++, this->posX, this->posY, this->posX + 32, this->posY + 32, tile, x0 << 6,
+                        x1 << 8, 1 << 10, 1 << 10);
 
     this->posX += 32;
 }
