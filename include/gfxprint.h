@@ -9,14 +9,14 @@
 typedef struct gfxprint  {
     /* 0x00 */ PrintCallback proutFunc; /* Current print out func */
     /* 0x04 */ Gfx* gListp; /* Current display list to write text to */
-    /* 0x08 */ s32 isOpen;
+    /* 0x08 */ s32 isOpen; /* Open state */
     /* 0x0C */ s32 posX;
     /* 0x10 */ s32 posY;
     /* 0x14 */ Color_RGBA8_u32 color;
-    /* 0x18 */ s32 kanaMode;
-    /* 0x1C */ s32 isGradient;
-    /* 0x20 */ s32 isShadow;
-    /* 0x24 */ s32 isChanged;
+    /* 0x18 */ s32 kanaMode; /* Japanese characters displayed as hiragana or katakana */
+    /* 0x1C */ s32 isGradient; /* Gradient state */
+    /* 0x20 */ s32 isShadow; /* Shadow state */
+    /* 0x24 */ s32 isChanged; /* Text changed */
     /* 0x28 */ s32 offsetX;
     /* 0x2C */ s32 offsetY;
 } gfxprint;
@@ -24,13 +24,6 @@ typedef struct gfxprint  {
 #define GFXPRINT_NUM_SUBPIXELS 4
 #define GFXPRINT_PIXELS_PER_BLOCK 8
 #define GFXPRINT_PAD GFXPRINT_PIXELS_PER_BLOCK * GFXPRINT_NUM_SUBPIXELS
-
-#define GFXPRINT_FLAG_KANA_MODE (1 << 0) /* Japanese characters displayed as hiragana or katakana */
-#define GFXPRINT_FLAG_GRADIENT (1 << 1) /* Gradient state */
-#define GFXPRINT_FLAG_SHADOW (1 << 2) /* Shadow state */
-#define GFXPRINT_FLAG_CHANGED (1 << 3) /* Text changed */
-#define GFXPRINT_FLAG_HIGHRES (1 << 6) /* Highres text */
-#define GFXPRINT_FLAG_OPENED (1 << 7) /* Open state */
 
 #define GFXPRINT_KANA_MODE_KATAKANA 0
 #define GFXPRINT_KANA_MODE_HIRAGANA 1
