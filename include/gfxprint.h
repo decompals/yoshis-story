@@ -3,29 +3,22 @@
 
 #include "ultra64.h"
 #include "color.h"
-#include "libc64/aprintf.h"
+#include "aprintf.h"
+#include "libc/stdbool.h"
 
 typedef struct gfxprint  {
     /* 0x00 */ PrintCallback proutFunc; /* Current print out func */
     /* 0x04 */ Gfx* gListp; /* Current display list to write text to */
     /* 0x08 */ s32 isOpen;
-    /* 0x0C */ s32 unkC;
-    /* 0x10 */ s32 unk10;
+    /* 0x0C */ s32 posX;
+    /* 0x10 */ s32 posY;
     /* 0x14 */ Color_RGBA8_u32 color;
-    /* 0x18 */ s32 unk18;
-    /* 0x1C */ s32 unk1C;
-    /* 0x20 */ s32 unk20;
-    /* 0x24 */ s32 unk24;
-    /* 0x28 */ s32 unk28;
-    /* 0x2C */ s32 unk2C;
-
-    // Need to confirm below
-    /* 0x08 */ u16 positionX; /* Display coords (sub-pixel units) */
-    /* 0x0A */ u16 positionY; /* Display coords (sub-pixel units) */
-    /* 0x0C */ u16 offsetX; /* Display offset */
-    /* 0x0E */ u8 offsetY; /* Display offset */
-    /* 0x0F */ u8 flags;
-    /* 0x14 */ u8 dummy[0x16];
+    /* 0x18 */ s32 kanaMode;
+    /* 0x1C */ s32 isGradient;
+    /* 0x20 */ s32 isShadow;
+    /* 0x24 */ s32 isChanged;
+    /* 0x28 */ s32 offsetX;
+    /* 0x2C */ s32 offsetY;
 } gfxprint;
 
 #define GFXPRINT_NUM_SUBPIXELS 4
@@ -51,33 +44,33 @@ typedef struct gfxprint  {
 #define GFXPRINT_UNUSED_CHAR '\x8E'
 
 #define gfxprint_isOpened(this) (this->isOpen)
-#define gfxprint_setOpened(this) (this->isOpen = 1)
-#define gfxprint_clrOpened(this) (this->isOpen = 0)
+#define gfxprint_setOpened(this) (this->isOpen = true)
+#define gfxprint_clrOpened(this) (this->isOpen = false)
 
-#define gfxprint_isHiragana(this) (this->unk18 != 0)
-#define gfxprint_isKatakana(this) (this->unk18 == 0)
-#define gfxprint_setHiragana(this) (this->unk18 = 1)
-#define gfxprint_setKatakana(this) (this->unk18 = 0)
+#define gfxprint_isHiragana(this) (this->kanaMode != GFXPRINT_KANA_MODE_KATAKANA)
+#define gfxprint_isKatakana(this) (this->kanaMode == GFXPRINT_KANA_MODE_KATAKANA)
+#define gfxprint_setHiragana(this) (this->kanaMode = GFXPRINT_KANA_MODE_HIRAGANA)
+#define gfxprint_setKatakana(this) (this->kanaMode = GFXPRINT_KANA_MODE_KATAKANA)
 
-#define gfxprint_isGradient(this) (this->unk1C)
-#define gfxprint_setGradient(this) (this->unk1C = 1)
-#define gfxprint_clrGradient(this) (this->unk1C = 0)
+#define gfxprint_isGradient(this) (this->isGradient)
+#define gfxprint_setGradient(this) (this->isGradient = true)
+#define gfxprint_clrGradient(this) (this->isGradient = false)
 
-#define gfxprint_isShadow(this) (this->unk20)
-#define gfxprint_setShadow(this) (this->unk20 = 1)
-#define gfxprint_clrShadow(this) (this->unk20 = 0)
+#define gfxprint_isShadow(this) (this->isShadow)
+#define gfxprint_setShadow(this) (this->isShadow = true)
+#define gfxprint_clrShadow(this) (this->isShadow = false)
 
-#define gfxprint_isChanged(this) (this->unk24)
-#define gfxprint_setChanged(this) (this->unk24 = 1)
-#define gfxprint_clrChanged(this) (this->unk24 = 0)
+#define gfxprint_isChanged(this) (this->isChanged)
+#define gfxprint_setChanged(this) (this->isChanged = true)
+#define gfxprint_clrChanged(this) (this->isChanged = false)
 
 //TODO: migrate data and add these when we can extract assets
 
-extern u16 gfxprint_moji_tlut[];
-extern u16 gfxprint_rainbow_tlut[];
+extern u16 gfxprint_moji_tlut[]; // 0x800A9A60
+extern u16 gfxprint_rainbow_tlut[]; // 0x800A9AE0
 
-extern u8 gfxprint_font[];
-extern u8 gfxprint_rainbow_txtr[];
+extern u8 gfxprint_font[]; // 0x800A9B08
+extern u8 gfxprint_rainbow_txtr[]; // 0x800A9B00
 
 
 void gfxprint_setup(gfxprint* this);

@@ -3,8 +3,6 @@
 
 #define TX_LINE(width, siz) (((((4 << (siz)) * (width)) >> 3) + 7) >> 3)
 
-const char D_800B2F30[] = "gfxprint_open:２重オープンです\n";
-
 #ifdef NON_MATCHING
 void gfxprint_setup(gfxprint* this) {
     s32 width = 16;
@@ -12,10 +10,11 @@ void gfxprint_setup(gfxprint* this) {
     s32 i;
 
     gDPPipeSync(this->gListp++);
-    gDPSetOtherMode(this->gListp++,
-                    G_AD_DISABLE | G_CD_DISABLE | G_CK_NONE | G_TC_FILT | G_TF_BILERP | G_TT_IA16 | G_TL_TILE |
-                        G_TD_CLAMP | G_TP_NONE | G_CYC_1CYCLE | G_PM_NPRIMITIVE,
-                    G_RM_XLU_SURF | G_RM_XLU_SURF2 | G_ZS_PRIM);
+    gSPSetOtherMode(this->gListp++, G_SETOTHERMODE_H, 0, 24, G_AD_DISABLE | G_CD_DISABLE | G_CK_NONE | G_TC_FILT | G_TF_BILERP | G_TT_IA16 | G_TL_TILE | G_TD_CLAMP | G_TP_NONE | G_CYC_1CYCLE | G_PM_NPRIMITIVE);
+    gSPSetOtherMode(this->gListp++, G_SETOTHERMODE_L, G_MDSFT_ALPHACOMPARE, 3, G_AC_NONE | G_ZS_PRIM | G_RM_XLU_SURF | G_RM_XLU_SURF2);
+
+    gDPSetRenderMode(this->gListp++, G_ZS_PRIM | G_RM_XLU_SURF, G_ZS_PRIM | G_RM_XLU_SURF2);
+    gDPSetCombineMode(this->gListp++, G_CC_MODULATEIDECALA_PRIM, G_CC_MODULATEIDECALA_PRIM);
     gDPSetCombineMode(this->gListp++, G_CC_DECALRGBA, G_CC_DECALRGBA);
 
     gDPLoadTextureBlock_4b(this->gListp++, gfxprint_font, G_IM_FMT_CI, width, height, 0, G_TX_NOMIRROR | G_TX_WRAP,
@@ -61,8 +60,8 @@ void gfxprint_color(gfxprint* this, u32 r, u32 g, u32 b, u32 a) {
 }
 
 void gfxprint_locate(gfxprint* this, s32 x, s32 y) {
-    this->unkC = this->unk28 + x * 4;
-    this->unk10 = this->unk2C + y * 4;
+    this->posX = this->offsetX + x * 4;
+    this->posY = this->offsetY + y * 4;
 }
 
 void gfxprint_locate8x8(gfxprint* this, s32 x, s32 y) {
@@ -70,8 +69,8 @@ void gfxprint_locate8x8(gfxprint* this, s32 x, s32 y) {
 }
 
 void gfxprint_setoffset(gfxprint* this, s32 x, s32 y) {
-    this->unk28 = x * 4;
-    this->unk2C = y * 4;
+    this->offsetX = x * 4;
+    this->offsetY = y * 4;
 }
 
 void gfxprint_putc1(gfxprint* this, char c) {
@@ -98,22 +97,22 @@ void gfxprint_putc1(gfxprint* this, char c) {
 
     if (gfxprint_isShadow(this)) {
         gDPSetColor(this->gListp++, G_SETPRIMCOLOR, 0);
-        gSPTextureRectangle(this->gListp++, this->unkC + 4, this->unk10 + 4, this->unkC + 4 + 32,
-                            this->unk10 + 4 + 32, tile, x0 << 6, x1 << 8, 1 << 10, 1 << 10);
+        gSPTextureRectangle(this->gListp++, this->posX + 4, this->posY + 4, this->posX + 4 + 32,
+                            this->posY + 4 + 32, tile, x0 << 6, x1 << 8, 1 << 10, 1 << 10);
         gDPSetColor(this->gListp++, G_SETPRIMCOLOR, this->color.rgba);
     }
 
-    gSPTextureRectangle(this->gListp++, this->unkC, this->unk10, this->unkC + 32,
-                        this->unk10 + 32, tile, x0 << 6, x1 << 8, 1 << 10, 1 << 10);
+    gSPTextureRectangle(this->gListp++, this->posX, this->posY, this->posX + 32,
+                        this->posY + 32, tile, x0 << 6, x1 << 8, 1 << 10, 1 << 10);
 
-    this->unkC += 32;
+    this->posX += 32;
 }
 
 void gfxprint_putc(gfxprint* this, char c) {
     if (c >= ' ' && c <= 0x7E) {
         gfxprint_putc1(this, c);
     } else if (c >= 0xA0 && c <= 0xDF) {
-        if (this->unk18) {
+        if (gfxprint_isHiragana(this)) {
             if (c <= 0xBF) {
                 c -= 0x20;
             } else {
@@ -127,16 +126,16 @@ void gfxprint_putc(gfxprint* this, char c) {
                 break;
 
             case '\n':
-                this->unk10 += 32;
+                this->posY += 32;
             // fallthrough
             case '\r':
-                this->unkC = this->unk28;
+                this->posX = this->offsetX;
                 break;
 
             case '\t':
                 do {
                     gfxprint_putc1(this, ' ');
-                } while ((this->unkC - this->unk28) % 256);
+                } while ((this->posX - this->offsetX) % 256);
 
                 break;
 
@@ -192,35 +191,37 @@ void* gfxprint_prout(void* this, const char* buffer, s32 n) {
 }
 
 void gfxprint_init(gfxprint* this) {
-    this->isOpen = 0;
+    gfxprint_clrOpened(this);
     this->proutFunc = (PrintCallback)gfxprint_prout;
     this->gListp = NULL;
-    this->unkC = 0;
-    this->unk10 = 0;
-    this->unk28 = 0;
-    this->unk2C = 0;
+    this->posX = 0;
+    this->posY = 0;
+    this->offsetX = 0;
+    this->offsetY = 0;
     this->color.rgba = 0;
-    this->unk18 = 0;
-    this->unk1C = 0;
-    this->unk20 = 1;
-    this->unk24 = 1;
+    gfxprint_setKatakana(this);
+    gfxprint_clrGradient(this);
+    gfxprint_setShadow(this);
+    gfxprint_setChanged(this);
 }
 
 void gfxprint_cleanup(UNUSED gfxprint* this) {
 }
 
 void gfxprint_open(gfxprint* this, Gfx* gListp) {
-    if (!this->isOpen) {
-        this->isOpen = 1;
+    if (!gfxprint_isOpened(this)) {
+        gfxprint_setOpened(this);
         this->gListp = gListp;
         gfxprint_setup(this);
+    } else {
+        (void)"gfxprint_open:２重オープンです\n";
     }
 }
 
 Gfx* gfxprint_close(gfxprint* this) {
     Gfx* list = this->gListp;
 
-    this->isOpen = 0;
+    gfxprint_clrOpened(this);
     this->gListp = NULL;
     return list;
 }

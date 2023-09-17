@@ -6,4 +6,4 @@ def apply(config, args):
     config['mapfile'] = 'build/yoshisstory.us.map'
     config['source_directories'] = ['./src','./include']
     config['objdump_flags'] = ['-M','reg-names=32']
-    config['makeflags'] = []
+    config['makeflags'] = ["KEEP_MDEBUG=1"]
