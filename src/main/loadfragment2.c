@@ -166,7 +166,7 @@ size_t Overlay_Load(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart,
     }
 
     if (gOverlayLogSeverity >= 3) {
-         // "Relocate"
+        // "Relocate"
         (void)"リロケーションします\n";
     }
 
