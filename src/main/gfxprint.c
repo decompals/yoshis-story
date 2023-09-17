@@ -217,6 +217,7 @@ void gfxprint_open(gfxprint* this, Gfx* gListp) {
         this->gListp = gListp;
         gfxprint_setup(this);
     } else {
+        // gfxprint_open: Double open
         (void)"gfxprint_open:２重オープンです\n";
     }
 }
