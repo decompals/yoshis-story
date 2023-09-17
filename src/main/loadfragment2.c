@@ -85,6 +85,7 @@ void DoRelocation(void* allocatedRamAddr, OverlayRelocationSection* ovl, uintptr
                 if ((*relocDataP & 0x0F000000) == 0) {
                     *relocDataP = *relocDataP - vramStart + allocu32;
                 } else if (gOverlayLogSeverity >= 3) {
+                    // "Segment pointer 32 %08x"
                     (void)"セグメントポインタ32です %08x\n";
                 }
                 break;
@@ -99,6 +100,7 @@ void DoRelocation(void* allocatedRamAddr, OverlayRelocationSection* ovl, uintptr
                         (*relocDataP & 0xFC000000) |
                         (((PHYS_TO_K0(MIPS_JUMP_TARGET(*relocDataP)) - vramStart + allocu32) & 0x0FFFFFFF) >> 2);
                 } else if (gOverlayLogSeverity >= 3) {
+                    // "Segment pointer 26 %08x"
                     (void)"セグメントポインタ26です %08x\n";
                 }
                 break;
@@ -129,6 +131,7 @@ void DoRelocation(void* allocatedRamAddr, OverlayRelocationSection* ovl, uintptr
                     *luiInstRef = (*luiInstRef & 0xFFFF0000) | (((relocatedAddress >> 0x10) & 0xFFFF) + isLoNeg);
                     *relocDataP = (*relocDataP & 0xFFFF0000) | (relocatedAddress & 0xFFFF);
                 } else if (gOverlayLogSeverity >= 3) {
+                    // "Segment pointer 16 %08x %08x %08x"
                     (void)"セグメントポインタ16です %08x %08x %08x\n";
                 }
                 break;
@@ -144,10 +147,12 @@ size_t Overlay_Load(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart,
     OverlayRelocationSection* ovl;
 
     if (gOverlayLogSeverity >= 3) {
+        // "Start loading dynamic link function"
         (void)"\nダイナミックリンクファンクションのロードを開始します\n";
     }
 
     if (gOverlayLogSeverity >= 3) {
+        // "DMA transfer of TEXT, DATA, RODATA + rel (%08x-%08x)"
         (void)"TEXT,DATA,RODATA+relをＤＭＡ転送します(%08x-%08x)\n";
     }
 
@@ -161,6 +166,7 @@ size_t Overlay_Load(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart,
     }
 
     if (gOverlayLogSeverity >= 3) {
+         // "Relocate"
         (void)"リロケーションします\n";
     }
 
@@ -168,6 +174,7 @@ size_t Overlay_Load(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart,
 
     if (ovl->bssSize != 0) {
         if (gOverlayLogSeverity >= 3) {
+            // "Clear BSS area (% 08x-% 08x)"
             (void)"BSS領域をクリアします(%08x-%08x)\n";
         }
         bzero(end, ovl->bssSize);
@@ -179,6 +186,7 @@ size_t Overlay_Load(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart,
     osInvalICache(allocatedRamAddr, size);
 
     if (gOverlayLogSeverity >= 3) {
+        // "Finish loading dynamic link function"
         (void)"ダイナミックリンクファンクションのロードを終了します\n\n";
     }
 
