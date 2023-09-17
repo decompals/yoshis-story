@@ -2,6 +2,23 @@ entrypoint = 0x80000400;
 
 bootproc = 0x8006743C;
 
+gfxprint_setup = 0x8007EF00; // type:func
+gfxprint_color = 0x8007F3F4; // type:func
+gfxprint_locate = 0x8007F440; // type:func
+gfxprint_locate8x8 = 0x8007F464; // type:func
+gfxprint_setoffset = 0x8007F48C; // type:func
+gfxprint_putc1 = 0x8007F4A0; // type:func
+gfxprint_putc = 0x8007F79C; // type:func
+gfxprint_write = 0x8007F920; // type:func
+gfxprint_puts = 0x8007F97C; // type:func
+gfxprint_prout = 0x8007F9D4; // type:func
+gfxprint_init = 0x8007FA00; // type:func
+gfxprint_cleanup = 0x8007FA40; // type:func
+gfxprint_open = 0x8007FA48; // type:func
+gfxprint_close = 0x8007FA7C; // type:func
+gfxprint_vprintf = 0x8007FA8C; // type:func
+gfxprint_printf = 0x8007FAAC; // type:func
+
 pad_init = 0x8007FAE0;
 pad_flush = 0x8007FB08;
 pad_push_only = 0x8007FB1C;
@@ -73,6 +90,12 @@ aprintf = 0x80082174;
 csleep = 0x800821A0;
 
 // data
+gfxprint_moji_tlut = 0x800A9A60;
+gfxprint_rainbow_tlut = 0x800A9AE0;
+
+gfxprint_font = 0x800A9B08;
+gfxprint_rainbow_txtr = 0x800A9B00;
+
 gMtxClear = 0x800AA310;
 gMtxFClear = 0x800AA350;
 gOverlayLogSeverity = 0x800AA390; // type:s32

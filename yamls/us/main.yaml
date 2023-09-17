@@ -84,7 +84,7 @@
       - [0x7EC30, asm]
       - [0x7EFD0, asm]
       - [0x7F070, asm, vimode] # Top is like OoT, bottom is different
-      - [0x7FB00, asm, gfxprint]
+      - [0x7FB00, c, gfxprint]
       - [0x806E0, c, pad]
       - [0x808F0, c, 808F0] # Mtx functions, uses file below
       - [0x80C50, c, 80C50] # MtxF functions
@@ -238,6 +238,7 @@
 
       # rodata: vram start 800ABBE0
       - [0xAC7E0, rodata]
+      - [0xB3B30, .rodata, gfxprint]
       - [0xB3B70, .rodata, 80C50]
       - [0xB3B80, .rodata, loadfragment2]
       - [0xB3D20, .rodata, stackcheck]

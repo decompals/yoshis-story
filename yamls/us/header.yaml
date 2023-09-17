@@ -29,7 +29,7 @@ options:
 
   do_c_func_detection: True
   o_as_suffix: True
-  gfx_ucode: f3dex2
+  gfx_ucode: f3dex
   mnemonic_ljust: 12
   rom_address_padding: True
   dump_symbols: True
