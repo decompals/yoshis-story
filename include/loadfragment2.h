@@ -14,6 +14,14 @@
 #define R_MIPS_HI16 5
 #define R_MIPS_LO16 6
 
+typedef enum {
+    /* 0 */ RELOC_SECTION_NULL,
+    /* 1 */ RELOC_SECTION_TEXT,
+    /* 2 */ RELOC_SECTION_DATA,
+    /* 3 */ RELOC_SECTION_RODATA,
+    /* 4 */ RELOC_SECTION_MAX
+} RelocSectionId;
+
 typedef struct {
     /* 0x00 */ u32 textSize;
     /* 0x04 */ u32 dataSize;

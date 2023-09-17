@@ -237,7 +237,10 @@
       - [0xAB7B0, data]
 
       # rodata: vram start 800ABBE0
-      - [0xAC7E0, rodata] 
+      - [0xAC7E0, rodata]
+      - [0xB3B70, .rodata, 80C50]
+      - [0xB3B80, .rodata, loadfragment2]
+      - [0xB3D20, .rodata, stackcheck]
       - [0xB3D80, .rodata, math64] #
       - [0xB3DA0, rodata] #
       # - [0xB58B0, .bss] # size = 0x5DFF0
