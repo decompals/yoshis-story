@@ -39,8 +39,8 @@ pad_press_stick_y = 0x8007FC0C;
 pad_correct_stick = 0x8007FC14;
 
 DoRelocation = 0x80081430;
-Load2_LoadOverlay = 0x8008169C;
-Load2_AllocateAndLoad = 0x80081744; // type:func
+Overlay_Load = 0x8008169C;
+Overlay_AllocateAndLoad = 0x80081744; // type:func
 
 MtxConv_F2L = 0x800817A0;
 MtxConv_L2F = 0x800818E8;
@@ -98,7 +98,7 @@ gfxprint_rainbow_txtr = 0x800A9B00;
 
 gMtxClear = 0x800AA310;
 gMtxFClear = 0x800AA350;
-gLoad2LogSeverity = 0x800AA390; // type:s32
+gOverlayLogSeverity = 0x800AA390; // type:s32
 
 D_800B1E30 = 0x800B1E30; //
 

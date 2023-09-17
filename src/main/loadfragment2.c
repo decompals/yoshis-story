@@ -9,7 +9,7 @@
 #include "global.h"
 #include "loadfragment2.h"
 
-s32 gLoad2LogSeverity = 2;
+s32 gOverlayLogSeverity = 2;
 
 // Extract MIPS register rs from an instruction word
 #define MIPS_REG_RS(insn) (((insn) >> 0x15) & 0x1F)
@@ -41,7 +41,7 @@ s32 gLoad2LogSeverity = 2;
  * @param vramStart Virtual RAM address that the overlay was compiled at.
  */
 void DoRelocation(void* allocatedRamAddr, OverlayRelocationSection* ovl, uintptr_t vramStart) {
-    u32 sections[4];
+    u32 sections[RELOC_SECTION_MAX];
     u32* relocDataP;
     u32 reloc;
     uintptr_t relocatedAddress;
@@ -49,18 +49,30 @@ void DoRelocation(void* allocatedRamAddr, OverlayRelocationSection* ovl, uintptr
     u32* luiInstRef;
     u32 allocu32 = (uintptr_t)allocatedRamAddr;
     u32* regValP;
+    //! MIPS ELF relocation does not generally require tracking register values, so at first glance it appears this
+    //! register tracking was an unnecessary complication. However there is a bug in the IDO compiler that can cause
+    //! relocations to be emitted in the wrong order under rare circumstances when the compiler attempts to reuse a
+    //! previous HI16 relocation for a different LO16 relocation as an optimization. This register tracking is likely
+    //! a workaround to prevent improper matching of unrelated HI16 and LO16 relocations that would otherwise arise
+    //! due to the incorrect ordering.
     u32* luiRefs[32];
     u32 luiVals[32];
     u32 isLoNeg;
 
-    if (gLoad2LogSeverity >= 3) {}
+    if (gOverlayLogSeverity >= 3) {
+        (void)"DoRelocation(%08x, %08x, %08x)\n";
+    }
 
-    sections[0] = 0;
-    sections[1] = allocu32;
-    sections[2] = allocu32 + ovl->textSize;
-    sections[3] = sections[2] + ovl->dataSize;
+    sections[RELOC_SECTION_NULL] = 0;
+    sections[RELOC_SECTION_TEXT] = allocu32;
+    sections[RELOC_SECTION_DATA] = allocu32 + ovl->textSize;
+    sections[RELOC_SECTION_RODATA] = sections[RELOC_SECTION_DATA] + ovl->dataSize;
 
     for (i = 0; i < ovl->nRelocations; i++) {
+        // This will always resolve to a 32-bit aligned address as each section
+        // containing code or pointers must be aligned to at least 4 bytes and the
+        // MIPS ABI defines the offset of both 16-bit and 32-bit relocations to be
+        // the start of the 32-bit word containing the target.
         reloc = ovl->relocations[i];
         relocDataP = (u32*)(sections[RELOC_SECTION(reloc)] + RELOC_OFFSET(reloc));
 
@@ -72,7 +84,9 @@ void DoRelocation(void* allocatedRamAddr, OverlayRelocationSection* ovl, uintptr
                 // Check address is valid for relocation
                 if ((*relocDataP & 0x0F000000) == 0) {
                     *relocDataP = *relocDataP - vramStart + allocu32;
-                } else if (gLoad2LogSeverity >= 3) {
+                } else if (gOverlayLogSeverity >= 3) {
+                    // "Segment pointer 32 %08x"
+                    (void)"セグメントポインタ32です %08x\n";
                 }
                 break;
 
@@ -85,6 +99,9 @@ void DoRelocation(void* allocatedRamAddr, OverlayRelocationSection* ovl, uintptr
                     *relocDataP =
                         (*relocDataP & 0xFC000000) |
                         (((PHYS_TO_K0(MIPS_JUMP_TARGET(*relocDataP)) - vramStart + allocu32) & 0x0FFFFFFF) >> 2);
+                } else if (gOverlayLogSeverity >= 3) {
+                    // "Segment pointer 26 %08x"
+                    (void)"セグメントポインタ26です %08x\n";
                 }
                 break;
 
@@ -113,35 +130,53 @@ void DoRelocation(void* allocatedRamAddr, OverlayRelocationSection* ovl, uintptr
                     isLoNeg = (relocatedAddress & 0x8000) ? 1 : 0;
                     *luiInstRef = (*luiInstRef & 0xFFFF0000) | (((relocatedAddress >> 0x10) & 0xFFFF) + isLoNeg);
                     *relocDataP = (*relocDataP & 0xFFFF0000) | (relocatedAddress & 0xFFFF);
-                } else if (gLoad2LogSeverity >= 3) {
+                } else if (gOverlayLogSeverity >= 3) {
+                    // "Segment pointer 16 %08x %08x %08x"
+                    (void)"セグメントポインタ16です %08x %08x %08x\n";
                 }
                 break;
         }
     }
 }
 
-size_t Load2_LoadOverlay(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart, uintptr_t vramEnd,
-                         void* allocatedRamAddr) {
+size_t Overlay_Load(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart, uintptr_t vramEnd,
+                    void* allocatedRamAddr) {
     UNUSED s32 pad[2];
     s32 size = vromEnd - vromStart;
     void* end;
     OverlayRelocationSection* ovl;
 
-    if (gLoad2LogSeverity >= 3) {}
-    if (gLoad2LogSeverity >= 3) {}
+    if (gOverlayLogSeverity >= 3) {
+        // "Start loading dynamic link function"
+        (void)"\nダイナミックリンクファンクションのロードを開始します\n";
+    }
+
+    if (gOverlayLogSeverity >= 3) {
+        // "DMA transfer of TEXT, DATA, RODATA + rel (%08x-%08x)"
+        (void)"TEXT,DATA,RODATA+relをＤＭＡ転送します(%08x-%08x)\n";
+    }
 
     end = (void*)((uintptr_t)allocatedRamAddr + size);
     func_8007DF0C(allocatedRamAddr, vromStart, size);
 
     ovl = (OverlayRelocationSection*)((uintptr_t)end - ((s32*)end)[-1]);
 
-    if (gLoad2LogSeverity >= 3) {}
-    if (gLoad2LogSeverity >= 3) {}
+    if (gOverlayLogSeverity >= 3) {
+        (void)"TEXT(%08x), DATA(%08x), RODATA(%08x), BSS(%08x)\n";
+    }
+
+    if (gOverlayLogSeverity >= 3) {
+        // "Relocate"
+        (void)"リロケーションします\n";
+    }
 
     DoRelocation(allocatedRamAddr, ovl, vramStart);
 
     if (ovl->bssSize != 0) {
-        if (gLoad2LogSeverity >= 3) {}
+        if (gOverlayLogSeverity >= 3) {
+            // "Clear BSS area (% 08x-% 08x)"
+            (void)"BSS領域をクリアします(%08x-%08x)\n";
+        }
         bzero(end, ovl->bssSize);
     }
 
@@ -150,16 +185,19 @@ size_t Load2_LoadOverlay(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramS
     osWritebackDCache(allocatedRamAddr, size);
     osInvalICache(allocatedRamAddr, size);
 
-    if (gLoad2LogSeverity >= 3) {}
+    if (gOverlayLogSeverity >= 3) {
+        // "Finish loading dynamic link function"
+        (void)"ダイナミックリンクファンクションのロードを終了します\n\n";
+    }
 
     return size;
 }
 
-void* Load2_AllocateAndLoad(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart, uintptr_t vramEnd) {
+void* Overlay_AllocateAndLoad(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart, uintptr_t vramEnd) {
     void* allocatedRamAddr = func_80064DD0(vramEnd - vramStart);
 
     if (allocatedRamAddr != NULL) {
-        Load2_LoadOverlay(vromStart, vromEnd, vramStart, vramEnd, allocatedRamAddr);
+        Overlay_Load(vromStart, vromEnd, vramStart, vramEnd, allocatedRamAddr);
     }
 
     return allocatedRamAddr;

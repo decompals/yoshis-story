@@ -1,4 +1,5 @@
 #include "stackcheck.h"
+#include "terminal.h"
 #include "libc/stdbool.h"
 #include "libc/stdint.h"
 
@@ -79,11 +80,18 @@ s32 StackCheck_Check(StackEntry* entry) {
         free = (uintptr_t)iter - (uintptr_t)entry->head;
         if (free == 0) {
             ret = STACK_STATUS_OVERFLOW;
+            (void)VT_FGCOL(RED);
         } else if ((free < entry->minSpace) && (entry->minSpace != -1)) {
             ret = STACK_STATUS_WARNING;
+            (void)VT_FGCOL(YELLOW);
         } else {
+            (void)VT_FGCOL(GREEN);
             ret = STACK_STATUS_OK;
         }
+
+        (void)"head=%08x tail=%08x last=%08x used=%08x free=%08x [%s]\n";
+        (void)((entry->name) ? entry->name : "(null)");
+        (void)VT_RST;
 
         return ret;
     }
