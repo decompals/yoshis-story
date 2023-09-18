@@ -92,7 +92,6 @@ csleep = 0x800821A0;
 // data
 gfxprint_moji_tlut = 0x800A9A60;
 gfxprint_rainbow_tlut = 0x800A9AE0;
-
 gfxprint_font = 0x800A9B08;
 gfxprint_rainbow_txtr = 0x800A9B00;
 
