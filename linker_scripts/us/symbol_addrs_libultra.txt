@@ -472,7 +472,6 @@ __osEepromTimerMsg = 0x801101A0; // size:0x4 (controller, true)
 siAccessBuf = 0x801101B0; //
 __osSiAccessQueue = 0x801101B8; //
 
-
 DriveRomHandle = 0x801101D0; // size:0x74
 
 __osFinalrom = 0x80110250; // size:0x4
