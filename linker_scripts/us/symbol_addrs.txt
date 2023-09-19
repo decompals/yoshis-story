@@ -99,8 +99,6 @@ gMtxClear = 0x800AA310;
 gMtxFClear = 0x800AA350;
 gOverlayLogSeverity = 0x800AA390; // type:s32
 
-D_800B1E30 = 0x800B1E30; //
-
 // rodata
 
 // bss
