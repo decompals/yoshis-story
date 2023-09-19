@@ -307,8 +307,8 @@ osEPiRawWriteIo = 0x8008F540; // size:0x190
 
 osSetTimer = 0x8008F6D0; // size:0xD4
 
-_Genld = 0x8008F7B0; // size:0xAC0
-_Ldtob = 0x8008FD20; // size:0x54C
+_Genld = 0x8008F7B0;
+_Ldtob = 0x8008FD20;
 
 lldiv = 0x80090270; // size:0x100
 ldiv = 0x80090370; // size:0x84
