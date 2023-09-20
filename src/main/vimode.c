@@ -29,8 +29,8 @@ void ViMode_LogPrint(UNUSED OSViMode* osViMode) {
  * @param upperAdjust   Upper edge adjustment
  * @param lowerAdjust   Lower edge adjustment
  */
-void ViMode_Configure(ViMode* viMode, s32 type, s32 tvType, s32 loRes, s32 antialiasOff, s32 modeN, s32 fb16Bit, s32 width,
-                   s32 height, s32 leftAdjust, s32 rightAdjust, s32 upperAdjust, s32 lowerAdjust) {
+void ViMode_Configure(ViMode* viMode, s32 type, s32 tvType, s32 loRes, s32 antialiasOff, s32 modeN, s32 fb16Bit,
+                      s32 width, s32 height, s32 leftAdjust, s32 rightAdjust, s32 upperAdjust, s32 lowerAdjust) {
     s32 hiRes;
     s32 antialiasOn;
     s32 modeF;
@@ -286,8 +286,8 @@ void ViMode_Update(ViMode* viMode, Input* input) {
         }
 
         ViMode_Configure(viMode, OS_VI_MPAL_LPN1, osTvType, viMode->loRes, viMode->antialiasOff, viMode->modeN,
-                      viMode->fb16Bit, viMode->viWidth, viMode->viHeight, viMode->leftAdjust, viMode->rightAdjust,
-                      viMode->upperAdjust, viMode->lowerAdjust);
+                         viMode->fb16Bit, viMode->viWidth, viMode->viHeight, viMode->leftAdjust, viMode->rightAdjust,
+                         viMode->upperAdjust, viMode->lowerAdjust);
         ViMode_ConfigureFeatures(viMode, viMode->viFeatures);
 
         if (viMode->editState == VI_MODE_EDIT_STATE_SET) {
@@ -305,8 +305,8 @@ void func_8007EE28(ViMode* viMode, s32 arg1, s32 arg2) {
     viMode->lowerAdjust = (-(-arg2) * 2) - SCREEN_HEIGHT * 2;
     viMode->viHeight = arg2 - arg1;
     ViMode_Configure(viMode, OS_VI_MPAL_LPN1, osTvType, viMode->loRes, viMode->antialiasOff, viMode->modeN,
-                  viMode->fb16Bit, viMode->viWidth, viMode->viHeight, viMode->leftAdjust, viMode->rightAdjust,
-                  viMode->upperAdjust, viMode->lowerAdjust);
+                     viMode->fb16Bit, viMode->viWidth, viMode->viHeight, viMode->leftAdjust, viMode->rightAdjust,
+                     viMode->upperAdjust, viMode->lowerAdjust);
     ViMode_ConfigureFeatures(viMode, viMode->viFeatures);
     osViSetMode(&viMode->customViMode);
     osViSetSpecialFeatures(viMode->viFeatures);
