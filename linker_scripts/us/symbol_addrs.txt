@@ -2,6 +2,8 @@ entrypoint = 0x80000400;
 
 bootproc = 0x8006743C;
 
+ViMode_Init = 0x8007EA54;
+
 gfxprint_setup = 0x8007EF00; // type:func
 gfxprint_color = 0x8007F3F4; // type:func
 gfxprint_locate = 0x8007F440; // type:func

@@ -204,7 +204,7 @@ void func_80080824(MtxF* mf, f32 x, f32 y, f32 z) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/80C50/func_80080914.s")
+#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/80C50/func_80080914.s")
 
 void func_80080C84(MtxF* mf, f32 x, f32 y, f32 z) {
     s32 i;
