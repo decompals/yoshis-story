@@ -12,7 +12,6 @@
 #define UNK_RET UNK_TYPE
 #define UNK_ARGS 
 #define UNK_FUN_ARG void(*)(void)
-//#define UNK_FUN_PTR(name) void(*name)(void)
 typedef UNK_RET (*UNK_FUN_PTR)(UNK_ARGS);
 #define UNK_SIZE 1
 
