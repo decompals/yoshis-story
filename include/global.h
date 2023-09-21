@@ -9,6 +9,7 @@
 
 #include "attributes.h"
 #include "macros.h"
+#include "unk.h"
 #include "ys64math.h"
 
 // malloc

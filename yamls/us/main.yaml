@@ -86,7 +86,7 @@
       - [0x7E760, asm] # Has dmamgr string in StackCheck_Init
       - [0x7EC30, asm]
       - [0x7EE00, asm]
-      - [0x7EFD0, asm]
+      - [0x7EFD0, c, 7EFD0]
       - [0x7F070, c, vimode] # Top is like OoT, bottom is different
       - [0x7FB00, c, O2/gfxprint]
       - [0x806E0, c, O2/pad]
@@ -234,6 +234,7 @@
 
 
       - [0x92170, data]
+      - [0xAA650, .data, 7EFD0]
       - [0xAA660, data, O2/gfxprint]
       - [0xAAF10, .data, O2/808F0]
       - [0xAAF50, .data, O2/80C50]
@@ -339,7 +340,7 @@
       - [0xB39F0, rodata, 7E760]
       - [0xB3AA0, rodata, 7EC30]
       - [0xB3B10, rodata, 7EE00]
-      - [0xB3B20, rodata, 7EFD0]
+      - [0xB3B20, .rodata, 7EFD0]
       - [0xB3B30, .rodata, O2/gfxprint]
       - [0xB3B70, .rodata, O2/80C50]
       - [0xB3B80, .rodata, O2/loadfragment2]
@@ -365,6 +366,8 @@
 
 
       - { start: 0xB58B0, type: bss, vram: 0x800B4CB0, name: 800B4CB0 }
+
+      - { start: 0xB58B0, type: .bss, vram: 0x8010ED90, name: 7EFD0}
 
       # Libultra
       - { start: 0xB58B0, type: bss, vram: 0x8010F0C0, name: ../lib/ultralib/src/io/sptask }
