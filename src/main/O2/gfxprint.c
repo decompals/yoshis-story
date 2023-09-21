@@ -49,7 +49,7 @@ void gfxprint_setup(gfxprint* this) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/gfxprint/gfxprint_setup.s")
+#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/gfxprint/gfxprint_setup.s")
 #endif
 
 void gfxprint_color(gfxprint* this, u32 r, u32 g, u32 b, u32 a) {

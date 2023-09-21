@@ -87,19 +87,19 @@
       - [0x7EC30, asm]
       - [0x7EE00, asm]
       - [0x7EFD0, asm]
-      - [0x7F070, asm, vimode] # Top is like OoT, bottom is different
-      - [0x7FB00, c, gfxprint]
-      - [0x806E0, c, pad]
-      - [0x808F0, c, 808F0] # Mtx functions, uses file below
-      - [0x80C50, c, 80C50] # MtxF functions
-      - [0x82030, c, loadfragment2]
-      - [0x823A0, c, mtxuty-cvt]
-      - [0x82510, c, stackcheck]
-      - [0x826F0, c, padsetup]
-      - [0x82830, c, math64]
+      - [0x7F070, c, vimode] # Top is like OoT, bottom is different
+      - [0x7FB00, c, O2/gfxprint]
+      - [0x806E0, c, O2/pad]
+      - [0x808F0, c, O2/808F0] # Mtx functions, uses file below
+      - [0x80C50, c, O2/80C50] # MtxF functions
+      - [0x82030, c, O2/loadfragment2]
+      - [0x823A0, c, O2/mtxuty-cvt]
+      - [0x82510, c, O2/stackcheck]
+      - [0x826F0, c, O2/padsetup]
+      - [0x82830, c, O2/math64]
       - [0x82BE0, hasm, fp]
-      - [0x82D40, c, aprintf]
-      - [0x82DA0, c, sleep]
+      - [0x82D40, c, O2/aprintf]
+      - [0x82DA0, c, O2/sleep]
 
       # Libultra
       - [0x82E10, asm, ../lib/ultralib/src/os/sendmesg]
@@ -234,11 +234,11 @@
 
 
       - [0x92170, data]
-      - [0xAA660, data, gfxprint]
-      - [0xAAF10, .data, 808F0]
-      - [0xAAF50, .data, 80C50]
-      - [0xAAF90, .data, loadfragment2]
-      - [0xAAFA0, .data, stackcheck]
+      - [0xAA660, data, O2/gfxprint]
+      - [0xAAF10, .data, O2/808F0]
+      - [0xAAF50, .data, O2/80C50]
+      - [0xAAF90, .data, O2/loadfragment2]
+      - [0xAAFA0, .data, O2/stackcheck]
 
       # Libultra
       - [0xAAFB0, data, ../lib/ultralib/src/gu/sins]
@@ -340,11 +340,11 @@
       - [0xB3AA0, rodata, 7EC30]
       - [0xB3B10, rodata, 7EE00]
       - [0xB3B20, rodata, 7EFD0]
-      - [0xB3B30, .rodata, gfxprint]
-      - [0xB3B70, .rodata, 80C50]
-      - [0xB3B80, .rodata, loadfragment2]
-      - [0xB3D20, .rodata, stackcheck]
-      - [0xB3D80, .rodata, math64] #
+      - [0xB3B30, .rodata, O2/gfxprint]
+      - [0xB3B70, .rodata, O2/80C50]
+      - [0xB3B80, .rodata, O2/loadfragment2]
+      - [0xB3D20, .rodata, O2/stackcheck]
+      - [0xB3D80, .rodata, O2/math64] #
 
       # Libultra
       - [0xB3DA0, rodata, ../lib/ultralib/src/os/setintmask]
