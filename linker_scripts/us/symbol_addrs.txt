@@ -104,7 +104,7 @@ fault_display_enable = 0x800A8008;
 sFaultFont = 0x800A800C; // type:u32
 sExceptionNames = 0x800A840C; // size:0x48
 sFpExceptionNames = 0x800A8454; // size:0x18
-sFaultFontColor = 0x800A846C; // type:u16 size 0x2
+sFaultFontColor = 0x800A846C; // type:u16 size:0x2
 
 gfxprint_moji_tlut = 0x800A9A60;
 gfxprint_rainbow_tlut = 0x800A9AE0;
