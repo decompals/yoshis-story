@@ -178,7 +178,7 @@ s32 Fault_Printf(s32 x, s32 y, const char* fmt, ...) {
 }
 
 void Fault_Sleep(s32 ms) {
-    u64 cycles = (ms * osClockRate) / 1000ull;
+    u64 cycles = (ms * osClockRate) / 1000ULL;
 
     csleep(cycles);
 }
@@ -241,10 +241,10 @@ void Fault_PrintThreadContext(OSThread* thread) {
     s32 y = 20;
     s16 causeStrIndex = (thread->context.cause >> 2) & 0x1F;
 
-    if (causeStrIndex == 23) { // Watchpoint
+    if (causeStrIndex == (EXC_WATCH >> CAUSE_EXCSHIFT)) {
         causeStrIndex = 16;
     }
-    if (causeStrIndex == 31) { // Virtual coherency on data
+    if (causeStrIndex == (EXC_VCED >> CAUSE_EXCSHIFT)) {
         causeStrIndex = 17;
     }
 
