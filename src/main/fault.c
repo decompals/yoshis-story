@@ -32,7 +32,7 @@ vu32 fault_msg_id = 0;
 vs32 fault_display_enable = false;
 
 u32 sFaultFont[] = {
-    #include "assets/us/main/fault/sFaultFont.font.inc.c"
+#include "assets/us/main/fault/sFaultFont.font.inc.c"
 };
 
 const char* sExceptionNames[] = {
@@ -293,10 +293,10 @@ void Fault_LogThreadContext(OSThread* thread) {
     __OSThreadContext* ctx = &thread->context;
     s16 causeStrIndex = (thread->context.cause >> 2) & 0x1F;
 
-    if (causeStrIndex == 23) { // Watchpoint
+    if (causeStrIndex == (EXC_WATCH >> CAUSE_EXCSHIFT)) {
         causeStrIndex = 16;
     }
-    if (causeStrIndex == 31) { // Virtual coherency on data
+    if (causeStrIndex == (EXC_VCED >> CAUSE_EXCSHIFT)) {
         causeStrIndex = 17;
     }
 
