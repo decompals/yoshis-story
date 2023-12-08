@@ -1,10 +1,8 @@
   - name: makerom
     type: code
+    dir: makerom
     start: 0x000000
     subsegments:
-      - [0x000000, header, makerom/header]
-      - [0x000040, bin, makerom/ipl3]
-      - start: 0x001000
-        type: hasm
-        name: makerom/entry
-        vram: 0x80000400
+      - [0x000000, header, header]
+      - [0x000040, bin, ipl3]
+      - {start: 0x001000, type: hasm, name: entry, vram: 0x80000400}
