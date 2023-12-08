@@ -2,6 +2,7 @@
     type: code
     dir: makerom
     start: 0x000000
+    section_order: [".data", ".text", ".rodata", ".bss"]
     subsegments:
       - [0x000000, header, header]
       - [0x000040, bin, ipl3]

@@ -20,6 +20,8 @@ RUN_CC_CHECK ?= 1
 CC_CHECK_COMP ?= gcc
 # Dump build object files
 OBJDUMP_BUILD ?= 0
+# Disassembles matched functions and migrated data as well
+FULL_DISASM ?= 0
 # Number of threads to compress with
 N_THREADS ?= $(shell nproc)
 
@@ -157,6 +159,11 @@ ifeq ($(NON_MATCHING),0)
     COMPFLAGS += --matching
 endif
 
+SPLAT_FLAGS ?=
+ifneq ($(FULL_DISASM), 0)
+	SPLAT_FLAGS += --disassemble-all
+endif
+
 #### Files ####
 
 $(shell mkdir -p asm bin linker_scripts/$(VERSION)/auto)
@@ -214,7 +221,7 @@ setup:
 extract:
 	$(RM) -r asm/$(VERSION) bin/$(VERSION)
 	$(CAT) yamls/$(VERSION)/header.yaml yamls/$(VERSION)/makerom.yaml yamls/$(VERSION)/main.yaml > $(SPLAT_YAML)
-	$(SPLAT) $(SPLAT_YAML)
+	$(SPLAT) $(SPLAT_FLAGS) $(SPLAT_YAML)
 
 diff-init: uncompressed
 	$(RM) -rf expected/
