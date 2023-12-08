@@ -4,7 +4,4 @@
     subsegments:
       - [0x000000, header, makerom/header]
       - [0x000040, bin, makerom/ipl3]
-      - start: 0x001000
-        type: hasm
-        name: makerom/entry
-        vram: 0x80000400
+      - {start: 0x001000, type: hasm, name: makerom/entry, vram: 0x80000400}

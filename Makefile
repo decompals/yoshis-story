@@ -185,6 +185,7 @@ $(shell mkdir -p $(BUILD_DIR)/linker_scripts/$(VERSION) $(BUILD_DIR)/linker_scri
 build/src/main/O2/%.o: OPTFLAGS := -O2
 
 # per-file flags
+build/src/main/fault.o: CFLAGS += -trapuv
 
 # cc & asm-processor
 build/src/%.o: CC := $(ASM_PROC) $(ASM_PROC_FLAGS) $(CC) -- $(AS) $(ASFLAGS) --
