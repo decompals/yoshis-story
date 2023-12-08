@@ -3,9 +3,9 @@
 #include "stackcheck.h"
 #include "ys64thread.h"
 
-OSThread D_8010E840;
-STACK(D_8010E9F0, 0x300);
-StackEntry D_8010ECF0;
+OSThread sDmaThread;
+STACK(sDmaStack, 0x300);
+StackEntry sDmaStackInfo;
 OSMesgQueue D_8010ED10;
 OSMesg D_8010ED28[10];
 OSMesgQueue D_8010ED50;
@@ -146,7 +146,7 @@ void DmaMgr_RequestSync(void* vram, u32 vrom, u32 size) {
 void DmaMgr_Init(void) {
     osCreateMesgQueue(&D_8010ED10, D_8010ED28, ARRAY_COUNT(D_8010ED28));
     osCreateMesgQueue(&D_8010ED50, D_8010ED68, ARRAY_COUNT(D_8010ED68));
-    StackCheck_Init(&D_8010ECF0, D_8010E9F0, STACK_TOP(D_8010E9F0), 0, 0x100, "dmamgr");
-    osCreateThread(&D_8010E840, Y_THREAD_ID_DMA, DmaMgr_ThreadEntry, NULL, &D_8010ECF0, Y_PRIORITY_DMA);
-    osStartThread(&D_8010E840);
+    StackCheck_Init(&sDmaStackInfo, sDmaStack, STACK_TOP(sDmaStack), 0, 0x100, "dmamgr");
+    osCreateThread(&sDmaThread, Y_THREAD_ID_DMA, DmaMgr_ThreadEntry, NULL, &sDmaStackInfo, Y_PRIORITY_DMA);
+    osStartThread(&sDmaThread);
 }
