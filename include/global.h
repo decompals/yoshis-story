@@ -32,7 +32,7 @@ typedef struct Y511F0UnkStruct {
     /* 0x4 */ s16 unk4;
     /* 0x8 */ uintptr_t unk8;
     /* 0xC */ uintptr_t unkC;
-} Y511F0UnkStruct;
+} Y511F0UnkStruct; // size = 0x10
 
 extern Y511F0UnkStruct D_800DA840[];
 

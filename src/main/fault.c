@@ -394,6 +394,7 @@ OSThread* FindFaultedThread(void) {
     return NULL;
 }
 
+//! TODO: Old libultra header should use this as OS_CYCLES_TO_USEC?
 #define OS_CYCLES_TO_USEC_ALT(c) (((u64)(c) * (1000000LL / 15625LL)) / (osClockRate / 15625LL))
 
 void Fault_WaitButtonCombo(void) {

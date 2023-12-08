@@ -118,5 +118,3 @@ gOverlayLogSeverity = 0x800AA390; // type:s32
 // rodata
 
 // bss
-sFaultInputs = 0x80108630; // type:Input size:0x60
-debugger = 0x80108698; // type:FaultMgr size:0x5D4
