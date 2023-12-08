@@ -27,20 +27,20 @@ typedef struct DmaRequest {
     /* 0x40 */ OSMesg msg;
 } DmaRequest; // size = 0x44
 
-void DmaMgr_Read(OSIoMesg* ioMsg, s32 pri, s32 op, uintptr_t vrom, void* vram, size_t size, OSMesgQueue* endQueue,
+void DmaMgr_Read(OSIoMesg* ioMsg, s32 pri, s32 op, uintptr_t vrom, void* ram, size_t size, OSMesgQueue* endQueue,
                  size_t buffSize) {
     OSMesgQueue startQueue;
     OSMesg msg;
 
     osCreateMesgQueue(&startQueue, &msg, 1);
     while (buffSize < size) {
-        osPiStartDma(ioMsg, pri, op, vrom, vram, buffSize, &startQueue);
+        osPiStartDma(ioMsg, pri, op, vrom, ram, buffSize, &startQueue);
         osRecvMesg(&startQueue, NULL, OS_MESG_BLOCK);
         size -= buffSize;
         vrom += buffSize;
-        vram = (void*)((uintptr_t)vram + buffSize);
+        ram = (void*)((uintptr_t)ram + buffSize);
     }
-    osPiStartDma(ioMsg, pri, op, vrom, vram, size, endQueue);
+    osPiStartDma(ioMsg, pri, op, vrom, ram, size, endQueue);
 }
 
 // DmaMgr_Uncompress?
@@ -111,10 +111,9 @@ void DmaMgr_ThreadEntry(UNUSED void* arg) {
     }
 }
 
-void DmaMgr_SendRequest(DmaRequest* req, void* vram, u32 vrom, size_t size, void* arg4, OSMesgQueue* queue,
-                        OSMesg msg) {
+void DmaMgr_SendRequest(DmaRequest* req, void* ram, u32 vrom, size_t size, void* arg4, OSMesgQueue* queue, OSMesg msg) {
     req->unk00 = vrom;
-    req->unk04 = vram;
+    req->unk04 = ram;
     req->unk08 = size;
     req->unk0C = arg4;
     req->pri = OS_MESG_PRI_NORMAL;
@@ -122,7 +121,7 @@ void DmaMgr_SendRequest(DmaRequest* req, void* vram, u32 vrom, size_t size, void
     req->msg = msg;
     req->unk11 = 0;
     req->unk14 = vrom;
-    req->unk18 = vram;
+    req->unk18 = ram;
     if (size < 0x10) {
         req->unk10 = false;
         req->unk1C = size;
@@ -138,13 +137,13 @@ void DmaMgr_SendRequest(DmaRequest* req, void* vram, u32 vrom, size_t size, void
     DmaMgr_Read(&req->ioMsg, OS_MESG_PRI_HIGH, OS_READ, req->unk14, req->unk18, req->unk1C, &D_8010ED10, req->unk1C);
 }
 
-void DmaMgr_RequestSync(void* vram, u32 vrom, u32 size) {
+void DmaMgr_RequestSync(void* ram, u32 vrom, u32 size) {
     DmaRequest req;
     OSMesgQueue queue;
     OSMesg msg;
 
     osCreateMesgQueue(&queue, &msg, 1);
-    DmaMgr_SendRequest(&req, vram, vrom, size, NULL, &queue, NULL);
+    DmaMgr_SendRequest(&req, ram, vrom, size, NULL, &queue, NULL);
     osRecvMesg(&queue, NULL, OS_MESG_BLOCK);
 }
 

@@ -29,7 +29,7 @@ void func_80064E84(Y65430UnkStruct*);
 void func_8006F560(Y65430UnkStruct*, Y65430UnkStruct*);
 
 // dma
-void DmaMgr_RequestSync(void* vram, u32 vrom, u32 size);
+void DmaMgr_RequestSync(void* ram, u32 vrom, u32 size);
 
 // 80C50
 void func_800800CC(MtxF* mfA, MtxF* mfB);
