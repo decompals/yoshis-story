@@ -36,7 +36,9 @@ class N64SegFont(N64Segment):
                 font_string = ""
                 num = 0
 
-        lines.append(font_string)
+        if num != 0:
+            lines.append(font_string)
+
         # enforce newline at end of file
         lines.append("")
         return "\n".join(lines)

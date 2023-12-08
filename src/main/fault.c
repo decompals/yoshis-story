@@ -542,8 +542,8 @@ void func_80070848(Y511F0UnkStruct* arg0, s32 index) {
 
 s32 func_800708D4(s32 arg0) {
     Y511F0UnkStruct* var_s0 = &D_800DA840[arg0];
-    s32 j = 4;
-    s32 i = arg0;
+    s32 j;
+    s32 i;
 
     for (j = 4, i = arg0; (i < D_800DA83C) && (j < 28); i++) {
         if (var_s0->unk8 != 0) {
