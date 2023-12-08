@@ -27,21 +27,23 @@ typedef struct DmaRequest {
     /* 0x40 */ OSMesg msg;
 } DmaRequest; // size = 0x44
 
-void func_8007DB60(OSIoMesg* ioMsg, s32 pri, s32 arg2, u32 arg3, void* arg4, u32 arg5, OSMesgQueue* arg6, u32 arg7) {
-    OSMesgQueue queue;
+void DmaMgr_Read(OSIoMesg* ioMsg, s32 pri, s32 op, uintptr_t vrom, void* vram, size_t size, OSMesgQueue* endQueue, size_t buffSize) {
+    OSMesgQueue startQueue;
     OSMesg msg;
 
-    osCreateMesgQueue(&queue, &msg, 1);
-    while (arg7 < arg5) {
-        osPiStartDma(ioMsg, pri, arg2, arg3, arg4, arg7, &queue);
-        osRecvMesg(&queue, NULL, OS_MESG_BLOCK);
-        arg5 -= arg7;
-        arg3 += arg7;
-        arg4 = (void*)((uintptr_t)arg4 + arg7);
+    osCreateMesgQueue(&startQueue, &msg, 1);
+    while (buffSize < size) {
+        osPiStartDma(ioMsg, pri, op, vrom, vram, buffSize, &startQueue);
+        osRecvMesg(&startQueue, NULL, OS_MESG_BLOCK);
+        size -= buffSize;
+        vrom += buffSize;
+        vram = (void*)((uintptr_t)vram + buffSize);
     }
-    osPiStartDma(ioMsg, pri, arg2, arg3, arg4, arg5, arg6);
+    osPiStartDma(ioMsg, pri, op, vrom, vram, size, endQueue);
 }
 
+// DmaMgr_Uncompress?
+// CMPR = LZW compression ?
 s32 func_8007DC5C(DmaRequest* req) {
     Y65430UnkStruct* temp_v0;
 
@@ -76,7 +78,7 @@ s32 func_8007DC5C(DmaRequest* req) {
 
     (void)"osPiStartDma(%08x, %08x, OS_READ, %08x, %08x, %08x, %08x)\n";
 
-    func_8007DB60(&req->ioMsg, req->pri, OS_READ, req->unk14, req->unk18, req->unk1C, &D_8010ED10, 0x1000);
+    DmaMgr_Read(&req->ioMsg, req->pri, OS_READ, req->unk14, req->unk18, req->unk1C, &D_8010ED10, 0x1000);
     return 1;
 }
 
@@ -108,7 +110,7 @@ void DmaMgr_ThreadEntry(UNUSED void* arg) {
     }
 }
 
-void func_8007DE3C(DmaRequest* req, void* vram, u32 vrom, size_t size, void* arg4, OSMesgQueue* queue, OSMesg msg) {
+void DmaMgr_SendRequest(DmaRequest* req, void* vram, u32 vrom, size_t size, void* arg4, OSMesgQueue* queue, OSMesg msg) {
     req->unk00 = vrom;
     req->unk04 = vram;
     req->unk08 = size;
@@ -126,11 +128,12 @@ void func_8007DE3C(DmaRequest* req, void* vram, u32 vrom, size_t size, void* arg
         req->unk10 = true;
         req->unk1C = 0x10;
     }
+
     osSendMesg(&D_8010ED50, (OSMesg)req, OS_MESG_BLOCK);
     osInvalDCache(req->unk04, req->unk1C);
 
     (void)"osPiStartDma(%08x, OS_MESG_PRI_HIGH, OS_READ, %08x, %08x, %08x, %08x)\n";
-    func_8007DB60(&req->ioMsg, OS_MESG_PRI_HIGH, OS_READ, req->unk14, req->unk18, req->unk1C, &D_8010ED10, req->unk1C);
+    DmaMgr_Read(&req->ioMsg, OS_MESG_PRI_HIGH, OS_READ, req->unk14, req->unk18, req->unk1C, &D_8010ED10, req->unk1C);
 }
 
 void DmaMgr_RequestSync(void* vram, u32 vrom, u32 size) {
@@ -139,7 +142,7 @@ void DmaMgr_RequestSync(void* vram, u32 vrom, u32 size) {
     OSMesg msg;
 
     osCreateMesgQueue(&queue, &msg, 1);
-    func_8007DE3C(&req, vram, vrom, size, NULL, &queue, NULL);
+    DmaMgr_SendRequest(&req, vram, vrom, size, NULL, &queue, NULL);
     osRecvMesg(&queue, NULL, OS_MESG_BLOCK);
 }
 
