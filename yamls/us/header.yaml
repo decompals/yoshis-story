@@ -21,7 +21,7 @@ options:
 
   asm_path: asm/us
   src_path: src
-  asset_path: bin/us
+  asset_path: assets/us
 
   build_path: build
 

@@ -235,7 +235,13 @@
 
 
       - [0x92170, data]
-      - [0xA8C00, data, fault]
+      - start: 0xA8C00
+        type: .data
+        name:  fault
+        subsegments:
+          - [0xA8C00]
+          - [0xA8C0C, font, fault/sFaultFont]
+          - [0xA900C]
       - [0xA9080, data]
       - [0xAA650, .data, 7EFD0]
       - [0xAA660, data, O2/gfxprint]

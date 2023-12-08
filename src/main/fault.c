@@ -27,13 +27,13 @@ typedef struct FaultMgr {
     /* 0x5D2 */ u16 depth;
 } FaultMgr; // size = 0x5D4
 
-//! TODO: Import data when sFaultFont can be extracted properly (either splat or some dedicated tool)
-#if 0
 vu32 fault_exit = false;
 vu32 fault_msg_id = 0;
 vs32 fault_display_enable = false;
 
-extern u32 sFaultFont[];
+u32 sFaultFont[] = {
+    #include "assets/us/main/fault/sFaultFont.font.inc.c"
+};
 
 const char* sExceptionNames[] = {
     "Interrupt",
@@ -62,41 +62,6 @@ const char* sFpExceptionNames[] = {
 
 u16 sFaultFontColor = GPACK_RGBA5551(255, 255, 255, 1);
 static s32 sPad = 0;
-#else
-extern vu32 fault_exit;
-extern vu32 fault_msg_id;
-extern vs32 fault_display_enable;
-extern u32 sFaultFont[];
-extern const char* sExceptionNames[18];
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B1190.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B119C.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B11B0.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B11C8.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B11E0.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B11F8.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B1210.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B1224.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B1238.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B1250.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B1268.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B1280.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B1298.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B12AC.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B12BC.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B12D8.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B12F4.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B130C.s")
-
-extern const char* sFpExceptionNames[6];
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B1328.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B1340.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B1354.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B1368.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B1374.s")
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/fault/D_800B1380.s")
-
-extern u16 sFaultFontColor;
-#endif
 
 Input sFaultInputs[4];
 s32 D_80108690;
