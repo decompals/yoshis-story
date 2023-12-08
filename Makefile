@@ -5,6 +5,9 @@
 
 MAKEFLAGS += --no-builtin-rules
 
+SHELL = /bin/bash
+.SHELLFLAGS = -o pipefail -c
+
 #### Defaults ####
 
 # If COMPARE is 1, check the output md5sum after building
@@ -20,6 +23,8 @@ RUN_CC_CHECK ?= 1
 CC_CHECK_COMP ?= gcc
 # Dump build object files
 OBJDUMP_BUILD ?= 0
+# Disassembles matched functions and migrated data as well
+FULL_DISASM ?= 0
 # Number of threads to compress with
 N_THREADS ?= $(shell nproc)
 
@@ -69,7 +74,7 @@ $(error Native Windows is currently unsupported for building this repository, us
 else ifeq ($(UNAME_S),Linux)
     DETECTED_OS := linux
 else ifeq ($(UNAME_S),Darwin)
-    DETECTED_OS := mac
+    DETECTED_OS := macos
     MAKE := gmake
     CPPFLAGS += -xc++
 endif
@@ -157,6 +162,11 @@ ifeq ($(NON_MATCHING),0)
     COMPFLAGS += --matching
 endif
 
+SPLAT_FLAGS ?=
+ifneq ($(FULL_DISASM), 0)
+	SPLAT_FLAGS += --disassemble-all
+endif
+
 #### Files ####
 
 $(shell mkdir -p asm bin linker_scripts/$(VERSION)/auto)
@@ -215,7 +225,7 @@ setup:
 extract:
 	$(RM) -r asm/$(VERSION) bin/$(VERSION)
 	$(CAT) yamls/$(VERSION)/header.yaml yamls/$(VERSION)/makerom.yaml yamls/$(VERSION)/main.yaml > $(SPLAT_YAML)
-	$(SPLAT) $(SPLAT_YAML)
+	$(SPLAT) $(SPLAT_FLAGS) $(SPLAT_YAML)
 
 diff-init: uncompressed
 	$(RM) -rf expected/
@@ -255,7 +265,7 @@ $(BUILD_DIR)/%.o: %.bin
 	$(OBJCOPY) -I binary -O elf32-big $< $@
 
 $(BUILD_DIR)/%.o: %.s
-	$(CPP) $(CPPFLAGS) $(BUILD_DEFINES) $(IINC) -I $(dir $*) $(COMMON_DEFINES) $(RELEASE_DEFINES) $(GBI_DEFINES) $(AS_DEFINES) $< | $(ICONV) $(ICONV_FLAGS) | $(AS) $(ASFLAGS) $(ENDIAN) $(IINC) -I $(dir $*) -o $@
+	$(ICONV) $(ICONV_FLAGS) $< | $(AS) $(ASFLAGS) $(ENDIAN) $(IINC) -I $(dir $*) -o $@
 	$(OBJDUMP_CMD)
 
 $(BUILD_DIR)/%.o: %.c
