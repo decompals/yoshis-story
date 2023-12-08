@@ -83,7 +83,7 @@
       - [0x7D9A0, asm]
       - [0x7E140, asm]
       - [0x7E1E0, asm]
-      - [0x7E760, asm] # Has dmamgr string in StackCheck_Init
+      - [0x7E760, c, dmamgr]
       - [0x7EC30, asm]
       - [0x7EE00, asm]
       - [0x7EFD0, c, 7EFD0]
@@ -337,7 +337,7 @@
       - [0xB3690, rodata, 7CC30]
       - [0xB36A0, rodata, 7D140]
       - [0xB36E0, rodata, 7D9A0]
-      - [0xB39F0, rodata, 7E760]
+      - [0xB39F0, .rodata, dmamgr]
       - [0xB3AA0, rodata, 7EC30]
       - [0xB3B10, rodata, 7EE00]
       - [0xB3B20, .rodata, 7EFD0]
@@ -364,9 +364,8 @@
       - [0xB5460, rodata]
       - [0xB5880, rodata]
 
-
       - { start: 0xB58B0, type: bss, vram: 0x800B4CB0, name: 800B4CB0 }
-
+      - {start: 0xB58B0, type: .bss, vram: 0x8010E840, name: dmamgr}
       - { start: 0xB58B0, type: .bss, vram: 0x8010ED90, name: 7EFD0}
 
       # Libultra

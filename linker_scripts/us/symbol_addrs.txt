@@ -2,6 +2,9 @@ entrypoint = 0x80000400;
 
 bootproc = 0x8006743C;
 
+DmaMgr_RequestSync = 0x8007DF0C; // type:func
+DmaMgr_Init = 0x8007DF74; // type:func
+
 ViMode_Init = 0x8007EA54;
 
 gfxprint_setup = 0x8007EF00; // type:func

@@ -157,7 +157,7 @@ size_t Overlay_Load(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart,
     }
 
     end = (void*)((uintptr_t)allocatedRamAddr + size);
-    func_8007DF0C(allocatedRamAddr, vromStart, size);
+    DmaMgr_RequestSync(allocatedRamAddr, vromStart, size);
 
     ovl = (OverlayRelocationSection*)((uintptr_t)end - ((s32*)end)[-1]);
 
