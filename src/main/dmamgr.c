@@ -117,7 +117,7 @@ void DmaMgr_SendRequest(DmaRequest* req, void* vram, u32 vrom, size_t size, void
     req->unk04 = vram;
     req->unk08 = size;
     req->unk0C = arg4;
-    req->pri = 0;
+    req->pri = OS_MESG_PRI_NORMAL;
     req->queue = queue;
     req->msg = msg;
     req->unk11 = 0;
