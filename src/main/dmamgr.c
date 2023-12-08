@@ -27,7 +27,8 @@ typedef struct DmaRequest {
     /* 0x40 */ OSMesg msg;
 } DmaRequest; // size = 0x44
 
-void DmaMgr_Read(OSIoMesg* ioMsg, s32 pri, s32 op, uintptr_t vrom, void* vram, size_t size, OSMesgQueue* endQueue, size_t buffSize) {
+void DmaMgr_Read(OSIoMesg* ioMsg, s32 pri, s32 op, uintptr_t vrom, void* vram, size_t size, OSMesgQueue* endQueue,
+                 size_t buffSize) {
     OSMesgQueue startQueue;
     OSMesg msg;
 
@@ -110,7 +111,8 @@ void DmaMgr_ThreadEntry(UNUSED void* arg) {
     }
 }
 
-void DmaMgr_SendRequest(DmaRequest* req, void* vram, u32 vrom, size_t size, void* arg4, OSMesgQueue* queue, OSMesg msg) {
+void DmaMgr_SendRequest(DmaRequest* req, void* vram, u32 vrom, size_t size, void* arg4, OSMesgQueue* queue,
+                        OSMesg msg) {
     req->unk00 = vrom;
     req->unk04 = vram;
     req->unk08 = size;
