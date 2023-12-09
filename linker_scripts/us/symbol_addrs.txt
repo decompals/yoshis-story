@@ -6,6 +6,9 @@ Fault_SetFramebuffer = 0x80071250; // type:func
 Fault_Init = 0x8007127C; // type:func
 Fault_HungUp = 0x80071380; // type:func
 
+DmaMgr_RequestSync = 0x8007DF0C; // type:func
+DmaMgr_Init = 0x8007DF74; // type:func
+
 ViMode_Init = 0x8007EA54;
 
 gfxprint_setup = 0x8007EF00; // type:func
