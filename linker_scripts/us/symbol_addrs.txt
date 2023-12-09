@@ -2,6 +2,10 @@ entrypoint = 0x80000400;
 
 bootproc = 0x8006743C;
 
+Fault_SetFramebuffer = 0x80071250; // type:func
+Fault_Init = 0x8007127C; // type:func
+Fault_HungUp = 0x80071380; // type:func
+
 ViMode_Init = 0x8007EA54;
 
 gfxprint_setup = 0x8007EF00; // type:func
@@ -92,6 +96,16 @@ aprintf = 0x80082174;
 csleep = 0x800821A0;
 
 // data
+mallocRecord = 0x800A65AC; // type:MallocRecord size:0x14
+
+fault_exit = 0x800A8000;
+fault_msg_id = 0x800A8004;
+fault_display_enable = 0x800A8008;
+sFaultFont = 0x800A800C; // type:u32
+sExceptionNames = 0x800A840C; // size:0x48
+sFpExceptionNames = 0x800A8454; // size:0x18
+sFaultFontColor = 0x800A846C; // type:u16 size:0x2
+
 gfxprint_moji_tlut = 0x800A9A60;
 gfxprint_rainbow_tlut = 0x800A9AE0;
 gfxprint_font = 0x800A9B08;
