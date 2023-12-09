@@ -58,7 +58,8 @@
       - [0x6DBC0, asm]
       - [0x6DF40, asm] # Probably has at least 1 file split
       - [0x70160, asm]
-      - [0x70200, asm, fault]
+      - [0x70200, c, fault]
+      - [0x720B0, asm, padding720B0] # Better way?
       - [0x720C0, asm]
       - [0x72340, asm]
       - [0x72860, asm]
@@ -234,6 +235,14 @@
 
 
       - [0x92170, data]
+      - start: 0xA8C00
+        type: .data
+        name:  fault
+        subsegments:
+          - [0xA8C00]
+          - [0xA8C0C, font, fault/sFaultFont]
+          - [0xA900C]
+      - [0xA9080, data]
       - [0xAA650, .data, 7EFD0]
       - [0xAA660, data, O2/gfxprint]
       - [0xAAF10, .data, O2/808F0]
@@ -249,7 +258,7 @@
       - [0xAB820, data, ../lib/ultralib/src/io/controller]
       - [0xAB830, data, ../lib/ultralib/src/io/siacs]
       - [0xAB840, data, ../lib/ultralib/src/os/initialize]
-      - [0xAB860, data, ../lib/ultralib/src/io/vitbl.c]
+      - [0xAB860, data, ../lib/ultralib/src/io/vitbl]
       - [0xAC580, data, ../lib/ultralib/src/io/motor]
       - [0xAC590, data, ../lib/ultralib/src/io/pimgr]
       - [0xAC5C0, data, ../lib/ultralib/src/io/piacs]
@@ -315,7 +324,7 @@
       - [0xB1C60, rodata, 6CB80]
       - [0xB1C90, rodata]
       - [0xB1D60, rodata]
-      - [0xB1D90, rodata, fault]
+      - [0xB1D90, .rodata, fault]
       - [0xB26D0, rodata, 720C0]
       - [0xB2730, rodata, 72340]
       - [0xB27D0, rodata, 72860]
@@ -364,29 +373,32 @@
       - [0xB5460, rodata]
       - [0xB5880, rodata]
 
-      - { start: 0xB58B0, type: bss, vram: 0x800B4CB0, name: 800B4CB0 }
+
+      - {start: 0xB58B0, type: bss, vram: 0x800B4CB0, name: 800B4CB0}
+      - {start: 0xB58B0, type: .bss, vram: 0x80108630, name: fault}
+      - {start: 0xB58B0, type: bss, vram: 0x801090D0, name: 801090D0}
       - {start: 0xB58B0, type: .bss, vram: 0x8010E840, name: dmamgr}
-      - { start: 0xB58B0, type: .bss, vram: 0x8010ED90, name: 7EFD0}
+      - {start: 0xB58B0, type: .bss, vram: 0x8010ED90, name: 7EFD0}
 
       # Libultra
-      - { start: 0xB58B0, type: bss, vram: 0x8010F0C0, name: ../lib/ultralib/src/io/sptask }
-      - { start: 0xB58B0, type: bss, vram: 0x8010F100, name: ../lib/ultralib/src/gu/us2dex_emu }
-      - { start: 0xB58B0, type: bss, vram: 0x8010F120, name: ../lib/ultralib/src/io/leointerrupt }
-      - { start: 0xB58B0, type: bss, vram: 0x80110120, name: ../lib/ultralib/src/io/controller }
-      - { start: 0xB58B0, type: bss, vram: 0x801101B0, name: ../lib/ultralib/src/io/siacs }
-      - { start: 0xB58B0, type: bss, vram: 0x801101D0, name: ../lib/ultralib/src/io/driverominit }
-      - { start: 0xB58B0, type: bss, vram: 0x80110250, name: ../lib/ultralib/src/os/initialize }
-      - { start: 0xB58B0, type: bss, vram: 0x80110260, name: ../lib/ultralib/src/debug/kdebugserver }
-      - { start: 0xB58B0, type: bss, vram: 0x80110410, name: ../lib/ultralib/src/io/motor }
-      - { start: 0xB58B0, type: bss, vram: 0x80110650, name: ../lib/ultralib/src/io/pimgr }
-      - { start: 0xB58B0, type: bss, vram: 0x80111820, name: ../lib/ultralib/src/io/cartrominit }
-      - { start: 0xB58B0, type: bss, vram: 0x801118A0, name: ../lib/ultralib/src/io/piacs }
-      - { start: 0xB58B0, type: bss, vram: 0x801118C0, name: ../lib/ultralib/src/os/seteventmesg }
-      - { start: 0xB58B0, type: bss, vram: 0x80111940, name: ../lib/ultralib/src/io/leodiskinit }
-      - { start: 0xB58B0, type: bss, vram: 0x801119C0, name: ../lib/ultralib/src/os/timerintr }
-      - { start: 0xB58B0, type: bss, vram: 0x80111A00, name: ../lib/ultralib/src/io/pfsisplug }
-      - { start: 0xB58B0, type: bss, vram: 0x80111A40, name: ../lib/ultralib/src/io/vimgr }
-      - { start: 0xB58B0, type: bss, vram: 0x80112C60, name: ../lib/ultralib/src/io/conteepread }
+      - {start: 0xB58B0, type: bss, vram: 0x8010F0C0, name: ../lib/ultralib/src/io/sptask}
+      - {start: 0xB58B0, type: bss, vram: 0x8010F100, name: ../lib/ultralib/src/gu/us2dex_emu}
+      - {start: 0xB58B0, type: bss, vram: 0x8010F120, name: ../lib/ultralib/src/io/leointerrupt}
+      - {start: 0xB58B0, type: bss, vram: 0x80110120, name: ../lib/ultralib/src/io/controller}
+      - {start: 0xB58B0, type: bss, vram: 0x801101B0, name: ../lib/ultralib/src/io/siacs}
+      - {start: 0xB58B0, type: bss, vram: 0x801101D0, name: ../lib/ultralib/src/io/driverominit}
+      - {start: 0xB58B0, type: bss, vram: 0x80110250, name: ../lib/ultralib/src/os/initialize}
+      - {start: 0xB58B0, type: bss, vram: 0x80110260, name: ../lib/ultralib/src/debug/kdebugserver}
+      - {start: 0xB58B0, type: bss, vram: 0x80110410, name: ../lib/ultralib/src/io/motor}
+      - {start: 0xB58B0, type: bss, vram: 0x80110650, name: ../lib/ultralib/src/io/pimgr}
+      - {start: 0xB58B0, type: bss, vram: 0x80111820, name: ../lib/ultralib/src/io/cartrominit}
+      - {start: 0xB58B0, type: bss, vram: 0x801118A0, name: ../lib/ultralib/src/io/piacs}
+      - {start: 0xB58B0, type: bss, vram: 0x801118C0, name: ../lib/ultralib/src/os/seteventmesg}
+      - {start: 0xB58B0, type: bss, vram: 0x80111940, name: ../lib/ultralib/src/io/leodiskinit}
+      - {start: 0xB58B0, type: bss, vram: 0x801119C0, name: ../lib/ultralib/src/os/timerintr}
+      - {start: 0xB58B0, type: bss, vram: 0x80111A00, name: ../lib/ultralib/src/io/pfsisplug}
+      - {start: 0xB58B0, type: bss, vram: 0x80111A40, name: ../lib/ultralib/src/io/vimgr}
+      - {start: 0xB58B0, type: bss, vram: 0x80112C60, name: ../lib/ultralib/src/io/conteepread}
 
 
   - name: unkbin

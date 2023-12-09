@@ -105,7 +105,7 @@ SPLAT_YAML      ?= $(TARGET).$(VERSION).yaml
 
 
 
-IINC := -Iinclude -Ibin/$(VERSION) -I.
+IINC := -Iinclude -I.
 IINC += -Ilib/ultralib/include -Ilib/ultralib/include/PR -Ilib/ultralib/include/ido
 
 ifeq ($(KEEP_MDEBUG),0)
@@ -169,11 +169,11 @@ endif
 
 #### Files ####
 
-$(shell mkdir -p asm bin linker_scripts/$(VERSION)/auto)
+$(shell mkdir -p asm assets linker_scripts/$(VERSION)/auto)
 
 SRC_DIRS      := $(shell find src -type d)
 ASM_DIRS      := $(shell find asm/$(VERSION) -type d -not -path "asm/$(VERSION)/nonmatchings/*")
-BIN_DIRS      := $(shell find bin -type d)
+BIN_DIRS      := $(shell find assets -type d)
 
 C_FILES       := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 S_FILES       := $(foreach dir,$(ASM_DIRS) $(SRC_DIRS),$(wildcard $(dir)/*.s))
@@ -195,6 +195,7 @@ $(shell mkdir -p $(BUILD_DIR)/linker_scripts/$(VERSION) $(BUILD_DIR)/linker_scri
 build/src/main/O2/%.o: OPTFLAGS := -O2
 
 # per-file flags
+build/src/main/fault.o: CFLAGS += -trapuv
 
 # cc & asm-processor
 build/src/%.o: CC := $(ASM_PROC) $(ASM_PROC_FLAGS) $(CC) -- $(AS) $(ASFLAGS) --
@@ -211,10 +212,10 @@ ifneq ($(COMPARE),0)
 endif
 
 clean:
-	$(RM) -r $(BUILD_DIR)/asm $(BUILD_DIR)/bin $(BUILD_DIR)/src $(ROM) $(ELF)
+	$(RM) -r $(BUILD_DIR)/asm $(BUILD_DIR)/assets $(BUILD_DIR)/src $(ROM) $(ELF)
 
 distclean: clean
-	$(RM) -r $(BUILD_DIR) asm/ bin/ .splat/
+	$(RM) -r $(BUILD_DIR) asm/ assets/ .splat/
 	$(RM) -r linker_scripts/$(VERSION)/auto $(LD_SCRIPT)
 	$(MAKE) -C tools distclean
 
@@ -222,7 +223,7 @@ setup:
 	$(MAKE) -C tools
 
 extract:
-	$(RM) -r asm/$(VERSION) bin/$(VERSION)
+	$(RM) -r asm/$(VERSION) assets/$(VERSION)
 	$(CAT) yamls/$(VERSION)/header.yaml yamls/$(VERSION)/makerom.yaml yamls/$(VERSION)/main.yaml > $(SPLAT_YAML)
 	$(SPLAT) $(SPLAT_FLAGS) $(SPLAT_YAML)
 
