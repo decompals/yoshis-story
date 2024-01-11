@@ -59,7 +59,7 @@
       - [0x6DF40, asm] # Probably has at least 1 file split
       - [0x70160, asm]
       - [0x70200, c, fault]
-      - [0x720B0, asm, padding720B0] # Better way?
+      - [0x720B0, pad]
       - [0x720C0, asm]
       - [0x72340, asm]
       - [0x72860, asm]
