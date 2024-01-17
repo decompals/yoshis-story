@@ -38,6 +38,8 @@ VERSION ?= us
 BASEROM              := baserom.$(VERSION).z64
 TARGET               := yoshisstory
 
+ULTRALIB_VERSION     := H
+ULTRALIB_TARGET      := libultra_rom
 
 ### Output ###
 
@@ -130,20 +132,21 @@ else
 endif
 
 
-CFLAGS          += -G 0 -non_shared -Xcpluscomm -nostdinc -Wab,-r4300_mul
+CFLAGS           += -G 0 -non_shared -Xcpluscomm -nostdinc -Wab,-r4300_mul
 
-WARNINGS        := -fullwarn -verbose -woff 624,649,838,712,516,513,596,564,594
-ASFLAGS         := -march=vr4300 -32 -G0
-COMMON_DEFINES  := -D_MIPS_SZLONG=32
-GBI_DEFINES     := -DF3DEX_GBI
-RELEASE_DEFINES := -DNDEBUG -D_FINALROM
-AS_DEFINES      := -DMIPSEB -D_LANGUAGE_ASSEMBLY -D_ULTRA64
-C_DEFINES       := -DLANGUAGE_C -D_LANGUAGE_C
-ENDIAN          := -EB
+WARNINGS         := -fullwarn -verbose -woff 624,649,838,712,516,513,596,564,594
+ASFLAGS          := -march=vr4300 -32 -G0
+COMMON_DEFINES   := -D_MIPS_SZLONG=32
+GBI_DEFINES      := -DF3DEX_GBI
+RELEASE_DEFINES  := -DNDEBUG -D_FINALROM
+AS_DEFINES       := -DMIPSEB -D_LANGUAGE_ASSEMBLY -D_ULTRA64
+C_DEFINES        := -DLANGUAGE_C -D_LANGUAGE_C
+LIBULTRA_DEFINES := -DBUILD_VERSION=VERSION_$(ULTRALIB_VERSION)
+ENDIAN           := -EB
 
-OPTFLAGS        := -O2 -g3
-MIPS_VERSION    := -mips2
-ICONV_FLAGS     := --from-code=UTF-8 --to-code=EUC-JP
+OPTFLAGS         := -O2 -g3
+MIPS_VERSION     := -mips2
+ICONV_FLAGS      := --from-code=UTF-8 --to-code=EUC-JP
 
 # Use relocations and abi fpr names in the dump
 OBJDUMP_FLAGS := --disassemble --reloc --disassemble-zeroes -Mreg-names=32 -Mno-aliases
@@ -269,8 +272,8 @@ $(BUILD_DIR)/%.o: %.s
 	$(OBJDUMP_CMD)
 
 $(BUILD_DIR)/%.o: %.c
-	$(CC_CHECK) $(CC_CHECK_FLAGS) $(IINC) -I $(dir $*) $(CHECK_WARNINGS) $(BUILD_DEFINES) $(COMMON_DEFINES) $(RELEASE_DEFINES) $(GBI_DEFINES) $(C_DEFINES) $(MIPS_BUILTIN_DEFS) -o $@ $<
-	$(CC) -c $(CFLAGS) $(BUILD_DEFINES) $(IINC) $(WARNINGS) $(MIPS_VERSION) $(ENDIAN) $(COMMON_DEFINES) $(RELEASE_DEFINES) $(GBI_DEFINES) $(C_DEFINES) $(OPTFLAGS) -o $@ $<
+	$(CC_CHECK) $(CC_CHECK_FLAGS) $(IINC) -I $(dir $*) $(CHECK_WARNINGS) $(BUILD_DEFINES) $(COMMON_DEFINES) $(RELEASE_DEFINES) $(GBI_DEFINES) $(LIBULTRA_DEFINES) $(C_DEFINES) $(MIPS_BUILTIN_DEFS) -o $@ $<
+	$(CC) -c $(CFLAGS) $(BUILD_DEFINES) $(IINC) $(WARNINGS) $(MIPS_VERSION) $(ENDIAN) $(COMMON_DEFINES) $(RELEASE_DEFINES) $(GBI_DEFINES) $(LIBULTRA_DEFINES) $(C_DEFINES) $(OPTFLAGS) -o $@ $<
 	$(OBJDUMP_CMD)
 	$(RM_MDEBUG)
 
