@@ -98,7 +98,7 @@
       - [0x82510, c, O2/stackcheck]
       - [0x826F0, c, O2/padsetup]
       - [0x82830, c, O2/math64]
-      - [0x82BE0, hasm, fp]
+      - [0x82BE0, asm, fp] # hasm
       - [0x82D40, c, O2/aprintf]
       - [0x82DA0, c, O2/sleep]
 
@@ -106,17 +106,17 @@
       - [0x82E10, asm, ../lib/ultralib/src/os/sendmesg]
       - [0x82F60, asm, ../lib/ultralib/src/io/pfsfreeblocks]
       - [0x830B0, asm, ../lib/ultralib/src/os/recvmesg]
-      - [0x831F0, hasm, ../lib/ultralib/src/os/setintmask]
+      - [0x831F0, asm, ../lib/ultralib/src/os/setintmask] # hasm
       - [0x83290, asm, ../lib/ultralib/src/gu/scale]
       - [0x83330, asm, ../lib/ultralib/src/gu/sinf]
       - [0x834F0, asm, ../lib/ultralib/src/gu/sins]
       - [0x83560, asm, ../lib/ultralib/src/io/sptask]
       - [0x83820, asm, ../lib/ultralib/src/libc/ll] # -mips3
       - [0x83AE0, asm, ../lib/ultralib/src/gu/us2dex_emu]
-      - [0x849D0, hasm, ../lib/ultralib/src/os/exceptasm]
+      - [0x849D0, asm, ../lib/ultralib/src/os/exceptasm] # hasm
       - [0x852E0, asm, ../lib/ultralib/src/os/thread]
       - [0x85320, asm, ../lib/ultralib/src/os/destroythread]
-      - [0x85420, hasm, ../lib/ultralib/src/libc/bzero]
+      - [0x85420, asm, ../lib/ultralib/src/libc/bzero] # hasm
       - [0x854C0, asm, ../lib/ultralib/src/io/leointerrupt]
       - [0x85D40, asm, ../lib/ultralib/src/io/controller]
       - [0x86100, asm, ../lib/ultralib/src/io/siacs]
@@ -125,12 +125,12 @@
       - [0x86860, asm, ../lib/ultralib/src/io/contreaddata]
       - [0x86A80, asm, ../lib/ultralib/src/io/driverominit]
       - [0x86B60, asm, ../lib/ultralib/src/os/virtualtophysical]
-      - [0x86BE0, hasm, ../lib/ultralib/src/os/writebackdcache]
+      - [0x86BE0, asm, ../lib/ultralib/src/os/writebackdcache] # hasm
       - [0x86C60, asm, ../lib/ultralib/src/os/initialize]
       - [0x86EF0, asm, ../lib/ultralib/src/io/pirawread]
-      - [0x86F50, hasm, ../lib/ultralib/src/os/parameters]
-      - [0x86FB0, hasm, ../lib/ultralib/src/os/setsr]
-      - [0x86FC0, hasm, ../lib/ultralib/src/os/getsr]
+      - [0x86F50, asm, ../lib/ultralib/src/os/parameters] # hasm
+      - [0x86FB0, asm, ../lib/ultralib/src/os/setsr] # hasm
+      - [0x86FC0, asm, ../lib/ultralib/src/os/getsr] # hasm
       - [0x86FD0, asm, ../lib/ultralib/src/gu/perspective]
       - [0x87260, asm, ../lib/ultralib/src/io/sprawdma]
       - [0x872F0, asm, ../lib/ultralib/src/io/sirawdma]
@@ -144,8 +144,8 @@
       - [0x87C80, asm, ../lib/ultralib/src/gu/lookat]
       - [0x87FB0, asm, ../lib/ultralib/src/io/motor]
       - [0x88750, asm, ../lib/ultralib/src/io/pfsallocatefile]
-      - [0x88F00, hasm, ../lib/ultralib/src/os/probetlb]
-      - [0x88FC0, hasm, ../lib/ultralib/src/os/getcount]
+      - [0x88F00, asm, ../lib/ultralib/src/os/probetlb] # hasm
+      - [0x88FC0, asm, ../lib/ultralib/src/os/getcount] # hasm
       - [0x88FD0, asm, ../lib/ultralib/src/io/contpfs]
       - [0x89D30, asm, ../lib/ultralib/src/io/conteepprobe]
       - [0x89DD0, asm, ../lib/ultralib/src/io/pidma]
@@ -156,7 +156,7 @@
       - [0x8A400, asm, ../lib/ultralib/src/io/devmgr]
       - [0x8A890, asm, ../lib/ultralib/src/io/pirawdma]
       - [0x8A970, asm, ../lib/ultralib/src/os/seteventmesg]
-      - [0x8A9E0, hasm, ../lib/ultralib/src/gu/sqrtf]
+      - [0x8A9E0, asm, ../lib/ultralib/src/gu/sqrtf] # hasm
       - [0x8A9F0, asm, ../lib/ultralib/src/io/contquery]
       - [0x8AAA0, asm, ../lib/ultralib/src/libc/xprintf]
       - [0x8B760, asm, ../lib/ultralib/src/io/epidma]
@@ -164,8 +164,8 @@
       - [0x8B940, asm, ../lib/ultralib/src/libc/syncprintf]
       - [0x8B980, asm, ../lib/ultralib/src/libc/string] # -O3
       - [0x8BA20, asm, ../lib/ultralib/src/os/createmesgqueue]
-      - [0x8BA50, hasm, ../lib/ultralib/src/os/invalicache]
-      - [0x8BAD0, hasm, ../lib/ultralib/src/os/invaldcache]
+      - [0x8BA50, asm, ../lib/ultralib/src/os/invalicache] # hasm
+      - [0x8BAD0, asm, ../lib/ultralib/src/os/invaldcache] # hasm
       - [0x8BB80, asm, ../lib/ultralib/src/io/sp]
       - [0x8BBB0, asm, ../lib/ultralib/src/io/si]
       - [0x8BBE0, asm, ../lib/ultralib/src/os/jammesg]
@@ -176,7 +176,7 @@
       - [0x8BF40, asm, ../lib/ultralib/src/gu/mtxcatf]
       - [0x8C150, asm, ../lib/ultralib/src/io/epirawdma]
       - [0x8C380, asm, ../lib/ultralib/src/os/sptaskyielded]
-      - [0x8C400, hasm, ../lib/ultralib/src/libc/bcmp]
+      - [0x8C400, asm, ../lib/ultralib/src/libc/bcmp] # hasm
       - [0x8C520, asm, ../lib/ultralib/src/os/gettime]
       - [0x8C5B0, asm, ../lib/ultralib/src/os/timerintr]
       - [0x8C9B0, asm, ../lib/ultralib/src/os/setglobalintmask]
@@ -184,14 +184,14 @@
       - [0x8CB60, asm, ../lib/ultralib/src/io/dpctr]
       - [0x8CBB0, asm, ../lib/ultralib/src/io/crc]
       - [0x8CD30, asm, ../lib/ultralib/src/os/getactivequeue]
-      - [0x8CD40, hasm, ../lib/ultralib/src/os/setcompare]
+      - [0x8CD40, asm, ../lib/ultralib/src/os/setcompare] # hasm
       - [0x8CD50, asm, ../lib/ultralib/src/gu/normalize]
       - [0x8CDE0, asm, ../lib/ultralib/src/io/dpsetstat]
-      - [0x8CDF0, hasm, ../lib/ultralib/src/libc/bcopy]
+      - [0x8CDF0, asm, ../lib/ultralib/src/libc/bcopy] # hasm
       - [0x8D100, asm, ../lib/ultralib/src/os/resetglobalintmask]
       - [0x8D160, asm, ../lib/ultralib/src/io/pfsdeletefile]
       - [0x8D780, asm, ../lib/ultralib/src/gu/ortho]
-      - [0x8D940, hasm, ../lib/ultralib/src/os/interrupt]
+      - [0x8D940, asm, ../lib/ultralib/src/os/interrupt] # hasm
       - [0x8D980, asm, ../lib/ultralib/src/io/vi]
       - [0x8DAC0, asm, ../lib/ultralib/src/io/viswapcontext]
       - [0x8DE20, asm, ../lib/ultralib/src/io/pigetcmdq]
@@ -210,7 +210,7 @@
       - [0x8F080, asm, ../lib/ultralib/src/io/pfschecker]
       - [0x8FAE0, asm, ../lib/ultralib/src/io/aigetlen]
       - [0x8FAF0, asm, ../lib/ultralib/src/io/epirawread]
-      - [0x8FC90, hasm, ../lib/ultralib/src/os/maptlbrdb]
+      - [0x8FC90, asm, ../lib/ultralib/src/os/maptlbrdb] # hasm
       - [0x8FCF0, asm, ../lib/ultralib/src/os/yieldthread]
       - [0x8FD40, asm, ../lib/ultralib/src/gu/translate]
       - [0x8FDE0, asm, ../lib/ultralib/src/io/contramwrite]
