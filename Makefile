@@ -253,7 +253,7 @@ lib:
 
 extract:
 	$(RM) -r asm/$(VERSION) assets/$(VERSION)
-	$(CAT) yamls/$(VERSION)/header.yaml yamls/$(VERSION)/makerom.yaml yamls/$(VERSION)/main.yaml > $(SPLAT_YAML)
+	$(CAT) yamls/$(VERSION)/header.yaml yamls/$(VERSION)/makerom.yaml yamls/$(VERSION)/main.yaml yamls/$(VERSION)/overlays.yaml > $(SPLAT_YAML)
 	$(SPLAT) $(SPLAT_FLAGS) $(SPLAT_YAML)
 
 diff-init: rom

@@ -1,0 +1,6 @@
+  - name: unkbin
+    type: bin
+    start: 0xB58B0
+    vram: 0x80112CA0
+    follows_vram: main
+  - [0x1000000]
