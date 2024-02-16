@@ -1,8 +1,9 @@
 import struct
 from pathlib import Path
 
-from splat.util import options
+from splat.util import options, log
 from splat.segtypes.n64.segment import N64Segment
+
 
 class N64SegFont(N64Segment):
     def __init__(self, rom_start, rom_end, type, name, vram_start, args, yaml):
@@ -43,9 +44,9 @@ class N64SegFont(N64Segment):
         lines.append("")
         return "\n".join(lines)
 
-    def scan(self, rom_bytes: bytes):        
+    def scan(self, rom_bytes: bytes):
         self.file_text = self.disassemble_data(rom_bytes)
-    
+
     def split(self, rom_bytes: bytes):
         if self.file_text and self.out_path():
             self.out_path().parent.mkdir(parents=True, exist_ok=True)
