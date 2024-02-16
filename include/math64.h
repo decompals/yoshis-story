@@ -3,6 +3,10 @@
 
 #include "ultra64.h"
 
+#ifdef __sgi
+#pragma intrinsic(sqrtf);
+#endif
+
 f32 Math_FTanF(f32 x);
 f32 Math_FFloorF(f32 x);
 f32 Math_FCeilF(f32 x);

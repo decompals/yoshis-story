@@ -6,4 +6,4 @@
     subsegments:
       - [0x000000, header, header]
       - [0x000040, bin, ipl3]
-      - {start: 0x001000, type: hasm, name: entry, vram: 0x80000400}
+      - {start: 0x001000, type: asm, name: entry, vram: 0x80000400} # hasm

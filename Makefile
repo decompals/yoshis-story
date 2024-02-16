@@ -49,7 +49,7 @@ FULL_DISASM ?= 0
 # Number of threads to compress with
 N_THREADS ?= $(shell nproc)
 # MIPS toolchain prefix
-MIPS_BINUTILS_PREFIX ?= mips-linux-gnu-
+CROSS ?= mips-linux-gnu-
 # Python virtual environment
 VENV ?= .venv
 # Python interpreter
@@ -62,6 +62,9 @@ BASEROM_DIR := baseroms/$(VERSION)
 BASEROM     := $(BASEROM_DIR)/baserom.z64
 TARGET      := yoshisstory
 
+# TODO: ULTRALIB_VERSION should be H
+ULTRALIB_VERSION     := I
+ULTRALIB_TARGET      := libultra_rom
 
 ### Output ###
 
@@ -96,8 +99,8 @@ ifeq ($(DETECTED_OS), macos)
 endif
 
 #### Tools ####
-ifneq ($(shell type $(MIPS_BINUTILS_PREFIX)ld >/dev/null 2>/dev/null; echo $$?), 0)
-$(error Unable to find $(MIPS_BINUTILS_PREFIX)ld. Please install or build MIPS binutils, commonly mips-linux-gnu. (or set MIPS_BINUTILS_PREFIX if your MIPS binutils install uses another prefix))
+ifneq ($(shell type $(CROSS)ld >/dev/null 2>/dev/null; echo $$?), 0)
+$(error Unable to find $(CROSS)ld. Please install or build MIPS binutils, commonly mips-linux-gnu. (or set CROSS if your MIPS binutils install uses another prefix))
 endif
 
 
@@ -105,10 +108,10 @@ CC              := tools/ido/$(DETECTED_OS)/7.1/cc
 CC_OLD          := tools/ido/$(DETECTED_OS)/5.3/cc
 
 
-AS              := $(MIPS_BINUTILS_PREFIX)as
-LD              := $(MIPS_BINUTILS_PREFIX)ld
-OBJCOPY         := $(MIPS_BINUTILS_PREFIX)objcopy
-OBJDUMP         := $(MIPS_BINUTILS_PREFIX)objdump
+AS              := $(CROSS)as
+LD              := $(CROSS)ld
+OBJCOPY         := $(CROSS)objcopy
+OBJDUMP         := $(CROSS)objdump
 CPP             := cpp
 ICONV           := iconv
 ASM_PROC        := $(PYTHON) tools/asm-processor/build.py
@@ -146,20 +149,21 @@ else
 endif
 
 
-CFLAGS          += -G 0 -non_shared -Xcpluscomm -nostdinc -Wab,-r4300_mul
+CFLAGS           += -G 0 -non_shared -Xcpluscomm -nostdinc -Wab,-r4300_mul
 
-WARNINGS        := -fullwarn -verbose -woff 624,649,838,712,516,513,596,564,594
-ASFLAGS         := -march=vr4300 -32 -G0
-COMMON_DEFINES  := -D_MIPS_SZLONG=32
-GBI_DEFINES     := -DF3DEX_GBI
-RELEASE_DEFINES := -DNDEBUG -D_FINALROM
-AS_DEFINES      := -DMIPSEB -D_LANGUAGE_ASSEMBLY -D_ULTRA64
-C_DEFINES       := -DLANGUAGE_C -D_LANGUAGE_C
-ENDIAN          := -EB
+WARNINGS         := -fullwarn -verbose -woff 624,649,838,712,516,513,596,564,594
+ASFLAGS          := -march=vr4300 -32 -G0
+COMMON_DEFINES   := -D_MIPS_SZLONG=32
+GBI_DEFINES      := -DF3DEX_GBI
+RELEASE_DEFINES  := -DNDEBUG -D_FINALROM
+AS_DEFINES       := -DMIPSEB -D_LANGUAGE_ASSEMBLY -D_ULTRA64
+C_DEFINES        := -DLANGUAGE_C -D_LANGUAGE_C
+LIBULTRA_DEFINES := -DBUILD_VERSION=VERSION_$(ULTRALIB_VERSION)
+ENDIAN           := -EB
 
-OPTFLAGS        := -O2 -g3
-MIPS_VERSION    := -mips2
-ICONV_FLAGS     := --from-code=UTF-8 --to-code=EUC-JP
+OPTFLAGS         := -O2 -g3
+MIPS_VERSION     := -mips2
+ICONV_FLAGS      := --from-code=UTF-8 --to-code=EUC-JP
 
 # Use relocations and abi fpr names in the dump
 OBJDUMP_FLAGS := --disassemble --reloc --disassemble-zeroes -Mreg-names=32 -Mno-aliases
@@ -192,6 +196,9 @@ O_FILES       := $(foreach f,$(C_FILES:.c=.o),$(BUILD_DIR)/$f) \
                  $(foreach f,$(S_FILES:.s=.o),$(BUILD_DIR)/$f) \
                  $(foreach f,$(BIN_FILES:.bin=.o),$(BUILD_DIR)/$f)
 
+ULTRALIB_DIR  := lib/ultralib
+ULTRALIB_LIB  := $(ULTRALIB_DIR)/build/$(ULTRALIB_VERSION)/$(ULTRALIB_TARGET)/$(ULTRALIB_TARGET).a
+LIBULTRA      := $(BUILD_DIR)/libultra.a
 
 # Automatic dependency files
 DEP_FILES := $(O_FILES:.o=.d) \
@@ -222,11 +229,15 @@ ifneq ($(COMPARE),0)
 endif
 
 clean:
-	$(RM) -r $(BUILD_DIR)/asm $(BUILD_DIR)/assets $(BUILD_DIR)/src $(ROM) $(ELF)
+	$(RM) -r $(BUILD_DIR)
 
-distclean: clean
-	$(RM) -r $(BUILD_DIR) asm/ assets/ .splat/
+libclean:
+	$(MAKE) -C lib/ultralib clean VERSION=$(ULTRALIB_VERSION) TARGET=$(ULTRALIB_TARGET)
+
+distclean: clean libclean
+	$(RM) -r asm/ assets/ .splat/
 	$(RM) -r linker_scripts/$(VERSION)/auto $(LDSCRIPT)
+	$(MAKE) -C lib/ultralib distclean
 	$(MAKE) -C tools distclean
 
 venv:
@@ -237,9 +248,12 @@ venv:
 setup:
 	$(MAKE) -C tools
 
+lib:
+	$(MAKE) -C lib/ultralib VERSION=$(ULTRALIB_VERSION) TARGET=$(ULTRALIB_TARGET) COMPARE=0 CROSS=$(CROSS) CC=../../$(CC)
+
 extract:
 	$(RM) -r asm/$(VERSION) assets/$(VERSION)
-	$(CAT) yamls/$(VERSION)/header.yaml yamls/$(VERSION)/makerom.yaml yamls/$(VERSION)/main.yaml > $(SPLAT_YAML)
+	$(CAT) yamls/$(VERSION)/header.yaml yamls/$(VERSION)/makerom.yaml yamls/$(VERSION)/main.yaml yamls/$(VERSION)/overlays.yaml > $(SPLAT_YAML)
 	$(SPLAT) $(SPLAT_FLAGS) $(SPLAT_YAML)
 
 diff-init: rom
@@ -251,6 +265,7 @@ init: distclean
 	$(MAKE) venv
 	$(MAKE) setup
 	$(MAKE) extract
+	$(MAKE) lib
 	$(MAKE) all
 	$(MAKE) diff-init
 
@@ -260,7 +275,7 @@ ifeq ($(N64_EMULATOR),)
 endif
 	$(N64_EMULATOR) $<
 
-.PHONY: all rom clean distclean setup extract diff-init init venv run
+.PHONY: all rom clean libclean distclean setup extract lib diff-init init venv run
 .DEFAULT_GOAL := rom
 # Prevent removing intermediate files
 .SECONDARY:
@@ -273,11 +288,20 @@ $(ROM): $(ELF)
 # TODO: update rom header checksum
 
 # TODO: avoid using auto/undefined
-$(ELF): $(LIBULTRA_O) $(O_FILES) $(LDSCRIPT) $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_syms_auto.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_funcs_auto.ld
+$(ELF): $(O_FILES) $(LIBULTRA) $(LDSCRIPT) $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_syms_auto.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_funcs_auto.ld
 	$(LD) $(LDFLAGS) -T $(LDSCRIPT) \
 		-T $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld \
 		-T $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_syms_auto.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_funcs_auto.ld \
-		-Map $(MAP) -o $@
+		-Map $(MAP) $(LIBULTRA) -o $@
+
+$(LDSCRIPT): linker_scripts/$(VERSION)/yoshisstory.ld
+	cp $< $@
+
+$(LIBULTRA): $(ULTRALIB_LIB)
+	cp $< $@
+
+$(ULTRALIB_LIB):
+	$(MAKE) lib
 
 $(BUILD_DIR)/%.ld: %.ld
 	$(CPP) $(CPPFLAGS) $(BUILD_DEFINES) $(IINC) $< > $@
@@ -290,8 +314,8 @@ $(BUILD_DIR)/%.o: %.s
 	$(OBJDUMP_CMD)
 
 $(BUILD_DIR)/%.o: %.c
-	$(CC_CHECK) $(CC_CHECK_FLAGS) $(IINC) -I $(dir $*) $(CHECK_WARNINGS) $(BUILD_DEFINES) $(COMMON_DEFINES) $(RELEASE_DEFINES) $(GBI_DEFINES) $(C_DEFINES) $(MIPS_BUILTIN_DEFS) -o $@ $<
-	$(CC) -c $(CFLAGS) $(BUILD_DEFINES) $(IINC) $(WARNINGS) $(MIPS_VERSION) $(ENDIAN) $(COMMON_DEFINES) $(RELEASE_DEFINES) $(GBI_DEFINES) $(C_DEFINES) $(OPTFLAGS) -o $@ $<
+	$(CC_CHECK) $(CC_CHECK_FLAGS) $(IINC) -I $(dir $*) $(CHECK_WARNINGS) $(BUILD_DEFINES) $(COMMON_DEFINES) $(RELEASE_DEFINES) $(GBI_DEFINES) $(LIBULTRA_DEFINES) $(C_DEFINES) $(MIPS_BUILTIN_DEFS) -o $@ $<
+	$(CC) -c $(CFLAGS) $(BUILD_DEFINES) $(IINC) $(WARNINGS) $(MIPS_VERSION) $(ENDIAN) $(COMMON_DEFINES) $(RELEASE_DEFINES) $(GBI_DEFINES) $(LIBULTRA_DEFINES) $(C_DEFINES) $(OPTFLAGS) -o $@ $<
 	$(OBJDUMP_CMD)
 	$(RM_MDEBUG)
 
