@@ -8,8 +8,29 @@ MAKEFLAGS += --no-builtin-rules
 SHELL = /bin/bash
 .SHELLFLAGS = -o pipefail -c
 
-#### Defaults ####
+# OS Detection
+ifeq ($(OS),Windows_NT)
+  DETECTED_OS = windows
+  MAKE = make
+  VENV_BIN_DIR = Scripts
+else
+  UNAME_S := $(shell uname -s)
+  ifeq ($(UNAME_S),Linux)
+    DETECTED_OS = linux
+    MAKE = make
+    VENV_BIN_DIR = bin
+  endif
+  ifeq ($(UNAME_S),Darwin)
+    DETECTED_OS = macos
+    MAKE = gmake
+    VENV_BIN_DIR = bin
+  endif
+endif
 
+#### Defaults ####
+# Target game version. Currently only the following version is supported:
+#   us   N64 USA (default)
+VERSION ?= us
 # If COMPARE is 1, check the output md5sum after building
 COMPARE ?= 1
 # If NON_MATCHING is 1, define the NON_MATCHING C flag when building
@@ -27,25 +48,28 @@ OBJDUMP_BUILD ?= 0
 FULL_DISASM ?= 0
 # Number of threads to compress with
 N_THREADS ?= $(shell nproc)
-
-# Set prefix to mips binutils binaries (mips-linux-gnu-ld => 'mips-linux-gnu-') - Change at your own risk!
-# In nearly all cases, not having 'mips-linux-gnu-*' binaries on the PATH is indicative of missing dependencies
+# MIPS toolchain prefix
 MIPS_BINUTILS_PREFIX ?= mips-linux-gnu-
+# Python virtual environment
+VENV ?= .venv
+# Python interpreter
+PYTHON ?= $(VENV)/$(VENV_BIN_DIR)/python3
+# Emulator w/ flags
+N64_EMULATOR ?=
 
 
-VERSION ?= us
-
-BASEROM              := baserom.$(VERSION).z64
-TARGET               := yoshisstory
+BASEROM_DIR := baseroms/$(VERSION)
+BASEROM     := $(BASEROM_DIR)/baserom.z64
+TARGET      := yoshisstory
 
 
 ### Output ###
 
 BUILD_DIR := build
-ROM       := $(BUILD_DIR)/$(TARGET).$(VERSION).z64
-ELF       := $(BUILD_DIR)/$(TARGET).$(VERSION).elf
-LD_MAP    := $(BUILD_DIR)/$(TARGET).$(VERSION).map
-LD_SCRIPT := linker_scripts/$(VERSION)/$(TARGET).ld
+ROM       := $(BUILD_DIR)/$(TARGET)-$(VERSION).z64
+ELF       := $(ROM:.z64=.elf)
+MAP       := $(ROM:.z64=.map)
+LDSCRIPT  := linker_scripts/$(VERSION)/$(TARGET)-$(VERSION).ld
 
 
 #### Setup ####
@@ -64,19 +88,11 @@ ifeq ($(NON_MATCHING),1)
     COMPARE  := 0
 endif
 
-MAKE = make
 CPPFLAGS += -fno-dollars-in-identifiers -P
 LDFLAGS  := --no-check-sections --accept-unknown-input-arch --emit-relocs
 
-UNAME_S := $(shell uname -s)
-ifeq ($(OS),Windows_NT)
-$(error Native Windows is currently unsupported for building this repository, use WSL instead c:)
-else ifeq ($(UNAME_S),Linux)
-    DETECTED_OS := linux
-else ifeq ($(UNAME_S),Darwin)
-    DETECTED_OS := macos
-    MAKE := gmake
-    CPPFLAGS += -xc++
+ifeq ($(DETECTED_OS), macos)
+  CPPFLAGS += -xc++
 endif
 
 #### Tools ####
@@ -95,13 +111,13 @@ OBJCOPY         := $(MIPS_BINUTILS_PREFIX)objcopy
 OBJDUMP         := $(MIPS_BINUTILS_PREFIX)objdump
 CPP             := cpp
 ICONV           := iconv
-ASM_PROC        := python3 tools/asm-processor/build.py
+ASM_PROC        := $(PYTHON) tools/asm-processor/build.py
 CAT             := cat
 
 ASM_PROC_FLAGS  := --input-enc=utf-8 --output-enc=euc-jp --convert-statics=global-with-filename
 
-SPLAT           ?= splat split
-SPLAT_YAML      ?= $(TARGET).$(VERSION).yaml
+SPLAT           ?= $(PYTHON) -m splat split
+SPLAT_YAML      ?= $(TARGET)-$(VERSION).yaml
 
 
 
@@ -156,12 +172,6 @@ else
     OBJCOPY_BIN = @:
 endif
 
-# rom compression flags
-COMPFLAGS := --threads $(N_THREADS)
-ifeq ($(NON_MATCHING),0)
-    COMPFLAGS += --matching
-endif
-
 SPLAT_FLAGS ?=
 ifneq ($(FULL_DISASM), 0)
 	SPLAT_FLAGS += --disassemble-all
@@ -203,12 +213,12 @@ build/src/%.o: CC := $(ASM_PROC) $(ASM_PROC_FLAGS) $(CC) -- $(AS) $(ASFLAGS) --
 
 #### Main Targets ###
 
-all: uncompressed
+all: rom
 
-uncompressed: $(ROM)
+rom: $(ROM)
 ifneq ($(COMPARE),0)
 	@md5sum $(ROM)
-	@md5sum -c $(TARGET).$(VERSION).md5
+	@md5sum -c $(BASEROM_DIR)/checksum.md5
 endif
 
 clean:
@@ -216,8 +226,13 @@ clean:
 
 distclean: clean
 	$(RM) -r $(BUILD_DIR) asm/ assets/ .splat/
-	$(RM) -r linker_scripts/$(VERSION)/auto $(LD_SCRIPT)
+	$(RM) -r linker_scripts/$(VERSION)/auto $(LDSCRIPT)
 	$(MAKE) -C tools distclean
+
+venv:
+	test -d $(VENV) || python3 -m venv $(VENV)
+	$(PYTHON) -m pip install -U pip
+	$(PYTHON) -m pip install -U -r requirements.txt
 
 setup:
 	$(MAKE) -C tools
@@ -227,20 +242,26 @@ extract:
 	$(CAT) yamls/$(VERSION)/header.yaml yamls/$(VERSION)/makerom.yaml yamls/$(VERSION)/main.yaml > $(SPLAT_YAML)
 	$(SPLAT) $(SPLAT_FLAGS) $(SPLAT_YAML)
 
-diff-init: uncompressed
+diff-init: rom
 	$(RM) -rf expected/
 	mkdir -p expected/
 	cp -r $(BUILD_DIR) expected/$(BUILD_DIR)
 
-init:
-	$(MAKE) distclean
+init: distclean
+	$(MAKE) venv
 	$(MAKE) setup
 	$(MAKE) extract
 	$(MAKE) all
 	$(MAKE) diff-init
 
-.PHONY: all uncompressed clean distclean setup extract diff-init init
-.DEFAULT_GOAL := uncompressed
+run: $(ROM)
+ifeq ($(N64_EMULATOR),)
+	$(error Emulator path not set. Set N64_EMULATOR in the Makefile, .make_options, or define it as an environment variable)
+endif
+	$(N64_EMULATOR) $<
+
+.PHONY: all rom clean distclean setup extract diff-init init venv run
+.DEFAULT_GOAL := rom
 # Prevent removing intermediate files
 .SECONDARY:
 
@@ -252,11 +273,11 @@ $(ROM): $(ELF)
 # TODO: update rom header checksum
 
 # TODO: avoid using auto/undefined
-$(ELF): $(LIBULTRA_O) $(O_FILES) $(LD_SCRIPT) $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_syms_auto.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_funcs_auto.ld
-	$(LD) $(LDFLAGS) -T $(LD_SCRIPT) \
+$(ELF): $(LIBULTRA_O) $(O_FILES) $(LDSCRIPT) $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_syms_auto.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_funcs_auto.ld
+	$(LD) $(LDFLAGS) -T $(LDSCRIPT) \
 		-T $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld \
 		-T $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_syms_auto.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_funcs_auto.ld \
-		-Map $(LD_MAP) -o $@
+		-Map $(MAP) -o $@
 
 $(BUILD_DIR)/%.ld: %.ld
 	$(CPP) $(CPPFLAGS) $(BUILD_DEFINES) $(IINC) $< > $@

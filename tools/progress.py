@@ -70,7 +70,7 @@ def progressMain():
 
     args = parser.parse_args()
 
-    mapPath = Path("build") / f"yoshisstory.{args.version}.map"
+    mapPath = Path("build") / f"yoshisstory-{args.version}.map"
 
     totalStats, progressPerFolder = getProgress(mapPath, args.version)
 
