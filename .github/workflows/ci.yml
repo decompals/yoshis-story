@@ -32,10 +32,10 @@ jobs:
         token: ${{ secrets.SECRETTOKEN }}
         path: deps_repo
     - name: Get the dependency
-      run: cp deps_repo/yoshis-story/* .
+      run: cp deps_repo/yoshis-story/* baseroms/us/baserom.z64
 
     - name: venv
-      run: make venv -j $(nproc) VERSION=${{ mactrix.version }}
+      run: make venv -j $(nproc) VERSION=${{ matrix.version }}
 
     - name: Setup
       run: make setup -j $(nproc) VERSION=${{ matrix.version }}
