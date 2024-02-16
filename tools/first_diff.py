@@ -46,8 +46,8 @@ def firstDiffMain():
 
     buildFolder = Path("build")
 
-    BUILTROM = buildFolder / f"yoshisstory.{args.version}.z64"
-    BUILTMAP = buildFolder / f"yoshisstory.{args.version}.map"
+    BUILTROM = buildFolder / f"yoshisstory-{args.version}.z64"
+    BUILTMAP = buildFolder / f"yoshisstory-{args.version}.map"
 
     EXPECTEDROM = "expected" / BUILTROM
     EXPECTEDMAP = "expected" / BUILTMAP
