@@ -1,3 +1,14 @@
+# TODO: splat64 version to 0.21.11
 splat64[mips]>=0.21.3,<1.0.0
-mapfile-parser>=1.2.1,<2.0.0
+mapfile-parser>=2.3.5,<3.0.0
+
+# asm-differ
+argcomplete
 colorama
+cxxfilt
+python-Levenshtein
+watchdog
+
+# decomp-permuter
+pycparser
+toml
