@@ -49,7 +49,7 @@ FULL_DISASM ?= 0
 # Number of threads to compress with
 N_THREADS ?= $(shell nproc)
 # MIPS toolchain prefix
-MIPS_BINUTILS_PREFIX ?= mips-linux-gnu-
+CROSS ?= mips-linux-gnu-
 # Python virtual environment
 VENV ?= .venv
 # Python interpreter
@@ -62,7 +62,8 @@ BASEROM_DIR := baseroms/$(VERSION)
 BASEROM     := $(BASEROM_DIR)/baserom.z64
 TARGET      := yoshisstory
 
-ULTRALIB_VERSION     := H
+# ULTRALIB_VERSION should be H
+ULTRALIB_VERSION     := I
 ULTRALIB_TARGET      := libultra_rom
 
 ### Output ###
@@ -98,8 +99,8 @@ ifeq ($(DETECTED_OS), macos)
 endif
 
 #### Tools ####
-ifneq ($(shell type $(MIPS_BINUTILS_PREFIX)ld >/dev/null 2>/dev/null; echo $$?), 0)
-$(error Unable to find $(MIPS_BINUTILS_PREFIX)ld. Please install or build MIPS binutils, commonly mips-linux-gnu. (or set MIPS_BINUTILS_PREFIX if your MIPS binutils install uses another prefix))
+ifneq ($(shell type $(CROSS)ld >/dev/null 2>/dev/null; echo $$?), 0)
+$(error Unable to find $(CROSS)ld. Please install or build MIPS binutils, commonly mips-linux-gnu. (or set CROSS if your MIPS binutils install uses another prefix))
 endif
 
 
@@ -107,10 +108,10 @@ CC              := tools/ido/$(DETECTED_OS)/7.1/cc
 CC_OLD          := tools/ido/$(DETECTED_OS)/5.3/cc
 
 
-AS              := $(MIPS_BINUTILS_PREFIX)as
-LD              := $(MIPS_BINUTILS_PREFIX)ld
-OBJCOPY         := $(MIPS_BINUTILS_PREFIX)objcopy
-OBJDUMP         := $(MIPS_BINUTILS_PREFIX)objdump
+AS              := $(CROSS)as
+LD              := $(CROSS)ld
+OBJCOPY         := $(CROSS)objcopy
+OBJDUMP         := $(CROSS)objdump
 CPP             := cpp
 ICONV           := iconv
 ASM_PROC        := $(PYTHON) tools/asm-processor/build.py
@@ -236,6 +237,7 @@ libclean:
 distclean: clean libclean
 	$(RM) -r $(BUILD_DIR) asm/ assets/ .splat/
 	$(RM) -r linker_scripts/$(VERSION)/auto $(LDSCRIPT)
+	$(MAKE) -C lib/ultralib distclean
 	$(MAKE) -C tools distclean
 
 venv:
@@ -247,7 +249,7 @@ setup:
 	$(MAKE) -C tools
 
 lib:
-	$(MAKE) -C lib/ultralib VERSION=$(ULTRALIB_VERSION) TARGET=$(ULTRALIB_TARGET) COMPARE=0 CC=../../$(CC)
+	$(MAKE) -C lib/ultralib VERSION=$(ULTRALIB_VERSION) TARGET=$(ULTRALIB_TARGET) COMPARE=0 CROSS=$(CROSS) CC=../../$(CC)
 
 extract:
 	$(RM) -r asm/$(VERSION) assets/$(VERSION)
@@ -273,7 +275,7 @@ ifeq ($(N64_EMULATOR),)
 endif
 	$(N64_EMULATOR) $<
 
-.PHONY: all rom clean distclean setup extract lib diff-init init venv run
+.PHONY: all rom clean libclean distclean setup extract lib diff-init init venv run
 .DEFAULT_GOAL := rom
 # Prevent removing intermediate files
 .SECONDARY:
@@ -294,6 +296,9 @@ $(ELF): $(LIBULTRA) $(O_FILES) $(LDSCRIPT) $(BUILD_DIR)/linker_scripts/$(VERSION
 
 $(LIBULTRA): $(ULTRALIB_LIB)
 	cp $< $@
+
+$(ULTRALIB_LIB):
+	$(MAKE) lib
 
 $(BUILD_DIR)/%.ld: %.ld
 	$(CPP) $(CPPFLAGS) $(BUILD_DEFINES) $(IINC) $< > $@
