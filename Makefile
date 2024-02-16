@@ -198,7 +198,7 @@ O_FILES       := $(foreach f,$(C_FILES:.c=.o),$(BUILD_DIR)/$f) \
 
 ULTRALIB_DIR  := lib/ultralib
 ULTRALIB_LIB  := $(ULTRALIB_DIR)/build/$(ULTRALIB_VERSION)/$(ULTRALIB_TARGET)/$(ULTRALIB_TARGET).a
-LIBULTRA      := $(BUILD_DIR)/$(ULTRALIB_TARGET).a
+LIBULTRA      := $(BUILD_DIR)/libultra.a
 
 # Automatic dependency files
 DEP_FILES := $(O_FILES:.o=.d) \
@@ -229,13 +229,13 @@ ifneq ($(COMPARE),0)
 endif
 
 clean:
-	$(RM) -r $(BUILD_DIR)/asm $(BUILD_DIR)/assets $(BUILD_DIR)/src $(ROM) $(ELF)
+	$(RM) -r $(BUILD_DIR)
 
 libclean:
 	$(MAKE) -C lib/ultralib clean VERSION=$(ULTRALIB_VERSION) TARGET=$(ULTRALIB_TARGET)
 
 distclean: clean libclean
-	$(RM) -r $(BUILD_DIR) asm/ assets/ .splat/
+	$(RM) -r asm/ assets/ .splat/
 	$(RM) -r linker_scripts/$(VERSION)/auto $(LDSCRIPT)
 	$(MAKE) -C lib/ultralib distclean
 	$(MAKE) -C tools distclean
@@ -293,6 +293,9 @@ $(ELF): $(LIBULTRA) $(O_FILES) $(LDSCRIPT) $(BUILD_DIR)/linker_scripts/$(VERSION
 		-T $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld \
 		-T $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_syms_auto.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_funcs_auto.ld \
 		-Map $(MAP) -o $@
+
+$(LDSCRIPT): linker_scripts/$(VERSION)/yoshisstory.ld
+	cp $< $@
 
 $(LIBULTRA): $(ULTRALIB_LIB)
 	cp $< $@

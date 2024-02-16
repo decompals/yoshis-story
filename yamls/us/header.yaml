@@ -3,7 +3,7 @@ sha1: b13072fef6c6df48c07d8822c01e5bc59036f6da
 options:
   basename: yoshisstory
   target_path: baseroms/us/baserom.z64
-  ld_script_path: build/yoshisstory-us.ld
+  ld_script_path: linker_scripts/us/yoshisstory.ld
   base_path: .
   compiler: IDO
   find_file_boundaries: True
@@ -24,6 +24,7 @@ options:
   asset_path: assets/us
 
   build_path: build
+  lib_path: build
 
   extensions_path: tools/splat_ext
   mips_abi_float_regs: o32
