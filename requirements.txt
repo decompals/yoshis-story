@@ -6,7 +6,7 @@ mapfile-parser>=2.3.5,<3.0.0
 argcomplete
 colorama
 cxxfilt
-python-Levenshtein
+Levenshtein
 watchdog
 
 # decomp-permuter
