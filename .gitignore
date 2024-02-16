@@ -7,8 +7,8 @@ build/
 linker_scripts/us/auto/
 linker_scripts/us/yoshisstory.ld
 *_auto.ld
-yoshisstory.ld
-yoshisstory.us.yaml
+yoshisstory-*.ld
+yoshisstory-*.yaml
 
 __pycache__/
 .make_options
