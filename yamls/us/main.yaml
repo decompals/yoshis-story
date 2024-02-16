@@ -374,28 +374,28 @@
       - [0xB5880, rodata]
 
 
-      - {start: 0xB58B0, type: bss, vram: 0x800B4CB0, name: 800B4CB0, size: 0x53980}
-      - {start: 0xB58B0, type: .bss, name: fault}
-      - {start: 0xB58B0, type: bss, name: 801090D0, size: 0x5770}
-      - {start: 0xB58B0, type: .bss, name: dmamgr}
-      - {start: 0xB58B0, type: .bss, name: 7EFD0}
+      - {start: 0xB58B0, type: bss, vram: 0x800B4CB0, name: 800B4CB0}
+      - {start: 0xB58B0, type: .bss, vram: 0x80108630, name: fault}
+      - {start: 0xB58B0, type: bss, vram: 0x801090D0, name: 801090D0}
+      - {start: 0xB58B0, type: .bss, vram: 0x8010E840, name: dmamgr}
+      - {start: 0xB58B0, type: .bss, vram: 0x8010ED90, name: 7EFD0}
 
       # Libultra
-      - [0xB58B0, lib, libultra, sptask, .bss]
-      - [0xB58B0, lib, libultra, us2dex_emu, .bss]
-      - [0xB58B0, lib, libultra, leointerrupt, .bss]
-      - [0xB58B0, lib, libultra, controller, .bss]
-      - [0xB58B0, lib, libultra, siacs, .bss]
-      - [0xB58B0, lib, libultra, driverominit, .bss]
-      - [0xB58B0, lib, libultra, initialize, .bss]
-      - [0xB58B0, lib, libultra, kdebugserver, .bss]
-      - [0xB58B0, lib, libultra, motor, .bss]
-      - [0xB58B0, lib, libultra, pimgr, .bss]
-      - [0xB58B0, lib, libultra, cartrominit, .bss]
-      - [0xB58B0, lib, libultra, piacs, .bss]
-      - [0xB58B0, lib, libultra, seteventmesg, .bss]
-      - [0xB58B0, lib, libultra, leodiskinit, .bss]
-      - [0xB58B0, lib, libultra, timerintr, .bss]
-      - [0xB58B0, lib, libultra, pfsisplug, .bss]
-      - [0xB58B0, lib, libultra, vimgr, .bss]
-      - [0xB58B0, lib, libultra, conteepread, .bss]
+      - {start: 0xB58B0, type: lib, vram: 0x8010F0C0, name: libultra, object: sptask, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x8010F100, name: libultra, object: us2dex_emu, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x8010F120, name: libultra, object: leointerrupt, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x80110120, name: libultra, object: controller, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x801101B0, name: libultra, object: siacs, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x801101D0, name: libultra, object: driverominit, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x80110250, name: libultra, object: initialize, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x80110260, name: libultra, object: kdebugserver, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x80110410, name: libultra, object: motor, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x80110650, name: libultra, object: pimgr, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x80111820, name: libultra, object: cartrominit, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x801118A0, name: libultra, object: piacs, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x801118C0, name: libultra, object: seteventmesg, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x80111940, name: libultra, object: leodiskinit, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x801119C0, name: libultra, object: timerintr, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x80111A00, name: libultra, object: pfsisplug, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x80111A40, name: libultra, object: vimgr, section: .bss}
+      - {start: 0xB58B0, type: lib, vram: 0x80112C60, name: libultra, object: conteepread, section: .bss}
