@@ -69,7 +69,7 @@ BUILD_DIR := build
 ROM       := $(BUILD_DIR)/$(TARGET)-$(VERSION).z64
 ELF       := $(ROM:.z64=.elf)
 MAP       := $(ROM:.z64=.map)
-LDSCRIPT  := linker_scripts/$(VERSION)/$(TARGET)-$(VERSION).ld
+LDSCRIPT  := $(ROM:.z64=.ld)
 
 
 #### Setup ####
