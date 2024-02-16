@@ -34,6 +34,9 @@ jobs:
     - name: Get the dependency
       run: cp deps_repo/yoshis-story/* .
 
+    - name: venv
+      run: make venv -j $(nproc) VERSION=${{ mactrix.version }}
+
     - name: Setup
       run: make setup -j $(nproc) VERSION=${{ matrix.version }}
 
