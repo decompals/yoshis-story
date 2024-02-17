@@ -3,6 +3,10 @@
 
 #include "ultra64.h"
 
+typedef struct EepRequest {
+    /* 0x0 */ s16 unk0;
+    /* 0x4 */ void* unk4;
+} EepRequest;
 
 typedef struct EepMgr {
     /* 0x000 */ OSMesg unk000[4];
