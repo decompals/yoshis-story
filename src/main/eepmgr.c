@@ -213,12 +213,21 @@ s32 func_8007D508(EepMgr* eepmgr) {
     s32 msg;
 
     osRecvMesg(&eepmgr->unk02C, (OSMesg*)&msg, OS_MESG_BLOCK);
-    eepmgr->unk048 = 0;
+    eepmgr->unk048.unk0 = 0;
     return msg;
 }
 
-void func_8007D540(EepMgr* eepmgr, s32 arg1);
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007D540.s")
+void func_8007D540(EepMgr* eepmgr, void* arg1) {
+    EepRequest* req = &eepmgr->unk048;
+
+    if (req->unk0 != 0) {
+        LOOP();
+    }
+
+    req->unk0 = 8;
+    req->unk4 = arg1;
+    osSendMesg(&eepmgr->unk014, &eepmgr->unk048, OS_MESG_BLOCK);
+}
 
 void func_8007D590(EepMgr* eepmgr, s32 arg1);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007D590.s")
