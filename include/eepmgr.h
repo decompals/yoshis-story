@@ -17,10 +17,9 @@ typedef struct EepMgr {
     /* 0x068 */ OSThread thread;
     /* 0x218 */ s32 unk218;
     /* 0x21C */ u8 unk21C;
-    /* 0x21D */ char unk_21D[0x1];
     /* 0x21E */ u16 unk21E;
-    /* 0x220 */ s32 unk220;
-    /* 0x224 */ char unk_224[0x4];
+    /* 0x220 */ EepRequest* unk220;
+    /* 0x224 */ u8 unk224;
 } EepMgr; // size = 0x228
 
 #endif

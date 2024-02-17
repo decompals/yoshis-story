@@ -3,7 +3,7 @@
 #include "global.h"
 
 s32 D_800A9A20 = 1;
-u16 D_800A9A24[] = { 0, 0x40, 0x100 };
+u16 D_800A9A24[] = { 0, 0x200 / 8, 0x800 / 8 };
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007CDA0.s")
 
@@ -12,7 +12,7 @@ u16 D_800A9A24[] = { 0, 0x40, 0x100 };
 void func_8007CDFC(EepMgr* eepmgr);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007CDFC.s")
 
-void func_8007CF50(EepMgr* eepmgr, s32 arg1, s32 arg2, s32 arg3) {
+void func_8007CF50(EepMgr* eepmgr, s32 arg1, s32 arg2, void* arg3) {
     bzero(eepmgr, sizeof(EepMgr));
     eepmgr->unk218 = arg1;
     eepmgr->unk220 = arg3;
@@ -20,15 +20,36 @@ void func_8007CF50(EepMgr* eepmgr, s32 arg1, s32 arg2, s32 arg3) {
     eepmgr->unk21E = D_800A9A24[eepmgr->unk21C];
 }
 
+s32 func_8007CFB0(EepMgr* eepmgr, u8 arg1, EepRequest* arg2);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007CFB0.s")
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007D0B0.s")
 
-OSMesg func_8007D1EC(EepMgr* eepmgr, void* arg1);
+s32 func_8007D1EC(EepMgr* eepmgr, void* arg1);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007D1EC.s")
 
-OSMesg func_8007D2C4(EepMgr* eepmgr, void* arg1);
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007D2C4.s")
+s32 func_8007D2C4(EepMgr* eepmgr, void* arg1) {
+    s32 var_s0;
+    EepRequest* req;
+
+    if (eepmgr->unk21C == 0) {
+        return -1;
+    }
+
+    if (eepmgr->unk224 == 0) {
+        req = eepmgr->unk220;
+        for (var_s0 = 0; var_s0 < eepmgr->unk21E; var_s0++) {
+            if (func_8007CFB0(eepmgr, var_s0, req)) {
+                return -1;
+            }
+            req++;
+        }
+        eepmgr->unk224 = 1;
+    }
+
+    bcopy(eepmgr->unk220, arg1, eepmgr->unk21E * 8);
+    return 0;
+}
 
 void func_8007D380(void* arg) {
     EepRequest* req = NULL;
@@ -41,12 +62,12 @@ void func_8007D380(void* arg) {
         switch (req->unk0) {
             case 8:
                 if (1) {}
-                osSendMesg(&eepmgr->unk02C, func_8007D2C4(eepmgr, req->unk4), OS_MESG_BLOCK);
+                osSendMesg(&eepmgr->unk02C, (OSMesg)func_8007D2C4(eepmgr, req->unk4), OS_MESG_BLOCK);
                 break;
 
             case 9:
                 if (1) {}
-                osSendMesg(&eepmgr->unk02C, func_8007D1EC(eepmgr, req->unk4), OS_MESG_BLOCK);
+                osSendMesg(&eepmgr->unk02C, (OSMesg)func_8007D1EC(eepmgr, req->unk4), OS_MESG_BLOCK);
                 break;
 
                 //! FAKE:
@@ -57,7 +78,7 @@ void func_8007D380(void* arg) {
     } while (req->unk0 != 4);
 }
 
-void func_8007D488(EepMgr* eepmgr, s32 arg1, s32 arg2, s32 arg3, s32 id, s32 priority, void* stack) {
+void func_8007D488(EepMgr* eepmgr, s32 arg1, s32 arg2, void* arg3, s32 id, s32 priority, void* stack) {
     func_8007CF50(eepmgr, arg1, arg2, arg3);
     osCreateMesgQueue(&eepmgr->unk014, eepmgr->unk000, ARRAY_COUNT(eepmgr->unk000));
     osCreateMesgQueue(&eepmgr->unk02C, eepmgr->unk004, ARRAY_COUNT(eepmgr->unk004));
