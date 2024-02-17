@@ -20,29 +20,57 @@ void func_8007CF50(EepMgr* eepmgr, s32 arg1, s32 arg2, void* arg3) {
     eepmgr->unk21E = D_800A9A24[eepmgr->unk21C];
 }
 
-s32 func_8007CFB0(EepMgr* eepmgr, u8 arg1, EepRequest* arg2);
+s32 func_8007CFB0(EepMgr* eepmgr, u8 arg1, EepRequest2* arg2);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007CFB0.s")
 
+s32 func_8007D0B0(EepMgr* eepmgr, u8 arg1, EepRequest2* arg2);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007D0B0.s")
 
-s32 func_8007D1EC(EepMgr* eepmgr, void* arg1);
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007D1EC.s")
+#ifdef NON_MATCHING
+s32 func_8007D1EC(EepMgr* eepmgr, EepRequest2* arg1) {
+    EepRequest2* var_s0;
+    EepRequest2* var_s1;
+    s32 var_s2;
 
-s32 func_8007D2C4(EepMgr* eepmgr, void* arg1) {
+    if (eepmgr->unk21C == 0) {
+        return -1;
+    }
+    if (eepmgr->unk224 == 0) {
+        return -1;
+    }
+
+    for (var_s1 = eepmgr->unk220, var_s0 = arg1, var_s2 = 0; var_s2 < eepmgr->unk21E; var_s1++, var_s0++, var_s2++) {
+        if ((var_s1->unk0 == var_s0->unk0) && (var_s1->unk4 == var_s0->unk4)) {
+            continue;
+        }
+
+        if (func_8007D0B0(eepmgr, var_s2, var_s0)) {
+            return -1;
+        }
+        var_s1->unk0 = var_s0->unk0;
+        var_s1->unk4 = var_s0->unk4;
+    }
+
+    return 0;
+}
+#else
+s32 func_8007D1EC(EepMgr* eepmgr, EepRequest2* arg1);
+#pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007D1EC.s")
+#endif
+
+s32 func_8007D2C4(EepMgr* eepmgr, EepRequest2* arg1) {
     s32 var_s0;
-    EepRequest* req;
+    EepRequest2* req;
 
     if (eepmgr->unk21C == 0) {
         return -1;
     }
 
     if (eepmgr->unk224 == 0) {
-        req = eepmgr->unk220;
-        for (var_s0 = 0; var_s0 < eepmgr->unk21E; var_s0++) {
+        for (req = eepmgr->unk220, var_s0 = 0; var_s0 < eepmgr->unk21E; req++, var_s0++) {
             if (func_8007CFB0(eepmgr, var_s0, req)) {
                 return -1;
             }
-            req++;
         }
         eepmgr->unk224 = 1;
     }

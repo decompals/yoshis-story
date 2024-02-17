@@ -8,6 +8,11 @@ typedef struct EepRequest {
     /* 0x4 */ void* unk4;
 } EepRequest;
 
+typedef struct EepRequest2 {
+    /* 0x0 */ s32 unk0;
+    /* 0x4 */ s32 unk4;
+} EepRequest2;
+
 typedef struct EepMgr {
     /* 0x000 */ OSMesg unk000[4];
     /* 0x010 */ OSMesg unk004[1];
@@ -18,7 +23,7 @@ typedef struct EepMgr {
     /* 0x218 */ s32 unk218;
     /* 0x21C */ u8 unk21C;
     /* 0x21E */ u16 unk21E;
-    /* 0x220 */ EepRequest* unk220;
+    /* 0x220 */ EepRequest2* unk220;
     /* 0x224 */ u8 unk224;
 } EepMgr; // size = 0x228
 
