@@ -25,19 +25,16 @@ void func_8007CF50(EepMgr* eepmgr, s32 arg1, s32 arg2, void* arg3) {
 
 #define OS_CYCLES_TO_USEC_ALT(c) (((u64)(c) * (1000000LL / 15625LL)) / (osClockRate / 15625LL))
 
-s32 func_8007CFB0(EepMgr* eepmgr, u8 arg1, EepRequest2* arg2);
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007CFB0.s")
-
-s32 func_8007D0B0(EepMgr* eepmgr, u8 arg1, EepRequest2* arg2) {
-    s32 write;
+s32 func_8007CFB0(EepMgr* eepmgr, u8 arg1, EepRequest2* arg2) {
+    s32 status;
     OSTime before;
     OSTime after;
 
     func_8007CDA0(eepmgr);
 
-    eepmgr->unk225 = 2;
+    eepmgr->unk225 = 1;
     before = osGetTime();
-    write = osEepromWrite(eepmgr->unk044, arg1, (u8*)arg2);
+    status = osEepromRead(eepmgr->unk044, arg1, (u8*)arg2);
     after = osGetTime();
     eepmgr->unk225 = 0;
 
@@ -47,11 +44,39 @@ s32 func_8007D0B0(EepMgr* eepmgr, u8 arg1, EepRequest2* arg2) {
         (void)OS_CYCLES_TO_USEC_ALT(after - before);
     }
 
-    if (write != 0) {
+    if (status != 0) {
         return -1;
     }
 
-    if(D_800A9A20) {}
+    if (D_800A9A20) {}
+
+    return 0;
+}
+
+s32 func_8007D0B0(EepMgr* eepmgr, u8 arg1, EepRequest2* arg2) {
+    s32 status;
+    OSTime before;
+    OSTime after;
+
+    func_8007CDA0(eepmgr);
+
+    eepmgr->unk225 = 2;
+    before = osGetTime();
+    status = osEepromWrite(eepmgr->unk044, arg1, (u8*)arg2);
+    after = osGetTime();
+    eepmgr->unk225 = 0;
+
+    func_8007CDCC(eepmgr);
+
+    if (D_800A9A20 >= 2) {
+        (void)OS_CYCLES_TO_USEC_ALT(after - before);
+    }
+
+    if (status != 0) {
+        return -1;
+    }
+
+    if (D_800A9A20) {}
 
     csleep((15 * osClockRate) / 1000ULL);
     return 0;
