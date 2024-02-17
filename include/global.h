@@ -8,6 +8,7 @@
 #include "libc/stdint.h"
 
 #include "attributes.h"
+#include "eepmgr.h"
 #include "macros.h"
 #include "unk.h"
 #include "ys64math.h"
@@ -57,6 +58,9 @@ void func_8006F560(Y65430UnkStruct*, Y65430UnkStruct*);
 
 // dma
 void DmaMgr_RequestSync(void* ram, u32 vrom, u32 size);
+
+// 740F0
+void func_8007451C(s32 arg0, OSMesgQueue* arg1, void*);
 
 // 80C50
 void func_800800CC(MtxF* mfA, MtxF* mfB);

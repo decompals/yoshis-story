@@ -15,8 +15,10 @@ u16 D_800A9A24[] = { 0, 0x200 / 8, 0x800 / 8 };
 void func_8007CDA0(EepMgr* eepmgr);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007CDA0.s")
 
-void func_8007CDCC(EepMgr* eepmgr);
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007CDCC.s")
+void func_8007CDCC(EepMgr* eepmgr) {
+    func_8007451C(eepmgr->unk218, eepmgr->unk044, eepmgr);
+    eepmgr->unk044 = NULL;
+}
 
 void func_8007CDFC(EepMgr* eepmgr) {
     s32 status;
