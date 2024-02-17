@@ -178,7 +178,7 @@ endif
 
 SPLAT_FLAGS ?=
 ifneq ($(FULL_DISASM), 0)
-	SPLAT_FLAGS += --disassemble-all
+    SPLAT_FLAGS += --disassemble-all
 endif
 
 #### Files ####
