@@ -60,7 +60,8 @@ void func_8006F560(Y65430UnkStruct*, Y65430UnkStruct*);
 void DmaMgr_RequestSync(void* ram, u32 vrom, u32 size);
 
 // 740F0
-void func_8007451C(s32 arg0, OSMesgQueue* arg1, void*);
+OSMesgQueue* func_800744B0(s32 arg0);
+void func_8007451C(s32 arg0, OSMesgQueue* arg1);
 
 // 80C50
 void func_800800CC(MtxF* mfA, MtxF* mfB);

@@ -12,11 +12,12 @@ u16 D_800A9A24[] = { 0, 0x200 / 8, 0x800 / 8 };
 
 #define OS_CYCLES_TO_USEC_ALT(c) (((u64)(c) * (1000000LL / 15625LL)) / (osClockRate / 15625LL))
 
-void func_8007CDA0(EepMgr* eepmgr);
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007CDA0.s")
+void func_8007CDA0(EepMgr* eepmgr) {
+    eepmgr->unk044 = func_800744B0(eepmgr->unk218);
+}
 
 void func_8007CDCC(EepMgr* eepmgr) {
-    func_8007451C(eepmgr->unk218, eepmgr->unk044, eepmgr);
+    func_8007451C(eepmgr->unk218, eepmgr->unk044);
     eepmgr->unk044 = NULL;
 }
 
