@@ -3,8 +3,14 @@
 #include "global.h"
 #include "sleep.h"
 
+#define LOOP()   \
+    while (true) \
+    (void)0
+
 s32 D_800A9A20 = 1;
 u16 D_800A9A24[] = { 0, 0x200 / 8, 0x800 / 8 };
+
+#define OS_CYCLES_TO_USEC_ALT(c) (((u64)(c) * (1000000LL / 15625LL)) / (osClockRate / 15625LL))
 
 void func_8007CDA0(EepMgr* eepmgr);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007CDA0.s")
@@ -12,8 +18,40 @@ void func_8007CDA0(EepMgr* eepmgr);
 void func_8007CDCC(EepMgr* eepmgr);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007CDCC.s")
 
-void func_8007CDFC(EepMgr* eepmgr);
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007CDFC.s")
+void func_8007CDFC(EepMgr* eepmgr) {
+    s32 status;
+    OSTime before;
+    OSTime after;
+
+    func_8007CDA0(eepmgr);
+
+    eepmgr->unk225 = 1;
+    before = osGetTime();
+    status = osEepromProbe(eepmgr->unk044);
+    after = osGetTime();
+    eepmgr->unk225 = 0;
+
+    func_8007CDCC(eepmgr);
+
+    if (D_800A9A20 >= 3) {
+        (void)OS_CYCLES_TO_USEC_ALT(after - before);
+    }
+    if (status == 0) {
+        if (D_800A9A20 != 0) {}
+    } else if (status == 1) {
+        if (D_800A9A20 != 0) {}
+    } else if (status == 2) {
+        if (D_800A9A20 != 0) {}
+    } else {
+        LOOP();
+    }
+
+    if (D_800A9A20 != 0) {}
+
+    if (eepmgr->unk21C != status) {
+        LOOP();
+    }
+}
 
 void func_8007CF50(EepMgr* eepmgr, s32 arg1, s32 arg2, void* arg3) {
     bzero(eepmgr, sizeof(EepMgr));
@@ -22,8 +60,6 @@ void func_8007CF50(EepMgr* eepmgr, s32 arg1, s32 arg2, void* arg3) {
     eepmgr->unk21C = arg2;
     eepmgr->unk21E = D_800A9A24[eepmgr->unk21C];
 }
-
-#define OS_CYCLES_TO_USEC_ALT(c) (((u64)(c) * (1000000LL / 15625LL)) / (osClockRate / 15625LL))
 
 s32 func_8007CFB0(EepMgr* eepmgr, u8 arg1, EepRequest2* arg2) {
     s32 status;
@@ -48,7 +84,7 @@ s32 func_8007CFB0(EepMgr* eepmgr, u8 arg1, EepRequest2* arg2) {
         return -1;
     }
 
-    if (D_800A9A20) {}
+    if (D_800A9A20 != 0) {}
 
     return 0;
 }
@@ -76,7 +112,7 @@ s32 func_8007D0B0(EepMgr* eepmgr, u8 arg1, EepRequest2* arg2) {
         return -1;
     }
 
-    if (D_800A9A20) {}
+    if (D_800A9A20 != 0) {}
 
     csleep((15 * osClockRate) / 1000ULL);
     return 0;
