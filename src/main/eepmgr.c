@@ -209,8 +209,13 @@ void func_8007D488(EepMgr* eepmgr, s32 arg1, s32 arg2, void* arg3, s32 id, s32 p
     osStartThread(&eepmgr->thread);
 }
 
-void func_8007D508(EepMgr* eepmgr);
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007D508.s")
+s32 func_8007D508(EepMgr* eepmgr) {
+    s32 msg;
+
+    osRecvMesg(&eepmgr->unk02C, (OSMesg*)&msg, OS_MESG_BLOCK);
+    eepmgr->unk048 = 0;
+    return msg;
+}
 
 void func_8007D540(EepMgr* eepmgr, s32 arg1);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/eepmgr/func_8007D540.s")

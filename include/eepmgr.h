@@ -19,7 +19,8 @@ typedef struct EepMgr {
     /* 0x014 */ OSMesgQueue unk014;
     /* 0x02C */ OSMesgQueue unk02C;
     /* 0x044 */ OSMesgQueue* unk044;
-    /* 0x048 */ char unk_048[0x68 - 0x48];
+    /* 0x048 */ s16 unk048;
+    /* 0x04C */ char unk_04C[0x68 - 0x4C];
     /* 0x068 */ OSThread thread;
     /* 0x218 */ s32 unk218;
     /* 0x21C */ u8 unk21C;
