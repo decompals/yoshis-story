@@ -22,7 +22,7 @@ typedef struct EepMgr {
     /* 0x21C */ u8 type;
     /* 0x21E */ u16 numBlocks;
     /* 0x220 */ u64* buffer;
-    /* 0x224 */ u8 hasData;
+    /* 0x224 */ u8 cached;
     /* 0x225 */ u8 operation;
 } EepMgr; // size = 0x228
 
