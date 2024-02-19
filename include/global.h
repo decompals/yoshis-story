@@ -45,6 +45,8 @@ typedef struct Y511F0UnkStruct {
 extern Y511F0UnkStruct D_800DA840[];
 
 // 740F0
+OSMesgQueue* func_800744B0(s32 arg0);
+void func_8007451C(s32 arg0, OSMesgQueue* arg1);
 void func_80074C88(UNK_PTR, struct Input*, s32);
 
 // malloc
@@ -58,10 +60,6 @@ void func_8006F560(Y65430UnkStruct*, Y65430UnkStruct*);
 
 // dma
 void DmaMgr_RequestSync(void* ram, u32 vrom, u32 size);
-
-// 740F0
-OSMesgQueue* func_800744B0(s32 arg0);
-void func_8007451C(s32 arg0, OSMesgQueue* arg1);
 
 // 80C50
 void func_800800CC(MtxF* mfA, MtxF* mfB);
