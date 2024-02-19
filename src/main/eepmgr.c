@@ -74,7 +74,7 @@ void eepmgr_Probe(EepMgr* eepmgr) {
 void eepmgr_Setup(EepMgr* eepmgr, s32 arg1, s32 type, u64* buffer) {
     bzero(eepmgr, sizeof(EepMgr));
     eepmgr->unk218 = arg1;
-    eepmgr->buffer = buffer;
+    eepmgr->cache = buffer;
     eepmgr->type = type;
     eepmgr->numBlocks = sMaxBlocks[eepmgr->type];
 }
@@ -150,8 +150,8 @@ s32 eepmgr_Write(EepMgr* eepmgr, u8 addr, u64* buffer) {
 }
 
 s32 eepmgr_HandleWrite(EepMgr* eepmgr, u64* buffer) {
-    u64* readBuffer;
-    u64* iter;
+    u64* bufferIter;
+    u64* cacheIter;
     s32 i;
 
     if (eepmgr->type == 0) {
@@ -168,26 +168,26 @@ s32 eepmgr_HandleWrite(EepMgr* eepmgr, u64* buffer) {
         return -1;
     }
 
-    iter = eepmgr->buffer;
-    readBuffer = buffer;
+    cacheIter = eepmgr->cache;
+    bufferIter = buffer;
     for (i = 0; i < eepmgr->numBlocks; i++) {
-        if (*readBuffer != *iter) {
-            if (eepmgr_Write(eepmgr, i, readBuffer) != 0) {
+        if (*bufferIter != *cacheIter) {
+            if (eepmgr_Write(eepmgr, i, bufferIter) != 0) {
                 return -1;
             }
 
-            *iter = *readBuffer;
+            *cacheIter = *bufferIter;
         }
 
-        iter++;
-        readBuffer++;
+        cacheIter++;
+        bufferIter++;
     }
 
     return 0;
 }
 
 s32 eepmgr_HandleRead(EepMgr* eepmgr, u64* arg1) {
-    u64* iter;
+    u64* cacheIter;
     s32 i;
 
     if (eepmgr->type == 0) {
@@ -197,17 +197,17 @@ s32 eepmgr_HandleRead(EepMgr* eepmgr, u64* arg1) {
     }
 
     if (!eepmgr->cached) {
-        iter = eepmgr->buffer;
+        cacheIter = eepmgr->cache;
         for (i = 0; i < eepmgr->numBlocks; i++) {
-            if (eepmgr_Read(eepmgr, i, iter) != 0) {
+            if (eepmgr_Read(eepmgr, i, cacheIter) != 0) {
                 return -1;
             }
-            iter++;
+            cacheIter++;
         }
         eepmgr->cached = true;
     }
 
-    bcopy(eepmgr->buffer, arg1, eepmgr->numBlocks * EEPROM_BLOCK_SIZE);
+    bcopy(eepmgr->cache, arg1, eepmgr->numBlocks * EEPROM_BLOCK_SIZE);
     return 0;
 }
 
@@ -238,7 +238,7 @@ void eepmgr_ThreadEntry(void* arg) {
 
             case EEP_WRITE_MSG:
                 if (gEepmgrLogSeverity != 0) {
-                    // eepmgr:Receive save command
+                    // eepmgr: Receive save command
                     (void)"eepmgr:セーブコマンド受信\n";
                 }
                 osSendMesg(&eepmgr->unk02C, (OSMesg)eepmgr_HandleWrite(eepmgr, req->buffer), OS_MESG_BLOCK);
