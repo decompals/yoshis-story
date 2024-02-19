@@ -6,6 +6,10 @@ Fault_SetFramebuffer = 0x80071250; // type:func
 Fault_Init = 0x8007127C; // type:func
 Fault_HungUp = 0x80071380; // type:func
 
+eepmgr_Create = 0x8007D488; // type:func
+eepmgr_SendRead = 0x8007D540; // type:func
+eepmgr_SendWrite = 0x8007D590; // type:func
+
 DmaMgr_RequestSync = 0x8007DF0C; // type:func
 DmaMgr_Init = 0x8007DF74; // type:func
 

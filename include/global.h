@@ -8,6 +8,7 @@
 #include "libc/stdint.h"
 
 #include "attributes.h"
+#include "eepmgr.h"
 #include "macros.h"
 #include "unk.h"
 #include "ys64math.h"
@@ -44,6 +45,8 @@ typedef struct Y511F0UnkStruct {
 extern Y511F0UnkStruct D_800DA840[];
 
 // 740F0
+OSMesgQueue* func_800744B0(s32 arg0);
+void func_8007451C(s32 arg0, OSMesgQueue* arg1);
 void func_80074C88(UNK_PTR, struct Input*, s32);
 
 // malloc
