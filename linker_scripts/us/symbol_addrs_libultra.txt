@@ -441,9 +441,9 @@ cpihi = 0x800B3420; // type:f64
 cpilo = 0x800B3428; // type:f64
 czero = 0x800B3430; // type:f32
 
-pows = 0x800B3450; // type:f64 size:0x48 (xldtob, false)
-
 __libm_qnan_f = 0x800B3440; // size:0x4
+
+pows = 0x800B3450; // type:f64 size:0x48 (xldtob, false)
 
 
 // .bss
