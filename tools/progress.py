@@ -23,7 +23,15 @@ def getProgressFromMapFile(mapFile: mapfile_parser.MapFile, asmPath: Path, nonma
             if len(file) == 0:
                 continue
 
-            folder = file.filepath.parts[pathIndex]
+            fileparts = file.filepath.parts
+            if "ultralib" in fileparts:
+                folder = "ultralib"
+            else:
+                folder = fileparts[pathIndex]
+
+            if ".a" in folder:
+                folder = folder.split('.a')[0]
+
             if folder in aliases:
                 folder = aliases[folder]
 
@@ -31,19 +39,31 @@ def getProgressFromMapFile(mapFile: mapfile_parser.MapFile, asmPath: Path, nonma
                 progressPerFolder[folder] = mapfile_parser.ProgressStats()
 
             originalFilePath = Path(*file.filepath.parts[pathIndex:])
-            fullAsmFile = asmPath / originalFilePath.with_suffix(".s")
+
+            extensionlessFilePath = originalFilePath
+            while extensionlessFilePath.suffix:
+                extensionlessFilePath = extensionlessFilePath.with_suffix("")
+
+            fullAsmFile = asmPath / extensionlessFilePath.with_suffix(".s")
             wholeFileIsUndecomped = fullAsmFile.exists()
 
+
             for func in file:
+                funcAsmPath = nonmatchings / extensionlessFilePath / f"{func.name}.s"
+
+                symSize = 0
+                if func.size is not None:
+                    symSize = func.size
+
                 if wholeFileIsUndecomped:
-                    totalStats.undecompedSize += func.size
-                    progressPerFolder[folder].undecompedSize += func.size
-                elif mapFile.findSymbolByName(func.name) is not None:
-                    totalStats.undecompedSize += func.size
-                    progressPerFolder[folder].undecompedSize += func.size
+                    totalStats.undecompedSize += symSize
+                    progressPerFolder[folder].undecompedSize += symSize
+                elif funcAsmPath.exists():
+                    totalStats.undecompedSize += symSize
+                    progressPerFolder[folder].undecompedSize += symSize
                 else:
-                    totalStats.decompedSize += func.size
-                    progressPerFolder[folder].decompedSize += func.size
+                    totalStats.decompedSize += symSize
+                    progressPerFolder[folder].decompedSize += symSize
 
     return totalStats, progressPerFolder
 
@@ -64,7 +84,7 @@ def getProgress(mapPath: Path, version: str) -> tuple[mapfile_parser.ProgressSta
 
     nonMatchingsPath = ASMPATH / version / NONMATCHINGS
 
-    return mapFile.filterBySectionType(".text").getProgress(ASMPATH / version, nonMatchingsPath, aliases={"ultralib": "libultra"})
+    return getProgressFromMapFile(mapFile.filterBySectionType(".text"), ASMPATH / version, nonMatchingsPath, aliases={"ultralib": "libultra"})
 
 def progressMain():
     parser = argparse.ArgumentParser()
