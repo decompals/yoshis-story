@@ -24,7 +24,7 @@ options:
   asset_path: assets/us
 
   build_path: build
-  lib_path: build
+  lib_path: build/lib
 
   extensions_path: tools/splat_ext
   mips_abi_float_regs: o32

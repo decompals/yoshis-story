@@ -171,7 +171,7 @@ OBJDUMP_FLAGS := --disassemble --reloc --disassemble-zeroes -Mreg-names=32 -Mno-
 ifneq ($(OBJDUMP_BUILD), 0)
   OBJDUMP_CMD = $(OBJDUMP) $(OBJDUMP_FLAGS) $@ > $(@:.o=.s)
   OBJCOPY_BIN = $(OBJCOPY) -O binary $@ $@.bin
-  LIBDUMP_CMD = $(AR) xo --output $(BUILD_DIR)/lib $@
+  LIBDUMP_CMD = $(AR) xo --output $(@:.a=) $@
 else
   OBJDUMP_CMD = @:
   OBJCOPY_BIN = @:
@@ -187,9 +187,15 @@ endif
 
 $(shell mkdir -p asm assets linker_scripts/$(VERSION)/auto)
 
+ULTRALIB_DIR  := lib/ultralib
+ULTRALIB_LIB  := $(ULTRALIB_DIR)/build/$(ULTRALIB_VERSION)/$(ULTRALIB_TARGET)/$(ULTRALIB_TARGET).a
+LIBULTRA_DIR  := lib/libultra
+LIBULTRA_LIB  := $(BUILD_DIR)/$(LIBULTRA_DIR).a
+
 SRC_DIRS      := $(shell find src -type d)
 ASM_DIRS      := $(shell find asm/$(VERSION) -type d -not -path "asm/$(VERSION)/nonmatchings/*")
 BIN_DIRS      := $(shell find assets -type d)
+LIB_DIRS      := $(foreach f, $(LIBULTRA_DIR), $f)
 
 C_FILES       := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 S_FILES       := $(foreach dir,$(ASM_DIRS) $(SRC_DIRS),$(wildcard $(dir)/*.s))
@@ -198,16 +204,13 @@ O_FILES       := $(foreach f,$(C_FILES:.c=.o),$(BUILD_DIR)/$f) \
                  $(foreach f,$(S_FILES:.s=.o),$(BUILD_DIR)/$f) \
                  $(foreach f,$(BIN_FILES:.bin=.o),$(BUILD_DIR)/$f)
 
-ULTRALIB_DIR  := lib/ultralib
-ULTRALIB_LIB  := $(ULTRALIB_DIR)/build/$(ULTRALIB_VERSION)/$(ULTRALIB_TARGET)/$(ULTRALIB_TARGET).a
-LIBULTRA      := $(BUILD_DIR)/lib/libultra.a
 
 # Automatic dependency files
 DEP_FILES := $(O_FILES:.o=.d) \
              $(O_FILES:.o=.asmproc.d)
 
 # create build directories
-$(shell mkdir -p $(BUILD_DIR)/lib $(BUILD_DIR)/linker_scripts/$(VERSION) $(BUILD_DIR)/linker_scripts/$(VERSION)/auto $(foreach dir,$(SRC_DIRS) $(ASM_DIRS) $(BIN_DIRS),$(BUILD_DIR)/$(dir)))
+$(shell mkdir -p $(BUILD_DIR)/linker_scripts/$(VERSION) $(BUILD_DIR)/linker_scripts/$(VERSION)/auto $(foreach dir,$(SRC_DIRS) $(ASM_DIRS) $(BIN_DIRS) $(LIB_DIRS),$(BUILD_DIR)/$(dir)))
 
 
 # directory flags
@@ -290,15 +293,15 @@ $(ROM): $(ELF)
 # TODO: update rom header checksum
 
 # TODO: avoid using auto/undefined
-$(ELF): $(O_FILES) $(LIBULTRA) $(LDSCRIPT) $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld
+$(ELF): $(O_FILES) $(LIBULTRA_LIB) $(LDSCRIPT) $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld
 	$(LD) $(LDFLAGS) -T $(LDSCRIPT) \
 		-T $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld \
-		-Map $(MAP) $(LIBULTRA) -o $@
+		-Map $(MAP) $(LIBULTRA_LIB) -o $@
 
 $(LDSCRIPT): linker_scripts/$(VERSION)/yoshisstory.ld
 	cp $< $@
 
-$(LIBULTRA): $(ULTRALIB_LIB)
+$(LIBULTRA_LIB): $(ULTRALIB_LIB)
 	cp $< $@
 	$(LIBDUMP_CMD)
 
