@@ -38,6 +38,10 @@ extern UNK_TYPE D_8010DF40;
 extern UNK_TYPE D_80108624;
 extern UNK_TYPE D_80108628;
 
+extern u8 D_800FAAF8;
+extern u8 D_800FAB1C;
+extern u8 D_800FAB20;
+
 typedef struct Y511F0UnkStruct {
     /* 0x0 */ uintptr_t unk0;
     /* 0x4 */ s16 unk4;
@@ -68,6 +72,7 @@ void func_8006F500(void);
 
 // 740F0
 OSMesgQueue* func_800744B0(UNK_PTR arg0);
+void func_800748B0(UNK_PTR arg0);
 void func_8007451C(UNK_PTR arg0, OSMesgQueue* arg1);
 void func_80074C88(UNK_PTR, struct Input*, s32);
 

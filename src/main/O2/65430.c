@@ -464,7 +464,12 @@ void Main_ThreadEntry(UNUSED void* arg) {
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80069030.s")
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_8006915C.s")
+void func_8006915C(void) {
+    D_800FAAF8 = 0;
+    D_800FAB1C = 0;
+    D_800FAB20 = 1;
+    func_800748B0(&D_8010DF40);
+}
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_8006919C.s")
 
