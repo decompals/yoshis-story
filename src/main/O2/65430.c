@@ -501,13 +501,25 @@ void Main_ThreadEntry(UNUSED void* arg) {
 u16 func_800699BC(EepBuffer* arg0);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_800699BC.s")
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80069A80.s")
-
 extern EepMgr gEepMgr;
 extern EepBuffer D_800F97F8[2];
 extern STACK(sEepStack, 0x300);
 extern EepBuffer sEepBuff[2];
 extern StackEntry sEepStackInfo;
+
+s32 func_80069A80(void* arg0) {
+    func_80065528(&D_800F97F8[0].data, arg0, ARRAY_COUNT(D_800F97F8[0].data));
+    D_800F97F8[0].unk3FA = func_800699BC(D_800F97F8);
+    D_800F97F8[0].magic = EEPBUFFER_MAGIC;
+    D_800F97F8[1] = D_800F97F8[0];
+
+    eepmgr_SendWrite(&gEepMgr, D_800F97F8);
+    if (func_8007D508(&gEepMgr) != 0) {
+        return 1;
+    }
+
+    return 0;
+}
 
 s32 func_80069B34(UNK_PTR arg0) {
     eepmgr_SendRead(&gEepMgr, D_800F97F8);
@@ -516,12 +528,12 @@ s32 func_80069B34(UNK_PTR arg0) {
         return 1;
     }
 
-    if ((D_800F97F8[0].unk3FA == func_800699BC(&D_800F97F8[0])) && (D_800F97F8[0].unk3FC == 0x81317531)) {
+    if ((D_800F97F8[0].unk3FA == func_800699BC(&D_800F97F8[0])) && (D_800F97F8[0].magic == EEPBUFFER_MAGIC)) {
         func_80065528(arg0, &D_800F97F8[0].data, ARRAY_COUNT(D_800F97F8[0].data));
         return 0;
     }
 
-    if ((D_800F97F8[1].unk3FA == func_800699BC(&D_800F97F8[1])) && (D_800F97F8[1].unk3FC == 0x81317531)) {
+    if ((D_800F97F8[1].unk3FA == func_800699BC(&D_800F97F8[1])) && (D_800F97F8[1].magic == EEPBUFFER_MAGIC)) {
         func_80065528(arg0, &D_800F97F8[1].data, ARRAY_COUNT(D_800F97F8[1].data));
         return 0;
     }
