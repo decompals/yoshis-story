@@ -477,6 +477,7 @@ void func_8006915C(void) {
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_800692D4.s")
 
+void func_800694BC(s32 arg0);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_800694BC.s")
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80069508.s")
@@ -495,13 +496,24 @@ void func_8006915C(void) {
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_8006976C.s")
 
+s32 func_800697F0(void);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_800697F0.s")
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_8006988C.s")
 
+void func_80069900(void);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80069900.s")
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80069964.s")
+void func_80069C10(void);
+
+void func_80069964(void) {
+    func_80069C10();
+    if (func_800697F0() != 0) {
+        func_80065728(&D_800F8E58, 0x400, 0);
+        func_80069900();
+    }
+    func_800694BC(D_800F8E58.allocP >> 0x1E);
+}
 
 u16 func_800699BC(EepBuffer* arg0);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_800699BC.s")

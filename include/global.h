@@ -23,7 +23,7 @@ typedef struct Y65430UnkStruct {
 #define Y65430UnkStruct_MAGIC 0x434D5052 // 'CMPR'
 
 typedef struct MallocRecord {
-    /* 0x00 */ UNK_TYPE allocP;
+    /* 0x00 */ u32 allocP;
     /* 0x04 */ UNK_TYPE requestSize;
     /* 0x08 */ UNK_TYPE totalFree;
     /* 0x0C */ UNK_TYPE totalAlloc;
@@ -41,6 +41,8 @@ extern UNK_TYPE D_80108628;
 extern u8 D_800FAAF8;
 extern u8 D_800FAB1C;
 extern u8 D_800FAB20;
+
+extern MallocRecord D_800F8E58;
 
 typedef struct Y511F0UnkStruct {
     /* 0x0 */ uintptr_t unk0;
