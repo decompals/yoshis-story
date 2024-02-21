@@ -71,7 +71,7 @@ void eepmgr_Probe(EepMgr* eepmgr) {
     }
 }
 
-void eepmgr_Setup(EepMgr* eepmgr, s32 arg1, s32 type, u64* buffer) {
+void eepmgr_Setup(EepMgr* eepmgr, UNK_PTR arg1, s32 type, u64* buffer) {
     bzero(eepmgr, sizeof(EepMgr));
     eepmgr->unk218 = arg1;
     eepmgr->cache = buffer;
@@ -255,7 +255,7 @@ void eepmgr_ThreadEntry(void* arg) {
     }
 }
 
-void eepmgr_Create(EepMgr* eepmgr, s32 arg1, s32 type, u64* buffer, s32 id, s32 priority, void* stack) {
+void eepmgr_Create(EepMgr* eepmgr, UNK_PTR arg1, s32 type, u64* buffer, s32 id, s32 priority, void* stack) {
     (void)"eepmgr_Create(%08x, %08x, %d, %08x, %d, %d, %08x)\n";
     eepmgr_Setup(eepmgr, arg1, type, buffer);
     osCreateMesgQueue(&eepmgr->unk014, eepmgr->unk000, ARRAY_COUNT(eepmgr->unk000));

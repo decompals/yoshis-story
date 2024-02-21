@@ -504,4 +504,13 @@ void Main_ThreadEntry(UNUSED void* arg) {
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80069B34.s")
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80069C10.s")
+extern EepMgr gEepMgr;
+extern STACK(sEepStack, 0x300);
+extern u64 sEepBuff[32];
+extern StackEntry sEepStackInfo;
+
+void func_80069C10(void) {
+    StackCheck_Init(&sEepStackInfo, sEepStack, STACK_TOP(sEepStack), 0, 0x100, "eepmgr");
+    eepmgr_Create(&gEepMgr, &D_8010DF40, EEPROM_TYPE_16K, sEepBuff, Y_THREAD_ID_EEPMGR, Y_PRIORITY_EEPMGR,
+                  STACK_TOP(sEepStack));
+}
