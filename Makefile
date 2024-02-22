@@ -87,8 +87,8 @@ endif
 
 
 ifeq ($(NON_MATCHING),1)
-    BUILD_DEFINES   += -DNON_MATCHING -DAVOID_UB
-    COMPARE  := 0
+  BUILD_DEFINES   += -DNON_MATCHING -DAVOID_UB
+  COMPARE  := 0
 endif
 
 CPPFLAGS += -fno-dollars-in-identifiers -P
@@ -107,7 +107,7 @@ endif
 CC              := tools/ido/$(DETECTED_OS)/7.1/cc
 CC_OLD          := tools/ido/$(DETECTED_OS)/5.3/cc
 
-
+AR              := ar
 AS              := $(CROSS)as
 LD              := $(CROSS)ld
 OBJCOPY         := $(CROSS)objcopy
@@ -139,13 +139,13 @@ CHECK_WARNINGS := -Wall -Wextra -Wimplicit-fallthrough -Wno-unknown-pragmas -Wno
 MIPS_BUILTIN_DEFS := -DMIPSEB -D_MIPS_FPSET=16 -D_MIPS_ISA=2 -D_ABIO32=1 -D_MIPS_SIM=_ABIO32 -D_MIPS_SZINT=32 -D_MIPS_SZPTR=32
 ifneq ($(RUN_CC_CHECK),0)
 #   The -MMD flags additionaly creates a .d file with the same name as the .o file.
-    CC_CHECK          := $(CC_CHECK_COMP)
-    CC_CHECK_FLAGS    := -MMD -MP -fno-builtin -fsyntax-only -funsigned-char -fdiagnostics-color -std=gnu89 -m32 -DNON_MATCHING -DAVOID_UB -DCC_CHECK=1
-    ifneq ($(WERROR), 0)
-        CHECK_WARNINGS += -Werror
-    endif
+  CC_CHECK          := $(CC_CHECK_COMP)
+  CC_CHECK_FLAGS    := -MMD -MP -fno-builtin -fsyntax-only -funsigned-char -fdiagnostics-color -std=gnu89 -m32 -DNON_MATCHING -DAVOID_UB -DCC_CHECK=1
+  ifneq ($(WERROR), 0)
+    CHECK_WARNINGS += -Werror
+  endif
 else
-    CC_CHECK          := @:
+  CC_CHECK          := @:
 endif
 
 
@@ -169,25 +169,33 @@ ICONV_FLAGS      := --from-code=UTF-8 --to-code=EUC-JP
 OBJDUMP_FLAGS := --disassemble --reloc --disassemble-zeroes -Mreg-names=32 -Mno-aliases
 
 ifneq ($(OBJDUMP_BUILD), 0)
-    OBJDUMP_CMD = $(OBJDUMP) $(OBJDUMP_FLAGS) $@ > $(@:.o=.dump.s)
-    OBJCOPY_BIN = $(OBJCOPY) -O binary $@ $@.bin
+  OBJDUMP_CMD = $(OBJDUMP) $(OBJDUMP_FLAGS) $@ > $(@:.o=.s)
+  OBJCOPY_BIN = $(OBJCOPY) -O binary $@ $@.bin
+  LIBDUMP_CMD = $(AR) xo --output $(@:.a=) $@
 else
-    OBJDUMP_CMD = @:
-    OBJCOPY_BIN = @:
+  OBJDUMP_CMD = @:
+  OBJCOPY_BIN = @:
+  LIBDUMP_CMD = @:
 endif
 
 SPLAT_FLAGS ?=
 ifneq ($(FULL_DISASM), 0)
-    SPLAT_FLAGS += --disassemble-all
+  SPLAT_FLAGS += --disassemble-all
 endif
 
 #### Files ####
 
 $(shell mkdir -p asm assets linker_scripts/$(VERSION)/auto)
 
+ULTRALIB_DIR  := lib/ultralib
+ULTRALIB_LIB  := $(ULTRALIB_DIR)/build/$(ULTRALIB_VERSION)/$(ULTRALIB_TARGET)/$(ULTRALIB_TARGET).a
+LIBULTRA_DIR  := lib/libultra
+LIBULTRA_LIB  := $(BUILD_DIR)/$(LIBULTRA_DIR).a
+
 SRC_DIRS      := $(shell find src -type d)
 ASM_DIRS      := $(shell find asm/$(VERSION) -type d -not -path "asm/$(VERSION)/nonmatchings/*")
 BIN_DIRS      := $(shell find assets -type d)
+LIB_DIRS      := $(foreach f, $(LIBULTRA_DIR), $f)
 
 C_FILES       := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 S_FILES       := $(foreach dir,$(ASM_DIRS) $(SRC_DIRS),$(wildcard $(dir)/*.s))
@@ -196,16 +204,13 @@ O_FILES       := $(foreach f,$(C_FILES:.c=.o),$(BUILD_DIR)/$f) \
                  $(foreach f,$(S_FILES:.s=.o),$(BUILD_DIR)/$f) \
                  $(foreach f,$(BIN_FILES:.bin=.o),$(BUILD_DIR)/$f)
 
-ULTRALIB_DIR  := lib/ultralib
-ULTRALIB_LIB  := $(ULTRALIB_DIR)/build/$(ULTRALIB_VERSION)/$(ULTRALIB_TARGET)/$(ULTRALIB_TARGET).a
-LIBULTRA      := $(BUILD_DIR)/libultra.a
 
 # Automatic dependency files
 DEP_FILES := $(O_FILES:.o=.d) \
              $(O_FILES:.o=.asmproc.d)
 
 # create build directories
-$(shell mkdir -p $(BUILD_DIR)/linker_scripts/$(VERSION) $(BUILD_DIR)/linker_scripts/$(VERSION)/auto $(foreach dir,$(SRC_DIRS) $(ASM_DIRS) $(BIN_DIRS),$(BUILD_DIR)/$(dir)))
+$(shell mkdir -p $(BUILD_DIR)/linker_scripts/$(VERSION) $(BUILD_DIR)/linker_scripts/$(VERSION)/auto $(foreach dir,$(SRC_DIRS) $(ASM_DIRS) $(BIN_DIRS) $(LIB_DIRS),$(BUILD_DIR)/$(dir)))
 
 
 # directory flags
@@ -288,17 +293,17 @@ $(ROM): $(ELF)
 # TODO: update rom header checksum
 
 # TODO: avoid using auto/undefined
-$(ELF): $(O_FILES) $(LIBULTRA) $(LDSCRIPT) $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_syms_auto.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_funcs_auto.ld
+$(ELF): $(O_FILES) $(LIBULTRA_LIB) $(LDSCRIPT) $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld
 	$(LD) $(LDFLAGS) -T $(LDSCRIPT) \
 		-T $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld \
-		-T $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_syms_auto.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/auto/undefined_funcs_auto.ld \
-		-Map $(MAP) $(LIBULTRA) -o $@
+		-Map $(MAP) $(LIBULTRA_LIB) -o $@
 
 $(LDSCRIPT): linker_scripts/$(VERSION)/yoshisstory.ld
 	cp $< $@
 
-$(LIBULTRA): $(ULTRALIB_LIB)
+$(LIBULTRA_LIB): $(ULTRALIB_LIB)
 	cp $< $@
+	$(LIBDUMP_CMD)
 
 $(ULTRALIB_LIB):
 	$(MAKE) lib
