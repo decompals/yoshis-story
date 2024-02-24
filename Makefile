@@ -92,7 +92,8 @@ ifeq ($(NON_MATCHING),1)
 endif
 
 CPPFLAGS += -fno-dollars-in-identifiers -P
-LDFLAGS  := --no-check-sections --accept-unknown-input-arch --emit-relocs
+# TODO: Remove muldefs when all of libultra matches
+LDFLAGS  := --no-check-sections --accept-unknown-input-arch --emit-relocs -z muldefs
 
 ifeq ($(DETECTED_OS), macos)
   CPPFLAGS += -xc++
@@ -254,7 +255,7 @@ setup:
 	$(MAKE) -C tools
 
 lib:
-	$(MAKE) -C lib/ultralib VERSION=$(ULTRALIB_VERSION) TARGET=$(ULTRALIB_TARGET) COMPARE=0 CROSS=$(CROSS) CC=../../$(CC)
+	$(MAKE) -C lib/ultralib VERSION=$(ULTRALIB_VERSION) TARGET=$(ULTRALIB_TARGET) COMPARE=0 CROSS=$(CROSS) CC=../../$(CC_OLD)
 
 extract:
 	$(RM) -r asm/$(VERSION) assets/$(VERSION)
@@ -296,7 +297,7 @@ $(ROM): $(ELF)
 $(ELF): $(O_FILES) $(LIBULTRA_LIB) $(LDSCRIPT) $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld
 	$(LD) $(LDFLAGS) -T $(LDSCRIPT) \
 		-T $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld \
-		-Map $(MAP) $(LIBULTRA_LIB) -o $@
+		-Map $(MAP) --whole-archive $(LIBULTRA_LIB) -o $@
 
 $(LDSCRIPT): linker_scripts/$(VERSION)/yoshisstory.ld
 	cp $< $@
