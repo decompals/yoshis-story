@@ -185,7 +185,7 @@ endif
 
 #### Files ####
 
-$(shell mkdir -p asm assets linker_scripts/$(VERSION)/auto)
+$(shell mkdir -p asm/$(VERSION) assets/$(VERSION) linker_scripts/$(VERSION)/auto)
 
 ULTRALIB_DIR  := lib/ultralib
 ULTRALIB_LIB  := $(ULTRALIB_DIR)/build/$(ULTRALIB_VERSION)/$(ULTRALIB_TARGET)/$(ULTRALIB_TARGET).a
@@ -194,7 +194,7 @@ LIBULTRA_LIB  := $(BUILD_DIR)/$(LIBULTRA_DIR).a
 
 SRC_DIRS      := $(shell find src -type d)
 ASM_DIRS      := $(shell find asm/$(VERSION) -type d -not -path "asm/$(VERSION)/nonmatchings/*")
-BIN_DIRS      := $(shell find assets -type d)
+BIN_DIRS      := $(shell find assets/$(VERSION) -type d)
 LIB_DIRS      := $(foreach f, $(LIBULTRA_DIR), $f)
 
 C_FILES       := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
