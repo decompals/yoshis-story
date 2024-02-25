@@ -253,8 +253,7 @@ venv:
 setup:
 	$(MAKE) -C tools
 
-lib:
-	$(MAKE) -C lib/ultralib VERSION=$(ULTRALIB_VERSION) TARGET=$(ULTRALIB_TARGET) COMPARE=0 CROSS=$(CROSS) CC=../../$(CC)
+lib: $(ULTRALIB_LIB)
 
 extract:
 	$(RM) -r asm/$(VERSION) assets/$(VERSION)
@@ -293,9 +292,9 @@ $(ROM): $(ELF)
 # TODO: update rom header checksum
 
 # TODO: avoid using auto/undefined
-$(ELF): $(O_FILES) $(LIBULTRA_LIB) $(LDSCRIPT) $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld
+$(ELF): $(O_FILES) $(LIBULTRA_LIB) $(LDSCRIPT) $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld $(BUILD_DIR)/linker_scripts/$(VERSION)/unused_syms.ld
 	$(LD) $(LDFLAGS) -T $(LDSCRIPT) \
-		-T $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/pif_syms.ld \
+		-T $(BUILD_DIR)/linker_scripts/$(VERSION)/hardware_regs.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/undefined_syms.ld -T $(BUILD_DIR)/linker_scripts/$(VERSION)/unused_syms.ld \
 		-Map $(MAP) $(LIBULTRA_LIB) -o $@
 
 $(LDSCRIPT): linker_scripts/$(VERSION)/yoshisstory.ld
@@ -306,7 +305,7 @@ $(LIBULTRA_LIB): $(ULTRALIB_LIB)
 	$(LIBDUMP_CMD)
 
 $(ULTRALIB_LIB):
-	$(MAKE) lib
+	$(MAKE) -C lib/ultralib VERSION=$(ULTRALIB_VERSION) TARGET=$(ULTRALIB_TARGET) FIXUPS=1 CROSS=$(CROSS) CC=../../$(CC_OLD)
 
 $(BUILD_DIR)/%.ld: %.ld
 	$(CPP) $(CPPFLAGS) $(BUILD_DEFINES) $(IINC) $< > $@
