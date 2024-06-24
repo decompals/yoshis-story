@@ -1,1 +1,2 @@
 D_80000000 = 0x80000000; // ignore:true
+LEO_C2_BUFF = 0xA5000000; // ignore:true
