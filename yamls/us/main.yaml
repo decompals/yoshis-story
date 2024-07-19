@@ -57,6 +57,7 @@
       - [0x6CB80, asm]
       - [0x6DBC0, asm]
       - [0x6DF40, asm] # Probably has at least 1 file split
+      - [0x70100, c, O2/70100]
       - [0x70160, asm]
       - [0x70200, c, fault]
       - [0x720B0, pad]
