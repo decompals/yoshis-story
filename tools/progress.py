@@ -29,9 +29,6 @@ def getProgressFromMapFile(mapFile: mapfile_parser.MapFile, asmPath: Path, nonma
             else:
                 folder = fileparts[pathIndex]
 
-            if ".a" in folder:
-                folder = folder.split('.a')[0]
-
             if folder in aliases:
                 folder = aliases[folder]
 
