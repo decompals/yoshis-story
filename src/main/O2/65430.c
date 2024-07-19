@@ -8,7 +8,9 @@
 #include "stackcheck.h"
 #include "ys64thread.h"
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80064830.s")
+void func_80064830(Y65430UnkStruct* arg0) {
+    func_80064E84(arg0);
+}
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80064850.s")
 
