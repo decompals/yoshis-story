@@ -20,7 +20,12 @@ void* func_80064850(u16 arg0) {
     return sp18;
 }
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_800648A4.s")
+void func_800648A4(Y65430UnkStruct** arg0) {
+    if (*arg0 != NULL) {
+        func_80064830(*arg0);
+        *arg0 = NULL;
+    }
+}
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_800648DC.s")
 
