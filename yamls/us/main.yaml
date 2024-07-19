@@ -79,7 +79,7 @@
       - [0x79D60, asm] # Probably has at least 2 file split
       - [0x7CA70, asm]
       - [0x7CC30, asm]
-      - [0x7D140, asm]
+      - [0x7D140, c, 7D140]
       - [0x7D270, asm]
       - [0x7D9A0, c, eepmgr]
       - [0x7E1E0, asm]
@@ -348,7 +348,7 @@
       - [0xB3600, rodata]
       - [0xB3640, rodata, 7CA70]
       - [0xB3690, rodata, 7CC30]
-      - [0xB36A0, rodata, 7D140]
+      - [0xB36A0, .rodata, 7D140]
       - [0xB36E0, .rodata, eepmgr]
       - [0xB39F0, .rodata, dmamgr]
       - [0xB3AA0, rodata, 7EC30]
