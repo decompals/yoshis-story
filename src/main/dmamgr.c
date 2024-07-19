@@ -151,6 +151,6 @@ void DmaMgr_Init(void) {
     osCreateMesgQueue(&D_8010ED10, D_8010ED28, ARRAY_COUNT(D_8010ED28));
     osCreateMesgQueue(&D_8010ED50, D_8010ED68, ARRAY_COUNT(D_8010ED68));
     StackCheck_Init(&sDmaStackInfo, sDmaStack, STACK_TOP(sDmaStack), 0, 0x100, "dmamgr");
-    osCreateThread(&sDmaThread, Y_THREAD_ID_DMA, DmaMgr_ThreadEntry, NULL, &sDmaStackInfo, Y_PRIORITY_DMA);
+    osCreateThread(&sDmaThread, Y_THREAD_ID_DMA, DmaMgr_ThreadEntry, NULL, STACK_TOP(sDmaStack), Y_PRIORITY_DMA);
     osStartThread(&sDmaThread);
 }
