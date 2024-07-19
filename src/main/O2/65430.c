@@ -1,5 +1,7 @@
 #include "global.h"
 
+#include "lib/ultralib/src/io/viint.h"
+
 #include "segment_symbols.h"
 #include "stack.h"
 #include "stackcheck.h"
@@ -173,7 +175,7 @@
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80067170.s")
 
-void func_80067390(void);
+void Idle_InitVideo(void);
 void Main_ThreadEntry(void* arg);
 
 extern OSThread sMainThread;
@@ -187,7 +189,7 @@ extern OSMesg sPiMgrCmdBuff[8];
 // Getting extra nops with the infinite loop, file split?
 void Idle_ThreadEntry(void* arg) {
     osCreateViManager(OS_PRIORITY_VIMGR);
-    func_80067390();
+    Idle_InitVideo();
     osViSetSpecialFeatures(OS_VI_DITHER_FILTER_ON | OS_VI_GAMMA_DITHER_OFF | OS_VI_GAMMA_OFF);
     osViBlack(true);
     osCreatePiManager(OS_PRIORITY_PIMGR, &sPiMgrCmdQueue, sPiMgrCmdBuff, ARRAY_COUNT(sPiMgrCmdBuff));
@@ -207,7 +209,21 @@ void Idle_ThreadEntry(void* arg);
 #endif
 #undef NON_MATCHING
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80067390.s")
+void Idle_InitVideo(void) {
+    switch (osTvType) {
+        case OS_TV_TYPE_PAL:
+            osViSetMode(&osViModeTable[16]);
+            break;
+
+        case OS_TV_TYPE_NTSC:
+            osViSetMode(&osViModeTable[2]);
+            break;
+
+        case OS_TV_TYPE_MPAL:
+            osViSetMode(&osViModeTable[30]);
+            break;
+    }
+}
 
 void bootclear(void) {
     bzero(SEGMENT_VRAM_END(main), osMemSize - K0_TO_PHYS(SEGMENT_VRAM_END(main)));
