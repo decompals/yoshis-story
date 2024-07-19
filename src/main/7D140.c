@@ -1,5 +1,6 @@
 #include "global.h"
 
+#include "pad.h"
 #include "stack.h"
 #include "stackcheck.h"
 #include "ys64thread.h"
@@ -8,6 +9,7 @@ extern OSMesgQueue sSerialEventQueue;
 extern OSMesg sSerialMsgBuff[1];
 extern STACK(sPadStack, 0x400);
 extern StackEntry sPadStackInfo;
+extern Input D_8010DEE0;
 
 void func_8007C540(void) {
     osCreateMesgQueue(&sSerialEventQueue, sSerialMsgBuff, ARRAY_COUNT(sSerialMsgBuff));
@@ -16,7 +18,9 @@ void func_8007C540(void) {
     func_80075020(&D_8010DF40, &sSerialEventQueue, &D_801001F8, Y_THREAD_ID_PAD, Y_PRIORITY_PAD, STACK_TOP(sPadStack));
 }
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/7D140/func_8007C5EC.s")
+void func_8007C5EC(void) {
+    func_80074C88(&D_8010DF40, &D_8010DEE0, 1);
+}
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/7D140/func_8007C61C.s")
 
