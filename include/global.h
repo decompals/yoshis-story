@@ -44,23 +44,6 @@ typedef struct Y511F0UnkStruct2 {
     /* 0x4 */ UNK_TYPE unk4;
 } Y511F0UnkStruct2; // size >= 0x8
 
-// Bss
-
-extern UNK_TYPE D_800DA83C;
-extern Y511F0UnkStruct D_800DA840[];
-extern MallocRecord D_800F8E58;
-extern u8 D_800FAAF8;
-extern u8 D_800FAB1C;
-extern u8 D_800FAB20;
-extern UNK_TYPE D_80108624;
-extern UNK_TYPE D_80108628;
-extern UNK_TYPE D_8010DF40;
-
-// Data
-
-// 92170
-extern MallocRecord mallocRecord;
-
 // Functions
 
 // 511F0
@@ -104,6 +87,23 @@ void func_80080C84(MtxF* mf, f32 x, f32 y, f32 z);
 // loadfragment2
 size_t Overlay_Load(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart, uintptr_t vramEnd, void* allocatedRamAddr);
 void* Overlay_AllocateAndLoad(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart, uintptr_t vramEnd);
+
+// Data
+
+// 92170
+extern MallocRecord mallocRecord;
+
+// Bss
+
+extern UNK_TYPE D_800DA83C;
+extern Y511F0UnkStruct D_800DA840[];
+extern MallocRecord D_800F8E58;
+extern u8 D_800FAAF8;
+extern u8 D_800FAB1C;
+extern u8 D_800FAB20;
+extern UNK_TYPE D_80108624;
+extern UNK_TYPE D_80108628;
+extern UNK_TYPE D_8010DF40;
 
 
 #endif
