@@ -382,6 +382,8 @@
       - {type: bss, vram: 0x800B4CB0, name: 800B4CB0}
       - {type: .bss, vram: 0x80108630, name: fault}
       - {type: bss, vram: 0x801090D0, name: 801090D0}
+      - {type: .bss, vram: 0x8010DAA0, name: 7D140}
+      - {type: bss, vram: 0x8010DEE0, name: 8010DEE0}
       - {type: .bss, vram: 0x8010E840, name: dmamgr}
       - {type: .bss, vram: 0x8010ED90, name: 7EFD0}
 

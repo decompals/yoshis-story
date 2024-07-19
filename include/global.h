@@ -34,6 +34,7 @@ extern MallocRecord mallocRecord;
 
 extern UNK_TYPE D_800DA83C;
 extern UNK_TYPE D_801001F8;
+extern struct Input D_8010DEE0;
 extern UNK_TYPE D_8010DF40;
 
 typedef struct Y511F0UnkStruct {

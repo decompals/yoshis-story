@@ -5,11 +5,10 @@
 #include "stackcheck.h"
 #include "ys64thread.h"
 
-extern OSMesgQueue sSerialEventQueue;
-extern OSMesg sSerialMsgBuff[1];
-extern STACK(sPadStack, 0x400);
-extern StackEntry sPadStackInfo;
-extern Input D_8010DEE0;
+OSMesgQueue sSerialEventQueue;
+OSMesg sSerialMsgBuff[1];
+STACK(sPadStack, 0x400);
+StackEntry sPadStackInfo;
 
 void func_8007C540(void) {
     osCreateMesgQueue(&sSerialEventQueue, sSerialMsgBuff, ARRAY_COUNT(sSerialMsgBuff));
