@@ -1,5 +1,6 @@
 #include "global.h"
 
+#include "segment_symbols.h"
 #include "stack.h"
 #include "stackcheck.h"
 #include "ys64thread.h"
@@ -177,8 +178,9 @@ void Idle_ThreadEntry(void* arg);
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80067390.s")
 
-void func_80067400(void);
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80067400.s")
+void bootclear(void) {
+    bzero(SEGMENT_VRAM_END(main), osMemSize - K0_TO_PHYS(SEGMENT_VRAM_END(main)));
+}
 
 extern STACK(sBootStack, 0x2000);
 extern StackEntry sBootStackInfo;
@@ -190,7 +192,7 @@ extern StackEntry sIdleStackInfo;
 void bootproc(void) {
     StackCheck_Init(&sBootStackInfo, sBootStack, STACK_TOP(sBootStack), 0, -1, "boot");
     osInitialize();
-    func_80067400();
+    bootclear();
     StackCheck_Init(&sIdleStackInfo, sIdleStack, STACK_TOP(sIdleStack), 0, 0x100, "idle");
     osCreateThread(&sIdleThread, Y_THREAD_ID_IDLE, Idle_ThreadEntry, NULL, STACK_TOP(sIdleStack), Y_PRIORITY_IDLE);
     osStartThread(&sIdleThread);

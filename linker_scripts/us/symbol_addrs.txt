@@ -1,6 +1,7 @@
 entrypoint = 0x80000400;
 
 Idle_ThreadEntry = 0x80067284;
+bootclear = 0x80067400;
 bootproc = 0x8006743C;
 
 Fault_SetFramebuffer = 0x80071250; // type:func
