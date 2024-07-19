@@ -1,5 +1,6 @@
 entrypoint = 0x80000400;
 
+Idle_ThreadEntry = 0x80067284;
 bootproc = 0x8006743C;
 
 Fault_SetFramebuffer = 0x80071250; // type:func
@@ -103,6 +104,13 @@ aprintf = 0x80082174;
 csleep = 0x800821A0;
 
 // data
+
+sBootStack = 0x800FB018;
+sBootStackInfo = 0x800FD018;
+sIdleThread = 0x800FD038;
+sIdleStack = 0x800FD1E8;
+sIdleStackInfo = 0x800FD3E8;
+
 mallocRecord = 0x800A65AC; // type:MallocRecord size:0x14
 
 fault_exit = 0x800A8000;

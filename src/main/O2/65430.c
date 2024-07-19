@@ -1,5 +1,8 @@
 #include "global.h"
 
+#include "stack.h"
+#include "stackcheck.h"
+#include "ys64thread.h"
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80064830.s")
 
@@ -169,13 +172,29 @@
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80067170.s")
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80067284.s")
+void Idle_ThreadEntry(void* arg);
+#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/Idle_ThreadEntry.s")
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80067390.s")
 
+void func_80067400(void);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80067400.s")
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/bootproc.s")
+extern STACK(sBootStack, 0x2000);
+extern StackEntry sBootStackInfo;
+
+extern OSThread sIdleThread;
+extern STACK(sIdleStack, 0x200);
+extern StackEntry sIdleStackInfo;
+
+void bootproc(void) {
+    StackCheck_Init(&sBootStackInfo, sBootStack, STACK_TOP(sBootStack), 0, -1, "boot");
+    osInitialize();
+    func_80067400();
+    StackCheck_Init(&sIdleStackInfo, sIdleStack, STACK_TOP(sIdleStack), 0, 0x100, "idle");
+    osCreateThread(&sIdleThread, Y_THREAD_ID_IDLE, Idle_ThreadEntry, NULL, STACK_TOP(sIdleStack), Y_PRIORITY_IDLE);
+    osStartThread(&sIdleThread);
+}
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80067508.s")
 
