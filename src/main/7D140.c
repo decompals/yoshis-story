@@ -22,6 +22,8 @@ void func_8007C5EC(void) {
     func_80074C88(&D_8010DF40, &D_8010DEE0, 1);
 }
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/7D140/func_8007C61C.s")
+void func_8007C61C(void) {
+    func_800744B0(&D_8010DF40);
+}
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/7D140/func_8007C640.s")

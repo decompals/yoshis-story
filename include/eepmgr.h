@@ -2,6 +2,7 @@
 #define EEPMGR_H
 
 #include "ultra64.h"
+#include "unk.h"
 
 
 typedef struct EepRequest {
@@ -18,7 +19,7 @@ typedef struct EepMgr {
     /* 0x048 */ EepRequest unk048;
     /* 0x050 */ char unk_04C[0x68 - 0x50];
     /* 0x068 */ OSThread thread;
-    /* 0x218 */ s32 unk218;
+    /* 0x218 */ UNK_PTR unk218;
     /* 0x21C */ u8 type;
     /* 0x21E */ u16 numBlocks;
     /* 0x220 */ u64* cache;

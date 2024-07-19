@@ -46,7 +46,7 @@ typedef struct Y511F0UnkStruct {
 extern Y511F0UnkStruct D_800DA840[];
 
 // 740F0
-OSMesgQueue* func_800744B0(s32 arg0);
+OSMesgQueue* func_800744B0(UNK_PTR arg0);
 void func_8007451C(s32 arg0, OSMesgQueue* arg1);
 void func_80074C88(UNK_PTR, struct Input*, s32);
 void func_80075020(UNK_PTR, OSMesgQueue*, UNK_PTR, s32, s32, void*);
