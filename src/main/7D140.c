@@ -26,4 +26,6 @@ void func_8007C61C(void) {
     func_800744B0(&D_8010DF40);
 }
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/7D140/func_8007C640.s")
+void func_8007C640(OSMesgQueue* arg0) {
+    func_8007451C(&D_8010DF40, arg0);
+}
