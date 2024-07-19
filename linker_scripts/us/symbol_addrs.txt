@@ -3,6 +3,7 @@ entrypoint = 0x80000400;
 Idle_ThreadEntry = 0x80067284;
 bootclear = 0x80067400;
 bootproc = 0x8006743C;
+Main_ThreadEntry = 0x80069000;
 
 Fault_SetFramebuffer = 0x80071250; // type:func
 Fault_Init = 0x8007127C; // type:func
@@ -111,6 +112,13 @@ sBootStackInfo = 0x800FD018;
 sIdleThread = 0x800FD038;
 sIdleStack = 0x800FD1E8;
 sIdleStackInfo = 0x800FD3E8;
+sMainThread = 0x800FD408;
+sMainStack = 0x800FD5B8;
+sMainStackInfo = 0x800FFCB8;
+sPiMgrCmdQueue = 0x80100490;
+sPiMgrCmdBuff = 0x80100470;
+
+
 
 mallocRecord = 0x800A65AC; // type:MallocRecord size:0x14
 

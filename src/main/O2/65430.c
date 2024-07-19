@@ -173,8 +173,39 @@
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80067170.s")
 
+void func_80067390(void);
+void Main_ThreadEntry(void* arg);
+
+extern OSThread sMainThread;
+extern STACK(sMainStack, 0x2700);
+extern StackEntry sMainStackInfo;
+
+extern OSMesgQueue sPiMgrCmdQueue;
+extern OSMesg sPiMgrCmdBuff[8];
+
+#ifdef NON_MATCHING
+// Getting extra nops with the infinite loop, file split?
+void Idle_ThreadEntry(void* arg) {
+    osCreateViManager(OS_PRIORITY_VIMGR);
+    func_80067390();
+    osViSetSpecialFeatures(OS_VI_DITHER_FILTER_ON | OS_VI_GAMMA_DITHER_OFF | OS_VI_GAMMA_OFF);
+    osViBlack(true);
+    osCreatePiManager(OS_PRIORITY_PIMGR, &sPiMgrCmdQueue, sPiMgrCmdBuff, ARRAY_COUNT(sPiMgrCmdBuff));
+    StackCheck_Init(&sMainStackInfo, sMainStack, STACK_TOP(sMainStack), 0, 0x1000, "main");
+    osCreateThread(&sMainThread, Y_THREAD_ID_MAIN, Main_ThreadEntry, arg, STACK_TOP(sMainStack), Y_PRIORITY_MAIN);
+    D_80108624 = IO_READ(SP_IMEM_START);
+    D_80108628 = IO_READ(SP_DMEM_START);
+    func_8006F500();
+    osStartThread(&sMainThread);
+    osSetThreadPri(NULL, OS_PRIORITY_IDLE);
+
+    for (;;) {}
+}
+#else
 void Idle_ThreadEntry(void* arg);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/Idle_ThreadEntry.s")
+#endif
+#undef NON_MATCHING
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80067390.s")
 
@@ -383,7 +414,7 @@ void func_80068D8C(void) {
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80068F10.s")
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80069000.s")
+#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/Main_ThreadEntry.s")
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80069030.s")
 

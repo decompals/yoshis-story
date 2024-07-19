@@ -35,6 +35,9 @@ extern MallocRecord mallocRecord;
 extern UNK_TYPE D_800DA83C;
 extern UNK_TYPE D_8010DF40;
 
+extern UNK_TYPE D_80108624;
+extern UNK_TYPE D_80108628;
+
 typedef struct Y511F0UnkStruct {
     /* 0x0 */ uintptr_t unk0;
     /* 0x4 */ s16 unk4;
@@ -43,6 +46,9 @@ typedef struct Y511F0UnkStruct {
 } Y511F0UnkStruct; // size = 0x10
 
 extern Y511F0UnkStruct D_800DA840[];
+
+// 6DF40
+void func_8006F500(void);
 
 // 740F0
 OSMesgQueue* func_800744B0(s32 arg0);
