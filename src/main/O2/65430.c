@@ -519,18 +519,18 @@ u16 func_800699BC(EepBuffer* arg0);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_800699BC.s")
 
 extern EepMgr gEepMgr;
-extern EepBuffer D_800F97F8[2];
-extern STACK(sEepStack, 0x300);
 extern EepBuffer sEepBuff[2];
+extern STACK(sEepStack, 0x300);
+extern EepBuffer sEepCache[2];
 extern StackEntry sEepStackInfo;
 
 s32 func_80069A80(void* arg0) {
-    func_80065528(&D_800F97F8[0].data, arg0, ARRAY_COUNT(D_800F97F8[0].data));
-    D_800F97F8[0].unk3FA = func_800699BC(D_800F97F8);
-    D_800F97F8[0].magic = EEPBUFFER_MAGIC;
-    D_800F97F8[1] = D_800F97F8[0];
+    func_80065528(&sEepBuff[0].data, arg0, ARRAY_COUNT(sEepBuff[0].data));
+    sEepBuff[0].unk3FA = func_800699BC(sEepBuff);
+    sEepBuff[0].magic = EEPBUFFER_MAGIC;
+    sEepBuff[1] = sEepBuff[0];
 
-    eepmgr_SendWrite(&gEepMgr, D_800F97F8);
+    eepmgr_SendWrite(&gEepMgr, sEepBuff);
     if (func_8007D508(&gEepMgr) != 0) {
         return 1;
     }
@@ -539,19 +539,19 @@ s32 func_80069A80(void* arg0) {
 }
 
 s32 func_80069B34(UNK_PTR arg0) {
-    eepmgr_SendRead(&gEepMgr, D_800F97F8);
+    eepmgr_SendRead(&gEepMgr, sEepBuff);
 
     if (func_8007D508(&gEepMgr) != 0) {
         return 1;
     }
 
-    if ((D_800F97F8[0].unk3FA == func_800699BC(&D_800F97F8[0])) && (D_800F97F8[0].magic == EEPBUFFER_MAGIC)) {
-        func_80065528(arg0, &D_800F97F8[0].data, ARRAY_COUNT(D_800F97F8[0].data));
+    if ((sEepBuff[0].unk3FA == func_800699BC(&sEepBuff[0])) && (sEepBuff[0].magic == EEPBUFFER_MAGIC)) {
+        func_80065528(arg0, &sEepBuff[0].data, ARRAY_COUNT(sEepBuff[0].data));
         return 0;
     }
 
-    if ((D_800F97F8[1].unk3FA == func_800699BC(&D_800F97F8[1])) && (D_800F97F8[1].magic == EEPBUFFER_MAGIC)) {
-        func_80065528(arg0, &D_800F97F8[1].data, ARRAY_COUNT(D_800F97F8[1].data));
+    if ((sEepBuff[1].unk3FA == func_800699BC(&sEepBuff[1])) && (sEepBuff[1].magic == EEPBUFFER_MAGIC)) {
+        func_80065528(arg0, &sEepBuff[1].data, ARRAY_COUNT(sEepBuff[1].data));
         return 0;
     }
 
@@ -560,6 +560,6 @@ s32 func_80069B34(UNK_PTR arg0) {
 
 void func_80069C10(void) {
     StackCheck_Init(&sEepStackInfo, sEepStack, STACK_TOP(sEepStack), 0, 0x100, "eepmgr");
-    eepmgr_Create(&gEepMgr, &D_8010DF40, EEPROM_TYPE_16K, sEepBuff, Y_THREAD_ID_EEPMGR, Y_PRIORITY_EEPMGR,
+    eepmgr_Create(&gEepMgr, &D_8010DF40, EEPROM_TYPE_16K, sEepCache, Y_THREAD_ID_EEPMGR, Y_PRIORITY_EEPMGR,
                   STACK_TOP(sEepStack));
 }

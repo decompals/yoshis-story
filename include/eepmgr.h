@@ -35,7 +35,7 @@ typedef struct EepMgr {
 } EepMgr; // size = 0x228
 
 
-void eepmgr_Create(EepMgr* eepmgr, UNK_PTR arg1, s32 type, EepBuffer* buffer, s32 id, s32 priority, void* stack);
+void eepmgr_Create(EepMgr* eepmgr, UNK_PTR arg1, s32 type, EepBuffer* cache, s32 id, s32 priority, void* stack);
 s32 func_8007D508(EepMgr* eepmgr);
 void eepmgr_SendRead(EepMgr* eepmgr, EepBuffer* buffer);
 void eepmgr_SendWrite(EepMgr* eepmgr, EepBuffer* buffer);

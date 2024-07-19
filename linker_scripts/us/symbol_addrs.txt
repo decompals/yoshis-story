@@ -109,9 +109,9 @@ csleep = 0x800821A0;
 // data
 
 gEepMgr = 0x800F95D0;
-D_800F97F8 = 0x800F97F8;
+sEepBuff = 0x800F97F8;
 sEepStack = 0x800F9FF8;
-sEepBuff = 0x800FA2F8;
+sEepCache = 0x800FA2F8;
 sEepStackInfo = 0x800FAB00;
 sBootStack = 0x800FB018;
 sBootStackInfo = 0x800FD018;

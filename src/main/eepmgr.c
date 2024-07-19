@@ -71,10 +71,10 @@ void eepmgr_Probe(EepMgr* eepmgr) {
     }
 }
 
-void eepmgr_Setup(EepMgr* eepmgr, UNK_PTR arg1, s32 type, EepBuffer* buffer) {
+void eepmgr_Setup(EepMgr* eepmgr, UNK_PTR arg1, s32 type, EepBuffer* cache) {
     bzero(eepmgr, sizeof(EepMgr));
     eepmgr->unk218 = arg1;
-    eepmgr->cache = buffer;
+    eepmgr->cache = cache;
     eepmgr->type = type;
     eepmgr->numBlocks = sMaxBlocks[eepmgr->type];
 }
@@ -255,9 +255,9 @@ void eepmgr_ThreadEntry(void* arg) {
     }
 }
 
-void eepmgr_Create(EepMgr* eepmgr, UNK_PTR arg1, s32 type, EepBuffer* buffer, s32 id, s32 priority, void* stack) {
+void eepmgr_Create(EepMgr* eepmgr, UNK_PTR arg1, s32 type, EepBuffer* cache, s32 id, s32 priority, void* stack) {
     (void)"eepmgr_Create(%08x, %08x, %d, %08x, %d, %d, %08x)\n";
-    eepmgr_Setup(eepmgr, arg1, type, buffer);
+    eepmgr_Setup(eepmgr, arg1, type, cache);
     osCreateMesgQueue(&eepmgr->unk014, eepmgr->unk000, ARRAY_COUNT(eepmgr->unk000));
     osCreateMesgQueue(&eepmgr->unk02C, eepmgr->unk004, ARRAY_COUNT(eepmgr->unk004));
     osCreateThread(&eepmgr->thread, id, eepmgr_ThreadEntry, eepmgr, stack, priority);
