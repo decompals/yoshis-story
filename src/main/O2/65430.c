@@ -43,7 +43,9 @@ s32 func_800648DC(void** arg0, u16 arg1) {
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80064AD4.s")
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80064B38.s")
+void func_80064B38(void) {
+    func_80065728(&mallocRecord, 20, 0);
+}
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80064B64.s")
 

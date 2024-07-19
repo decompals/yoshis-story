@@ -58,6 +58,7 @@ typedef struct Y511F0UnkStruct2 {
 Y511F0UnkStruct2* func_80050C8C(u16 arg0);
 
 // 65430
+void func_80065728(MallocRecord*, s32, s32);
 void func_8006758C(void*, UNK_TYPE, size_t);
 void func_800675D0(void*, UNK_TYPE, size_t, Y65430UnkFunc);
 
