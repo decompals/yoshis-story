@@ -2,6 +2,7 @@
 
 #include "lib/ultralib/src/io/viint.h"
 
+#include "fault.h"
 #include "segment_symbols.h"
 #include "stack.h"
 #include "stackcheck.h"
@@ -424,13 +425,19 @@ void func_80068D8C(void) {
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80068D94.s")
 
+void func_80068E24(void);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80068E24.s")
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80068ED4.s")
 
+void func_80068F10(void);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80068F10.s")
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/Main_ThreadEntry.s")
+void Main_ThreadEntry(UNUSED void* arg) {
+    Fault_Init();
+    func_80068F10();
+    func_80068E24();
+}
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80069030.s")
 
