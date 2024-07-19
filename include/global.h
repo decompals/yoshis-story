@@ -49,8 +49,6 @@ extern Y511F0UnkStruct D_800DA840[];
 
 typedef void (*Y65430UnkFunc)(void*, UNK_TYPE, size_t);
 
-void func_8006758C(void*, UNK_TYPE, size_t);
-
 typedef struct Y511F0UnkStruct2 {
     /* 0x0 */ char unk0[0x04];
     /* 0x4 */ UNK_TYPE unk4;

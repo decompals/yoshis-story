@@ -27,7 +27,15 @@ void func_800648A4(Y65430UnkStruct** arg0) {
     }
 }
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_800648DC.s")
+s32 func_800648DC(void** arg0, u16 arg1) {
+    void* temp_v0 = func_80064850(arg1);
+
+    if (temp_v0 == NULL) {
+        return 0;
+    }
+    *arg0 = temp_v0;
+    return 1;
+}
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/func_80064920.s")
 
