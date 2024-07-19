@@ -349,6 +349,7 @@
       - [0xB3640, rodata, 7CA70]
       - [0xB3690, rodata, 7CC30]
       - [0xB36A0, .rodata, 7D140]
+      - [0xB36B0, rodata, 7D270]
       - [0xB36E0, .rodata, eepmgr]
       - [0xB39F0, .rodata, dmamgr]
       - [0xB3AA0, rodata, 7EC30]

@@ -125,3 +125,8 @@ gOverlayLogSeverity = 0x800AA390; // type:s32
 // rodata
 
 // bss
+
+sSerialEventQueue = 0x8010DAA0;
+sSerialMsgBuff = 0x8010DAB8;
+sPadStack = 0x8010DAC0;
+sPadStackInfo = 0x8010DEC0;
