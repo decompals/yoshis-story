@@ -71,15 +71,15 @@ void eepmgr_Probe(EepMgr* eepmgr) {
     }
 }
 
-void eepmgr_Setup(EepMgr* eepmgr, UNK_PTR arg1, s32 type, u64* buffer) {
+void eepmgr_Setup(EepMgr* eepmgr, UNK_PTR arg1, s32 type, EepBuffer* cache) {
     bzero(eepmgr, sizeof(EepMgr));
     eepmgr->unk218 = arg1;
-    eepmgr->cache = buffer;
+    eepmgr->cache = cache;
     eepmgr->type = type;
     eepmgr->numBlocks = sMaxBlocks[eepmgr->type];
 }
 
-s32 eepmgr_Read(EepMgr* eepmgr, u8 arg1, u64* buffer) {
+s32 eepmgr_Read(EepMgr* eepmgr, u8 addr, void* buffer) {
     s32 status;
     OSTime before;
     OSTime after;
@@ -88,7 +88,7 @@ s32 eepmgr_Read(EepMgr* eepmgr, u8 arg1, u64* buffer) {
 
     eepmgr->operation = 1;
     before = osGetTime();
-    status = osEepromRead(eepmgr->unk044, arg1, (u8*)buffer);
+    status = osEepromRead(eepmgr->unk044, addr, buffer);
     after = osGetTime();
     eepmgr->operation = 0;
 
@@ -113,7 +113,7 @@ s32 eepmgr_Read(EepMgr* eepmgr, u8 arg1, u64* buffer) {
     return 0;
 }
 
-s32 eepmgr_Write(EepMgr* eepmgr, u8 addr, u64* buffer) {
+s32 eepmgr_Write(EepMgr* eepmgr, u8 addr, void* buffer) {
     s32 status;
     OSTime before;
     OSTime after;
@@ -122,7 +122,7 @@ s32 eepmgr_Write(EepMgr* eepmgr, u8 addr, u64* buffer) {
 
     eepmgr->operation = 2;
     before = osGetTime();
-    status = osEepromWrite(eepmgr->unk044, addr, (u8*)buffer);
+    status = osEepromWrite(eepmgr->unk044, addr, buffer);
     after = osGetTime();
     eepmgr->operation = 0;
 
@@ -149,7 +149,7 @@ s32 eepmgr_Write(EepMgr* eepmgr, u8 addr, u64* buffer) {
     return 0;
 }
 
-s32 eepmgr_HandleWrite(EepMgr* eepmgr, u64* buffer) {
+s32 eepmgr_HandleWrite(EepMgr* eepmgr, EepBuffer* buffer) {
     u64* bufferIter;
     u64* cacheIter;
     s32 i;
@@ -168,8 +168,8 @@ s32 eepmgr_HandleWrite(EepMgr* eepmgr, u64* buffer) {
         return -1;
     }
 
-    cacheIter = eepmgr->cache;
-    bufferIter = buffer;
+    cacheIter = (u64*)eepmgr->cache;
+    bufferIter = (u64*)buffer;
     for (i = 0; i < eepmgr->numBlocks; i++) {
         if (*bufferIter != *cacheIter) {
             if (eepmgr_Write(eepmgr, i, bufferIter) != 0) {
@@ -186,7 +186,7 @@ s32 eepmgr_HandleWrite(EepMgr* eepmgr, u64* buffer) {
     return 0;
 }
 
-s32 eepmgr_HandleRead(EepMgr* eepmgr, u64* arg1) {
+s32 eepmgr_HandleRead(EepMgr* eepmgr, EepBuffer* buffer) {
     u64* cacheIter;
     s32 i;
 
@@ -197,7 +197,7 @@ s32 eepmgr_HandleRead(EepMgr* eepmgr, u64* arg1) {
     }
 
     if (!eepmgr->cached) {
-        cacheIter = eepmgr->cache;
+        cacheIter = (u64*)eepmgr->cache;
         for (i = 0; i < eepmgr->numBlocks; i++) {
             if (eepmgr_Read(eepmgr, i, cacheIter) != 0) {
                 return -1;
@@ -207,7 +207,7 @@ s32 eepmgr_HandleRead(EepMgr* eepmgr, u64* arg1) {
         eepmgr->cached = true;
     }
 
-    bcopy(eepmgr->cache, arg1, eepmgr->numBlocks * EEPROM_BLOCK_SIZE);
+    bcopy(eepmgr->cache, buffer, eepmgr->numBlocks * EEPROM_BLOCK_SIZE);
     return 0;
 }
 
@@ -255,9 +255,9 @@ void eepmgr_ThreadEntry(void* arg) {
     }
 }
 
-void eepmgr_Create(EepMgr* eepmgr, UNK_PTR arg1, s32 type, u64* buffer, s32 id, s32 priority, void* stack) {
+void eepmgr_Create(EepMgr* eepmgr, UNK_PTR arg1, s32 type, EepBuffer* cache, s32 id, s32 priority, void* stack) {
     (void)"eepmgr_Create(%08x, %08x, %d, %08x, %d, %d, %08x)\n";
-    eepmgr_Setup(eepmgr, arg1, type, buffer);
+    eepmgr_Setup(eepmgr, arg1, type, cache);
     osCreateMesgQueue(&eepmgr->unk014, eepmgr->unk000, ARRAY_COUNT(eepmgr->unk000));
     osCreateMesgQueue(&eepmgr->unk02C, eepmgr->unk004, ARRAY_COUNT(eepmgr->unk004));
     osCreateThread(&eepmgr->thread, id, eepmgr_ThreadEntry, eepmgr, stack, priority);
@@ -272,7 +272,7 @@ s32 func_8007D508(EepMgr* eepmgr) {
     return msg;
 }
 
-void eepmgr_SendRead(EepMgr* eepmgr, void* buffer) {
+void eepmgr_SendRead(EepMgr* eepmgr, EepBuffer* buffer) {
     EepRequest* req = &eepmgr->unk048;
 
     if (req->type != 0) {
@@ -284,7 +284,7 @@ void eepmgr_SendRead(EepMgr* eepmgr, void* buffer) {
     osSendMesg(&eepmgr->unk014, &eepmgr->unk048, OS_MESG_BLOCK);
 }
 
-void eepmgr_SendWrite(EepMgr* eepmgr, void* buffer) {
+void eepmgr_SendWrite(EepMgr* eepmgr, EepBuffer* buffer) {
     EepRequest* req = &eepmgr->unk048;
 
     if (req->type != 0) {

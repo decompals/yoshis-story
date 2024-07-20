@@ -4,10 +4,17 @@
 #include "ultra64.h"
 #include "unk.h"
 
+#define EEPBUFFER_MAGIC 0x81317531
+
+typedef struct EepBuffer {
+    /* 0x000 */ u8 data[0x3FA];
+    /* 0x3FA */ u16 unk3FA;
+    /* 0x3FC */ s32 magic;
+} EepBuffer; // size = 0x400
 
 typedef struct EepRequest {
     /* 0x0 */ s16 type;
-    /* 0x4 */ u64* buffer;
+    /* 0x4 */ EepBuffer* buffer;
 } EepRequest;
 
 typedef struct EepMgr {
@@ -22,9 +29,15 @@ typedef struct EepMgr {
     /* 0x218 */ UNK_PTR unk218;
     /* 0x21C */ u8 type;
     /* 0x21E */ u16 numBlocks;
-    /* 0x220 */ u64* cache;
+    /* 0x220 */ EepBuffer* cache;
     /* 0x224 */ u8 cached;
     /* 0x225 */ u8 operation;
 } EepMgr; // size = 0x228
+
+
+void eepmgr_Create(EepMgr* eepmgr, UNK_PTR arg1, s32 type, EepBuffer* cache, s32 id, s32 priority, void* stack);
+s32 func_8007D508(EepMgr* eepmgr);
+void eepmgr_SendRead(EepMgr* eepmgr, EepBuffer* buffer);
+void eepmgr_SendWrite(EepMgr* eepmgr, EepBuffer* buffer);
 
 #endif
