@@ -2,9 +2,11 @@
 #define LIBU64_GFX_PRINT_H
 
 #include "ultra64.h"
-#include "color.h"
-#include "aprintf.h"
+
 #include "stdbool.h"
+
+#include "aprintf.h"
+#include "color.h"
 
 typedef struct gfxprint  {
     /* 0x00 */ PrintCallback proutFunc; /* Current print out func */

@@ -1,10 +1,10 @@
 #include "fault.h"
 
-#include "lib/ultralib/src/libc/xstdio.h"
 #include "stdbool.h"
 #include "stddef.h"
 #include "stdint.h"
 #include "PR/os_internal.h"
+#include "lib/ultralib/src/libc/xstdio.h"
 
 #include "global.h"
 

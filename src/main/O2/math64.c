@@ -1,7 +1,9 @@
-#include "global.h"
 #include "math64.h"
+
 #include "math.h"
+
 #include "fp.h"
+#include "macros.h"
 
 f32 Math_FTanF(f32 x) {
     return sinf(x) / cosf(x);
