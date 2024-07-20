@@ -277,24 +277,24 @@
       - [0xAC7C0, lib, libultra/libultra, vimgr, .data]
 
 
-      - [0xAC7E0, rodata]
-      - [0xAC810, rodata]
-      - [0xAC840, rodata]
+      - [0xAC7E0, rodata] # 3BF0
+      - [0xAC810, rodata] # 3BF0
+      - [0xAC840, rodata] # 3BF0
       - [0xAC910, rodata, B9A0]
       - [0xAC940, rodata, D510]
       - [0xAC970, rodata, DF30]
-      - [0xACFB0, rodata]
-      - [0xAD200, rodata]
-      - [0xAD8C0, rodata]
+      - [0xACFB0, rodata] # 11330
+      - [0xAD200, rodata] # 11330
+      - [0xAD8C0, rodata] # 11330
       - [0xADA90, rodata]
-      - [0xADB60, rodata]
-      - [0xAE6E0, rodata]
-      - [0xAE960, rodata]
-      - [0xAF010, rodata]
-      - [0xAF030, rodata]
-      - [0xAF0A0, rodata]
-      - [0xAF1A0, rodata]
-      - [0xAF2A0, rodata]
+      - [0xADB60, rodata] # 128F0
+      - [0xAE6E0, rodata] # 128F0
+      - [0xAE960, rodata] # 128F0
+      - [0xAF010, rodata] # 128F0
+      - [0xAF030, rodata] # 128F0
+      - [0xAF0A0, rodata] # 128F0
+      - [0xAF1A0, rodata] # 128F0
+      - [0xAF2A0, rodata] # 128F0
       - [0xAFCB0, rodata, 192E0]
       - [0xB0060, rodata]
       - [0xB0140, rodata, 19D60]
@@ -308,13 +308,13 @@
       - [0xB0760, rodata, 1C690]
       - [0xB0780, rodata, 1CA30]
       - [0xB0790, rodata, 1D1D0]
-      - [0xB07B0, rodata]
-      - [0xB0F40, rodata]
+      - [0xB07B0, rodata] # 1E360
+      - [0xB0F40, rodata] # 1E360
       - [0xB1210, rodata, actormanager]
       - [0xB14B0, rodata, 4A430]
       - [0xB1500, rodata, bgManager]
-      - [0xB15B0, rodata]
-      - [0xB1630, rodata]
+      - [0xB15B0, rodata] # 511F0
+      - [0xB1630, rodata] # 511F0
       - [0xB16C0, rodata]
       - [0xB16D0, rodata, 54620]
       - [0xB1760, rodata, entryManager]
@@ -322,19 +322,19 @@
       - [0xB1800, rodata, imageManager]
       - [0xB1890, rodata, 5CA50]
       - [0xB18A0, rodata, nxgotoManager]
-      - [0xB1900, rodata]
-      - [0xB1960, rodata]
+      - [0xB1900, rodata] # 5E4C0
+      - [0xB1960, rodata] # 5E4C0
       - [0xB19A0, .rodata, O2/65430] # Probably main, but also has utility.c in rodata?
       - [0xB1B20, rodata, unitManager]
       - [0xB1C60, rodata, 6CB80]
-      - [0xB1C90, rodata]
-      - [0xB1D60, rodata]
+      - [0xB1C90, rodata] # 6DF40
+      - [0xB1D60, rodata] # 6DF40
       - [0xB1D90, .rodata, fault]
       - [0xB26D0, rodata, 720C0]
       - [0xB2730, rodata, 72340]
       - [0xB27D0, rodata, 72860]
-      - [0xB2A40, rodata]
-      - [0xB2BD0, rodata]
+      - [0xB2A40, rodata] # 740F0
+      - [0xB2BD0, rodata] # 740F0
       - [0xB3020, rodata]
       - [0xB3200, rodata, 76310]
       - [0xB32D0, rodata]
