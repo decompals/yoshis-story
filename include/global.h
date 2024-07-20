@@ -32,8 +32,6 @@ typedef struct Y65430UnkStruct {
     /* 0x04 */ size_t unk04;
 } Y65430UnkStruct; // size >= 0x08;
 
-extern UNK_TYPE D_80108620;
-
 typedef struct Y511F0UnkStruct {
     /* 0x0 */ uintptr_t unk0;
     /* 0x4 */ s16 unk4;
@@ -103,6 +101,7 @@ extern MallocRecord D_800F8E58;
 extern u8 D_800FAAF8;
 extern u8 D_800FAB1C;
 extern u8 D_800FAB20;
+extern UNK_TYPE D_80108620;
 extern UNK_TYPE D_80108624;
 extern UNK_TYPE D_80108628;
 extern UNK_TYPE D_8010DF40;
