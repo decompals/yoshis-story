@@ -231,7 +231,6 @@ void Idle_ThreadEntry(void* arg) {
 void Idle_ThreadEntry(void* arg);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/Idle_ThreadEntry.s")
 #endif
-#undef NON_MATCHING
 
 void Idle_InitVideo(void) {
     switch (osTvType) {
