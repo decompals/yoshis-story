@@ -11,13 +11,11 @@ root_dir = os.path.abspath(os.path.join(script_dir, ".."))
 
 # Project-specific
 CPP_FLAGS = [
-    "-I.",
     "-Iinclude",
-    "-Isrc",
-    "-Ibin",
+    "-Iinclude/libc",
     "-Ilib/ultralib/include",
     "-Ilib/ultralib/include/PR",
-    "-Ilib/ultralib/include/ido",
+    "-I.",
 
     "-D_LANGUAGE_C",
     "-DF3DEX_GBI_2",
