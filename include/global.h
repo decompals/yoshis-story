@@ -69,6 +69,7 @@ OSMesgQueue* func_800744B0(UNK_PTR arg0);
 void func_800748B0(UNK_PTR arg0);
 void func_8007451C(UNK_PTR arg0, OSMesgQueue* arg1);
 void func_80074C88(UNK_PTR, struct Input*, s32);
+void func_80075020(UNK_PTR, OSMesgQueue*, UNK_PTR, s32, s32, void*);
 
 // dma
 void DmaMgr_RequestSync(void* ram, u32 vrom, u32 size);
@@ -101,9 +102,11 @@ extern MallocRecord D_800F8E58;
 extern u8 D_800FAAF8;
 extern u8 D_800FAB1C;
 extern u8 D_800FAB20;
+extern UNK_TYPE D_801001F8;
 extern UNK_TYPE D_80108620;
 extern UNK_TYPE D_80108624;
 extern UNK_TYPE D_80108628;
+extern struct Input D_8010DEE0;
 extern UNK_TYPE D_8010DF40;
 
 
