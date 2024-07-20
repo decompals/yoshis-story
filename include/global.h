@@ -97,18 +97,17 @@ extern MallocRecord mallocRecord;
 // Bss
 
 extern UNK_TYPE D_800DA83C;
-extern UNK_TYPE D_801001F8;
-extern struct Input D_8010DEE0;
-extern UNK_TYPE D_8010DF40;
 extern Y511F0UnkStruct D_800DA840[];
 extern MallocRecord D_800F8E58;
 extern u8 D_800FAAF8;
 extern u8 D_800FAB1C;
 extern u8 D_800FAB20;
+extern UNK_TYPE D_801001F8;
 extern UNK_TYPE D_80108620;
 extern UNK_TYPE D_80108624;
 extern UNK_TYPE D_80108628;
-
+extern struct Input D_8010DEE0;
+extern UNK_TYPE D_8010DF40;
 
 
 #endif
