@@ -236,15 +236,15 @@ void Idle_ThreadEntry(void* arg);
 void Idle_InitVideo(void) {
     switch (osTvType) {
         case OS_TV_TYPE_PAL:
-            osViSetMode(&osViModeTable[16]);
+            osViSetMode(&osViModeTable[OS_VI_PAL_LAN1]);
             break;
 
         case OS_TV_TYPE_NTSC:
-            osViSetMode(&osViModeTable[2]);
+            osViSetMode(&osViModeTable[OS_VI_NTSC_LAN1]);
             break;
 
         case OS_TV_TYPE_MPAL:
-            osViSetMode(&osViModeTable[30]);
+            osViSetMode(&osViModeTable[OS_VI_MPAL_LAN1]);
             break;
     }
 }
