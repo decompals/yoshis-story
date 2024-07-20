@@ -1,8 +1,7 @@
 #ifndef SEGMENT_SYMBOLS_H
 #define SEGMENT_SYMBOLS_H
 
-#include "ultra64.h"
-#include "libc/stdint.h"
+#include "stdint.h"
 
 #define DECLARE_VRAM_SEGMENT(name) \
     extern u8 name ## _VRAM[]; \

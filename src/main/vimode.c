@@ -1,8 +1,10 @@
 #include "vimode.h"
+
+#include "stdbool.h"
+#include "lib/ultralib/src/io/viint.h"
+
 #include "attributes.h"
 #include "macros.h"
-#include "libc/stdbool.h"
-#include "lib/ultralib/src/io/viint.h"
 #include "pad.h"
 
 void ViMode_LogPrint(UNUSED OSViMode* osViMode) {

@@ -124,8 +124,9 @@ SPLAT_YAML      ?= $(TARGET)-$(VERSION).yaml
 
 
 
-IINC := -Iinclude -I.
-IINC += -Ilib/ultralib/include -Ilib/ultralib/include/PR -Ilib/ultralib/include/ido
+IINC := -Iinclude -Iinclude/libc
+IINC += -Ilib/ultralib/include -Ilib/ultralib/include/PR
+IINC += -I.
 
 ifeq ($(KEEP_MDEBUG),0)
   RM_MDEBUG = $(OBJCOPY) --remove-section .mdebug $@

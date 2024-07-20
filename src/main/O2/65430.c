@@ -231,20 +231,19 @@ void Idle_ThreadEntry(void* arg) {
 void Idle_ThreadEntry(void* arg);
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65430/Idle_ThreadEntry.s")
 #endif
-#undef NON_MATCHING
 
 void Idle_InitVideo(void) {
     switch (osTvType) {
         case OS_TV_TYPE_PAL:
-            osViSetMode(&osViModeTable[16]);
+            osViSetMode(&osViModeTable[OS_VI_PAL_LAN1]);
             break;
 
         case OS_TV_TYPE_NTSC:
-            osViSetMode(&osViModeTable[2]);
+            osViSetMode(&osViModeTable[OS_VI_NTSC_LAN1]);
             break;
 
         case OS_TV_TYPE_MPAL:
-            osViSetMode(&osViModeTable[30]);
+            osViSetMode(&osViModeTable[OS_VI_MPAL_LAN1]);
             break;
     }
 }
