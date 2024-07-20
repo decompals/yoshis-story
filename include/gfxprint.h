@@ -4,7 +4,7 @@
 #include "ultra64.h"
 #include "color.h"
 #include "aprintf.h"
-#include "libc/stdbool.h"
+#include "stdbool.h"
 
 typedef struct gfxprint  {
     /* 0x00 */ PrintCallback proutFunc; /* Current print out func */

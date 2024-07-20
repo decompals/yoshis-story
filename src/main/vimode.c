@@ -1,7 +1,7 @@
 #include "vimode.h"
 #include "attributes.h"
 #include "macros.h"
-#include "libc/stdbool.h"
+#include "stdbool.h"
 #include "lib/ultralib/src/io/viint.h"
 #include "pad.h"
 

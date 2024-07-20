@@ -1,6 +1,6 @@
 #include "global.h"
 #include "math64.h"
-#include "libc/math.h"
+#include "math.h"
 #include "fp.h"
 
 f32 Math_FTanF(f32 x) {
@@ -61,9 +61,9 @@ f32 Math_FAtanContFracF(f32 x) {
     }
 
     if (sector > 0) {
-        return ((f32)M_PI / 2) - (x / (1.0f + conv));
+        return (M_PIf / 2) - (x / (1.0f + conv));
     } else if (sector < 0) {
-        return -((f32)M_PI / 2) - (x / (1.0f + conv));
+        return -(M_PIf / 2) - (x / (1.0f + conv));
     } else {
         return x / (1.0f + conv);
     }
@@ -74,15 +74,15 @@ f32 fatan2(f32 y, f32 x) {
         return 0.0f;
     } else if (x == 0.0f) {
         if (y < 0.0f) {
-            return -((f32)M_PI / 2);
+            return -(M_PIf / 2);
         } else {
-            return (f32)M_PI / 2;
+            return M_PIf / 2;
         }
     } else if (x < 0.0f) {
         if (y < 0.0f) {
-            return -((f32)M_PI - Math_FAtanContFracF(fabs((f64)(y / x))));
+            return -(M_PIf - Math_FAtanContFracF(fabs((f64)(y / x))));
         } else {
-            return (f32)M_PI - Math_FAtanContFracF(fabs((f64)(y / x)));
+            return M_PIf - Math_FAtanContFracF(fabs((f64)(y / x)));
         }
     } else {
         return Math_FAtanContFracF(y / x);
@@ -94,5 +94,5 @@ f32 Math_FAsinF(f32 x) {
 }
 
 f32 Math_FAcosF(f32 x) {
-    return ((f32)M_PI / 2) - Math_FAsinF(x);
+    return (M_PIf / 2) - Math_FAsinF(x);
 }

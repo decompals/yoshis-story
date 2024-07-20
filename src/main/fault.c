@@ -1,9 +1,9 @@
 #include "fault.h"
 
 #include "lib/ultralib/src/libc/xstdio.h"
-#include "libc/stdbool.h"
-#include "libc/stddef.h"
-#include "libc/stdint.h"
+#include "stdbool.h"
+#include "stddef.h"
+#include "stdint.h"
 #include "PR/os_internal.h"
 
 #include "global.h"
@@ -740,7 +740,8 @@ void Fault_Init(void) {
     debugger.depth = 16;
     osCreateMesgQueue(&debugger.queue, debugger.msg, ARRAY_COUNT(debugger.msg));
     StackCheck_Init(&sFaultStackInfo, sFaultStack, STACK_TOP(sFaultStack), 0, 0x100, "fault");
-    osCreateThread(&debugger.thread, Y_THREAD_ID_FAULT, Fault_ThreadEntry, NULL, STACK_TOP(sFaultStack), Y_PRIORITY_FAULT);
+    osCreateThread(&debugger.thread, Y_THREAD_ID_FAULT, Fault_ThreadEntry, NULL, STACK_TOP(sFaultStack),
+                   Y_PRIORITY_FAULT);
     osStartThread(&debugger.thread);
 }
 
