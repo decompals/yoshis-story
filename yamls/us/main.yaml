@@ -50,7 +50,7 @@
       - [0x5E4C0, asm] # Probably has at least 1 file split
       - [0x63870, asm]
       - [0x63A30, asm]
-      - [0x65430, asm]
+      - [0x65430, c, O2/65430]
       - [0x6A8A0, asm, unitManager]
       - [0x6CB50, asm]
       - [0x6CB60, asm]
@@ -323,7 +323,7 @@
       - [0xB18A0, rodata, nxgotoManager]
       - [0xB1900, rodata]
       - [0xB1960, rodata]
-      - [0xB19A0, rodata, 65430] # Probably main, but also has utility.c in rodata?
+      - [0xB19A0, .rodata, O2/65430] # Probably main, but also has utility.c in rodata?
       - [0xB1B20, rodata, unitManager]
       - [0xB1C60, rodata, 6CB80]
       - [0xB1C90, rodata]

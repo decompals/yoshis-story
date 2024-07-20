@@ -1,6 +1,10 @@
 entrypoint = 0x80000400;
 
+Idle_ThreadEntry = 0x80067284;
+Idle_InitVideo = 0x80067390;
+bootclear = 0x80067400;
 bootproc = 0x8006743C;
+Main_ThreadEntry = 0x80069000;
 
 Fault_SetFramebuffer = 0x80071250; // type:func
 Fault_Init = 0x8007127C; // type:func
@@ -103,6 +107,7 @@ aprintf = 0x80082174;
 csleep = 0x800821A0;
 
 // data
+
 mallocRecord = 0x800A65AC; // type:MallocRecord size:0x14
 
 fault_exit = 0x800A8000;
@@ -125,3 +130,19 @@ gOverlayLogSeverity = 0x800AA390; // type:s32
 // rodata
 
 // bss
+
+gEepMgr = 0x800F95D0;
+sEepBuff = 0x800F97F8;
+sEepStack = 0x800F9FF8;
+sEepCache = 0x800FA2F8;
+sEepStackInfo = 0x800FAB00;
+sBootStack = 0x800FB018;
+sBootStackInfo = 0x800FD018;
+sIdleThread = 0x800FD038;
+sIdleStack = 0x800FD1E8;
+sIdleStackInfo = 0x800FD3E8;
+sMainThread = 0x800FD408;
+sMainStack = 0x800FD5B8;
+sMainStackInfo = 0x800FFCB8;
+sPiMgrCmdQueue = 0x80100490;
+sPiMgrCmdBuff = 0x80100470;
