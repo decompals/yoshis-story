@@ -17,7 +17,7 @@ struct Input;
 
 #define Y65430UnkStruct_MAGIC 0x434D5052 // 'CMPR'
 
-typedef void (*Y65430UnkFunc)(void*, UNK_TYPE, size_t);
+typedef void (*Y65520UnkFunc)(void*, UNK_TYPE, size_t);
 
 typedef struct MallocRecord {
     /* 0x00 */ u32 allocP;
@@ -53,10 +53,12 @@ Y511F0UnkStruct2* func_80050C8C(u16 arg0);
 Y65430UnkStruct* func_80064D1C(u32);
 void* func_80064DD0(u32 size); // malloc?
 void func_80064E84(Y65430UnkStruct*);
+
+// 65520
 void func_80065528(void* arg0, void* arg1, s32 arg2);
 void func_80065728(MallocRecord*, s32, s32);
 void func_8006758C(void*, UNK_TYPE, size_t);
-void func_800675D0(void*, UNK_TYPE, size_t, Y65430UnkFunc);
+void func_800675D0(void*, UNK_TYPE, size_t, Y65520UnkFunc);
 
 // 6DF40
 void func_8006F500(void);
