@@ -2,10 +2,10 @@ import struct
 from pathlib import Path
 
 from splat.util import options, log
-from splat.segtypes.n64.segment import N64Segment
+from splat.segtypes.segment import Segment
 
 
-class N64SegFont(N64Segment):
+class N64SegFont(Segment):
     def __init__(self, rom_start, rom_end, type, name, vram_start, args, yaml):
         super().__init__(
             rom_start, rom_end, type, name, vram_start, args=args, yaml=yaml

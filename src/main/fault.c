@@ -115,7 +115,7 @@ typedef struct FaultDrawerPos {
     /* 0x4 */ s32 y;
 } FaultDrawerPos;
 
-void* Fault_PrintCallback(char* arg, const char* fmt, size_t count) {
+void* Fault_PrintCallback(void* arg, const char* fmt, size_t count) {
     FaultDrawerPos* pos = (FaultDrawerPos*)arg;
 
     for (; count > 0; count--) {
@@ -135,7 +135,7 @@ s32 Fault_Printf(s32 x, s32 y, const char* fmt, ...) {
 
     pos.x = x;
     pos.y = y;
-    ret = _Printf((outfun*)*Fault_PrintCallback, (char*)&pos, fmt, ap);
+    ret = _Printf(*Fault_PrintCallback, (char*)&pos, fmt, ap);
 
     va_end(ap);
 
