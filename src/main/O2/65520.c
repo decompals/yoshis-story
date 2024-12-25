@@ -40,7 +40,10 @@ void func_80064B38(void) {
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65520/func_80064FEC.s")
 
-#pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65520/func_8006502C.s")
+
+s32 func_8006502C(void) {
+    return (D_800F93F4 - D_800F93F0) - func_80064FEC();
+}
 
 #pragma GLOBAL_ASM("asm/us/nonmatchings/main/O2/65520/func_80065060.s")
 
