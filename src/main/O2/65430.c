@@ -1,6 +1,6 @@
 #include "global.h"
 
-#include "lib/ultralib/src/io/viint.h"
+#include "PRinternal/viint.h"
 
 #include "fault.h"
 #include "segment_symbols.h"

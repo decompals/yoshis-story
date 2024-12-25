@@ -57,6 +57,8 @@ PYTHON ?= $(VENV)/$(VENV_BIN_DIR)/python3
 # Emulator w/ flags
 N64_EMULATOR ?=
 
+PROJECT_DIR   := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
+
 
 BASEROM_DIR := baseroms/$(VERSION)
 BASEROM     := $(BASEROM_DIR)/baserom.z64
@@ -106,6 +108,7 @@ endif
 
 CC              := tools/ido/$(DETECTED_OS)/7.1/cc
 CC_OLD          := tools/ido/$(DETECTED_OS)/5.3/cc
+CC_ULTRALIB 	:= $(PROJECT_DIR)/$(CC_OLD)
 
 AR              := ar
 AS              := $(CROSS)as
@@ -306,7 +309,7 @@ $(LIBULTRA_LIB): $(ULTRALIB_LIB)
 	$(LIBDUMP_CMD)
 
 $(ULTRALIB_LIB):
-	$(MAKE) -C lib/ultralib VERSION=$(ULTRALIB_VERSION) TARGET=$(ULTRALIB_TARGET) FIXUPS=1 CROSS=$(CROSS) CC=../../$(CC_OLD)
+	$(MAKE) -C lib/ultralib VERSION=$(ULTRALIB_VERSION) TARGET=$(ULTRALIB_TARGET) MODERN_LD=1 CROSS=$(CROSS) COMPILER_DIR=$(dir $(CC_ULTRALIB)) AR=$(AR)
 
 $(BUILD_DIR)/%.ld: %.ld
 	$(CPP) $(CPPFLAGS) $(BUILD_DEFINES) $(IINC) $< > $@

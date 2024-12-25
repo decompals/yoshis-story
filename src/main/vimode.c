@@ -1,7 +1,7 @@
 #include "vimode.h"
 
 #include "stdbool.h"
-#include "lib/ultralib/src/io/viint.h"
+#include "PRinternal/viint.h"
 
 #include "attributes.h"
 #include "macros.h"
