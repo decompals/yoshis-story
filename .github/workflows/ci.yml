@@ -45,6 +45,7 @@ jobs:
     - name: Build Rom
       run: make -j $(nproc) WERROR=1 VERSION=${{ matrix.version }}
 
-    - name: Upload frogress
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-      run: .venv/bin/python3 tools/upload_frogress.py ${{ matrix.version }} --apikey ${{ secrets.PROGRESS_API_KEY }}
+   # TODO: Switch to objdiff reporting and decomp.dev instead of frogress
+   # - name: Upload frogress
+   #   if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+   #   run: .venv/bin/python3 tools/upload_frogress.py ${{ matrix.version }} --apikey ${{ secrets.PROGRESS_API_KEY }}
