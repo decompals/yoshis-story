@@ -25,7 +25,7 @@ Under Debian / Ubuntu (which we recommend using), you can install them with the 
 
 ```bash
 sudo apt update
-sudo apt install make git build-essential binutils-mips-linux-gnu python3 python3-pip python3-venv
+sudo apt install make git build-essential binutils-mips-linux-gnu python3 python3-pip python3-venv wget
 ```
 
 #### 2. Install python dependencies
