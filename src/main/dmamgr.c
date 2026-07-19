@@ -65,7 +65,7 @@ s32 func_8007DC5C(DmaRequest* req) {
         if (req->unk0C != NULL) {
             req->unk18 = req->unk0C;
         } else {
-            req->unk18 = func_80064D1C(req->unk1C);
+            req->unk18 = Heap_Alloc(req->unk1C);
             if (req->unk18 == NULL) {
                 return -1;
             }
@@ -102,7 +102,7 @@ void DmaMgr_ThreadEntry(UNUSED void* arg) {
         if (req->unk11 != 0) {
             func_8006F560(req->unk18, req->unk04);
             if (req->unk0C == NULL) {
-                func_80064E84(req->unk18);
+                Heap_Free(req->unk18);
             }
         }
         if (req->queue != NULL) {

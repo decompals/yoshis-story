@@ -22,4 +22,12 @@
 
 #define DECR(x) ((x) == 0 ? 0 : --(x))
 
+#define IDO_PRINTF_WORKAROUND (__sgi && !__GNUC__ && !M2CTX && !PERMUTER)
+
+#if IDO_PRINTF_WORKAROUND
+#define PRINTF(args) (void)(args)
+#else
+#define PRINTF(format, ...) (void)(format)
+#endif
+
 #endif

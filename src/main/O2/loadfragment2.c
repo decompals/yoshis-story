@@ -194,7 +194,7 @@ size_t Overlay_Load(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart,
 }
 
 void* Overlay_AllocateAndLoad(uintptr_t vromStart, uintptr_t vromEnd, uintptr_t vramStart, uintptr_t vramEnd) {
-    void* allocatedRamAddr = func_80064DD0(vramEnd - vramStart);
+    void* allocatedRamAddr = Heap_AllocR(vramEnd - vramStart);
 
     if (allocatedRamAddr != NULL) {
         Overlay_Load(vromStart, vromEnd, vramStart, vramEnd, allocatedRamAddr);

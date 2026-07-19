@@ -8,7 +8,7 @@
 
 typedef struct EepBuffer {
     /* 0x000 */ u8 data[0x3FA];
-    /* 0x3FA */ u16 unk3FA;
+    /* 0x3FA */ u16 checksum; // SaveData_Checksum over data[]
     /* 0x3FC */ s32 magic;
 } EepBuffer; // size = 0x400
 

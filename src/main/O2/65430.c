@@ -1,14 +1,14 @@
 #include "global.h"
 
 void func_80064830(Y65430UnkStruct* arg0) {
-    func_80064E84(arg0);
+    Heap_Free(arg0);
 }
 
 void* func_80064850(u16 arg0) {
     s32 sp1C = func_80050C8C(arg0)->unk4;
-    void* sp18 = func_80064DD0(0x18);
+    void* sp18 = Heap_AllocR(0x18);
 
-    func_800675D0(sp18, sp1C, 0x18, func_8006758C);
+    Rom_LoadWith(sp18, sp1C, 0x18, Rom_LoadSegmented);
     return sp18;
 }
 
