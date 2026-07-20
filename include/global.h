@@ -17,7 +17,7 @@ struct Input;
 
 #define Y65430UnkStruct_MAGIC 0x434D5052 // 'CMPR'
 
-typedef void (*Y65520UnkFunc)(void*, UNK_TYPE, size_t);
+typedef void (*RomLoadFunc)(void* dest, UNK_TYPE src, size_t size);
 
 typedef struct MallocRecord {
     /* 0x00 */ u32 allocP;
@@ -49,17 +49,17 @@ typedef struct Y511F0UnkStruct2 {
 // 511F0
 Y511F0UnkStruct2* func_80050C8C(u16 arg0);
 
-// 65430
-Y65430UnkStruct* func_80064D1C(u32);
-void* func_80064DD0(u32 size); // malloc?
-void func_80064E84(Y65430UnkStruct*);
+// 65520 heap allocator
+Y65430UnkStruct* Heap_Alloc(u32 reqSize);
+void* Heap_AllocR(u32 reqSize);
+void Heap_Free(Y65430UnkStruct* ptr);
 
 // 65520
-s32 func_80064FEC(void);
-void func_80065528(void* arg0, void* arg1, s32 arg2);
-void func_80065728(MallocRecord*, s32, s32);
-void func_8006758C(void*, UNK_TYPE, size_t);
-void func_800675D0(void*, UNK_TYPE, size_t, Y65520UnkFunc);
+s32 Heap_GetTotalAllocated(void);
+void Mem_CopyHalfwords(void* dest, void* src, s32 size);
+void Mem_FillHalfwords(MallocRecord* dest, s32 size, s32 value); // MallocRecord* is an artifact; any halfword-aligned buffer
+void Rom_LoadSegmented(void* dest, UNK_TYPE segAddr, size_t size);
+void Rom_LoadWith(void* dest, UNK_TYPE src, size_t size, RomLoadFunc loadFn);
 
 // 6DF40
 void func_8006F500(void);
@@ -101,12 +101,17 @@ extern MallocRecord mallocRecord;
 
 extern UNK_TYPE D_800DA83C;
 extern Y511F0UnkStruct D_800DA840[];
-extern MallocRecord D_800F8E58;
-extern s32 D_800F93F0;
-extern s32 D_800F93F4;
-extern u8 D_800FAAF8;
-extern u8 D_800FAB1C;
-extern u8 D_800FAB20;
+// Root of the unpacked save-data BSS region (0x400 bytes; fields mapped by 65520.c sSaveFields),
+// NOT a malloc record - the MallocRecord type is an artifact but load-bearing (.allocP word reads).
+// First byte packs 2-bit options: bits 7-6 = save slot select (SaveData_Init).
+extern MallocRecord gSaveData;
+extern s32 gHeapStart;
+extern s32 gHeapEnd;
+extern u8 gRumbleAccum;
+extern u8 gRumbleMotorOn;
+extern u8 gRumbleStrength;
+extern u8 gRumbleTimer;
+extern u8 gRumbleDecay;
 extern UNK_TYPE D_801001F8;
 extern UNK_TYPE D_80108620;
 extern UNK_TYPE D_80108624;

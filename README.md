@@ -25,7 +25,7 @@ Under Debian / Ubuntu (which we recommend using), you can install them with the 
 
 ```bash
 sudo apt update
-sudo apt install make git build-essential binutils-mips-linux-gnu python3 python3-pip python3-venv
+sudo apt install make git build-essential binutils-mips-linux-gnu python3 python3-pip python3-venv wget
 ```
 
 #### 2. Install python dependencies
@@ -50,4 +50,23 @@ To start the extraction/build process, run the following command:
 make setup
 make extract
 make
+```
+
+### macOS notes
+
+The Linux instructions below mostly apply to macOS, with a few differences:
+
+* **Use `gmake` instead of `make`.** The system `make` on macOS is GNU Make 3.81, which is too old for this project. Install GNU Make via Homebrew: `brew install make`
+* **Install GNU `iconv`** via Homebrew: `brew install libiconv`. The macOS built-in `iconv` has encoding issues with EUC-JP that produce incorrect builds.
+* **Install GNU coreutils** for `md5sum`: `brew install coreutils`
+* **MIPS binutils** (`mips-linux-gnu-as`, `mips-linux-gnu-ld`, `mips-linux-gnu-ar`, etc.): `brew install mips-linux-gnu-binutils`
+
+Create a `.make_options` file in the project root to configure your local tool paths:
+
+```makefile
+# use custom binutils
+CROSS=mips-linux-gnu-
+
+# use GNU iconv
+export PATH := $(HOMEBREW_PREFIX)/opt/libiconv/bin:$(PATH)
 ```

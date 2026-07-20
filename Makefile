@@ -110,7 +110,7 @@ CC              := tools/ido/$(DETECTED_OS)/7.1/cc
 CC_OLD          := tools/ido/$(DETECTED_OS)/5.3/cc
 CC_ULTRALIB 	:= $(PROJECT_DIR)/$(CC_OLD)
 
-AR              := ar
+AR              := $(CROSS)ar
 AS              := $(CROSS)as
 LD              := $(CROSS)ld
 OBJCOPY         := $(CROSS)objcopy
